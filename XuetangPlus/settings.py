@@ -103,8 +103,8 @@ WSGI_APPLICATION = 'XuetangPlus.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': CONFIGS['DB_NAME'],
         'USER': CONFIGS['DB_USER'],
         'PASSWORD': CONFIGS['DB_PASS'],
         'HOST': CONFIGS['DB_HOST'],
