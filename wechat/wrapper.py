@@ -13,6 +13,7 @@ from django.template.loader import get_template
 
 from XuetangPlus import settings
 from codex.baseview import BaseView
+from wechat.models import User
 
 
 __author__ = "Epsirom"
@@ -83,10 +84,7 @@ class WeChatHandler(object):
         return self.is_msg_type('text') and ((self.input['Content'].split() or [None])[0] in commands)
 
     def url_help(self):
-        return settings.get_url('u/help')
-
-    def url_bind(self):
-        return settings.get_url('u/bind', {'openid': self.user.open_id})
+        return settings.get_url('')
 
 
 class WeChatEmptyHandler(WeChatHandler):

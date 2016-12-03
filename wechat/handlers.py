@@ -22,3 +22,16 @@ class DefaultHandler(WeChatHandler):
 
     def handle(self):
         return self.reply_text('对不起，没有找到您需要的信息:(')
+
+class HelpOrSubscribeHandler(WeChatHandler):
+
+    def check(self):
+        return self.is_text('帮助', 'help') or self.is_event('scan', 'subscribe') or \
+               self.is_event_click(self.view.event_keys['help'])
+
+    def handle(self):
+        return self.reply_single_news({
+            'Title': self.get_message('help_title'),
+            'Description': self.get_message('help_description'),
+            'Url': self.url_help(),
+        })
