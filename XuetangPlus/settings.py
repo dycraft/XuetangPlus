@@ -159,6 +159,8 @@ STATIC_URL = '/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+HTML_ROOT = os.path.join(STATIC_ROOT, 'partials')
+
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(STATIC_ROOT, "media").replace('\\','/')
