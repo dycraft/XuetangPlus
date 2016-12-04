@@ -86,6 +86,9 @@ class WeChatHandler(object):
     def url_help(self):
         return settings.get_url('')
 
+    def url_account_bind(self):
+        return settings.get_url('welcome/account_bind')
+
 
 class WeChatEmptyHandler(WeChatHandler):
 

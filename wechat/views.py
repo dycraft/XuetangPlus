@@ -17,6 +17,7 @@ class CustomWeChatView(WeChatView):
 
     event_keys = {
         'help': 'SERVICE_HELP',
+        'account_bind': 'ACCOUNT_BIND'
     }
 
     menu = {
@@ -28,6 +29,11 @@ class CustomWeChatView(WeChatView):
                         "type": "click",
                         "name": "帮助",
                         "key": event_keys['help'],
+                    },
+                    {
+                        "type": "click",
+                        "name": "绑定账号",
+                        "key": event_keys['account_bind'],
                     }
                 ]
             }
