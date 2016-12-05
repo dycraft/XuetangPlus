@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+        <title></title>
+        <link rel="stylesheet" href="/lib/weui/weui.css"/>
+        <link rel="stylesheet" href="/lib/weui/example.css">
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body ontouchstart>
+        <div class="weui-toptips weui-toptips_warn js_tooltips">Failed to load resource: 请求的 URL 在此服务器上找不到。</div>
+
+        <div id="content"></div>
+
+        <script type="text/javascript" src="/lib/zepto.min.js"></script>
+        <script type="text/javascript" src="/lib/swig.min.js"></script>
+        <script type="text/javascript">
+            $(function(){
+                var $tooltips = $('.js_tooltips');
+
+                $('#showTooltips').on('click', function(){
+                    if ($tooltips.css('display') != 'none') return;
+
+                    // toptips的fixed, 如果有`animation`, `position: fixed`不生效
+                    $('.page.cell').removeClass('slideIn');
+
+                    $tooltips.css('display', 'block');
+                    setTimeout(function () {
+                        $tooltips.css('display', 'none');
+                    }, 2000);
+                });
+            });
+        </script>
+    </body>
+</html>
