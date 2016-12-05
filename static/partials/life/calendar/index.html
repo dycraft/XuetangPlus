@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+        <title></title>
+        <link rel="stylesheet" href="/lib/weui/weui.css"/>
+        <link rel="stylesheet" href="/lib/weui/example.css">
+        <link rel="stylesheet" href="/lib/calendar/fullcalendar.css">
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body ontouchstart>
+        <div class="weui-toptips weui-toptips_warn js_tooltips">Failed to load resource: 请求的 URL 在此服务器上找不到。</div>
+
+        <div id="content">
+            <div class="page__hd">
+                <h1 class="page__title">个人日历</h1>
+                <p class="page__desc">2016年12月3日</p>
+            </div>
+            <div class="page__bd">
+                <div class="page__category js_categoryInner" style>
+                    <div class="weui-cells page__category-content">
+                        <a class="weui-cell weui-cell_access js_item" data-id="communication" href="javascript:;">
+                            <div class="weui-cell__bd">
+                                <p>事件列表</p>
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                        <a class="weui-cell weui-cell_access js_item" data-id="comment" id="showActionSheet" href="javascript:;">
+                            <div class="weui-cell__bd">
+                                <p>添加事件</p>
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="weui-cells page__bd_spacing">
+                <div id='calendar'></div>
+            </div>
+        </div>
+
+        <!--BEGIN actionSheet-->
+        <div>
+            <div class="weui-mask" id="iosMask" style="display: none"></div>
+            <div class="weui-actionsheet" id="iosActionsheet">
+                <div class="weui-actionsheet__menu">
+                    <div class="weui-actionsheet__cell">DDL</div>
+                    <div class="weui-actionsheet__cell">考试</div>
+                    <div class="weui-actionsheet__cell">备忘</div>
+                </div>
+                <div class="weui-actionsheet__action">
+                    <div class="weui-actionsheet__cell" id="iosActionsheetCancel">取消</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="weui-skin_android" id="androidActionsheet" style="display: none">
+            <div class="weui-mask"></div>
+            <div class="weui-actionsheet">
+                <div class="weui-actionsheet__menu">
+                    <div class="weui-actionsheet__cell">DDL</div>
+                    <div class="weui-actionsheet__cell">考试</div>
+                    <div class="weui-actionsheet__cell">备忘</div>
+                </div>
+            </div>
+        </div>
+        <!--END actionSheet-->
+
+        <script type="text/javascript" src="/lib/calendar/jquery.min.js"></script>
+        <script type="text/javascript" src="/lib/swig.min.js"></script>
+        <script type="text/javascript" src="/lib/calendar/moment.min.js"></script>
+        <script type="text/javascript" src="/lib/calendar/fullcalendar.min.js"></script>
+        <script>
+        	$(document).ready(function() {
+
+        		$('#calendar').fullCalendar({
+        			header: {
+        				left: 'prev,next today',
+        				center: 'title',
+        				right: 'month'
+        			},
+        			defaultDate: '2016-12-08',
+        			navLinks: false, // can click day/week names to navigate views
+        			editable: false,
+        			eventLimit: false, // allow "more" link when too many events
+        			events: [
+                        {
+        					title: 'DDL',
+        					start: '2016-12-01'
+        				},
+                        {
+        					title: '备忘',
+        					start: '2016-12-01'
+        				},
+                        {
+        					title: 'DDL',
+        					start: '2016-12-11'
+        				},
+                        {
+        					title: '考试',
+        					start: '2016-12-21'
+        				},
+                        {
+        					title: 'DDL',
+        					start: '2016-12-21'
+        				},
+                        {
+        					title: '备忘',
+        					start: '2016-12-17'
+        				},
+                        {
+        					title: '考试',
+        					start: '2016-12-16'
+        				},
+                        {
+        					title: '备忘',
+        					start: '2016-12-19'
+        				},
+        			]
+        		});
+
+        	});
+
+        </script>
+        <script type="text/javascript" class="actionsheet js_show">
+            // ios
+            $(function(){
+                if (getMobileOperatingSystem() == 'iOS') {
+                    var $iosActionsheet = $('#iosActionsheet');
+                    var $iosMask = $('#iosMask');
+
+                    function hideActionSheet() {
+                        $iosActionsheet.removeClass('weui-actionsheet_toggle');
+                        $iosMask.fadeOut(200);
+                    }
+
+                    $iosMask.on('click', hideActionSheet);
+                    $('#iosActionsheetCancel').on('click', hideActionSheet);
+                    $("#showActionSheet").on("click", function(){
+                        $iosActionsheet.addClass('weui-actionsheet_toggle');
+                        $iosMask.fadeIn(200);
+                    });
+                } else {
+                    var $androidActionSheet = $('#androidActionsheet');
+                    var $androidMask = $androidActionSheet.find('.weui-mask');
+
+                    $("#showActionSheet").on('click', function(){
+                        $androidActionSheet.fadeIn(200);
+                        $androidMask.on('click',function () {
+                            $androidActionSheet.fadeOut(200);
+                        });
+                    });
+                }
+            });
+
+
+            function getMobileOperatingSystem() {
+                var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+                  // Windows Phone must come first because its UA also contains "Android"
+                if (/windows phone/i.test(userAgent)) {
+                    return "Windows Phone";
+                }
+
+                if (/android/i.test(userAgent)) {
+                    return "Android";
+                }
+
+                // iOS detection from: http://stackoverflow.com/a/9039885/177710
+                if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                    return "iOS";
+                }
+
+                return "unknown";
+            }
+        </script>
+    </body>
+</html>
