@@ -16,14 +16,14 @@ class CustomWeChatView(WeChatView):
     default_handler = DefaultHandler
 
     event_keys = {
-        'help': 'SERVICE_HELP',
-        'account_bind': 'ACCOUNT_BIND'
+        'help': 'WELCOME_HELP',
+        'account_bind': 'WELCOME_BIND'
     }
 
     menu = {
         'button': [
             {
-                "name": "服务",
+                "name": "欢迎",
                 "sub_button": [
                     {
                         "type": "click",
@@ -39,3 +39,11 @@ class CustomWeChatView(WeChatView):
             }
         ]
     }
+
+    @classmethod
+    def get_book_btn(cls):
+        return cls.menu['button'][-1]
+
+    @classmethod
+    def update_menu(cls):
+        return cls.lib.set_wechat_menu(cls.menu)
