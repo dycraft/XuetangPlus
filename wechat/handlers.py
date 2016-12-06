@@ -28,8 +28,9 @@ class DefaultHandler(WeChatHandler):
 class HelpOrSubscribeHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('帮助', 'help') or self.is_event('scan', 'subscribe') or \
-               self.is_event_click(self.view.event_keys['help'])
+        # return self.is_text('帮助', 'help') or self.is_event('scan', 'subscribe') or \
+        #        self.is_event_click(self.view.event_keys['help'])
+        return self.is_text('帮助', 'help') or self.is_event('scan', 'subscribe')
 
     def handle(self):
         return self.reply_single_news({
@@ -116,7 +117,6 @@ class MyCourseHandler(WeChatHandler):
         if self.user.username == '':
             return  self.reply_text("请先进行绑定")
         response = requests.post('http://se.zhuangty.com:8000/curriculum/' + self.user.username)
-        description = '暂时无法获得，接口尚未完善'
         dic = {
             1: '8:00',
             2: '9:50',
@@ -125,16 +125,17 @@ class MyCourseHandler(WeChatHandler):
             5: '17:05',
             6: '19:20',
         }
+        description = '查看您的课程列表'
         if response.status_code == 200:
             res = json.loads(response.content.decode())
             for course in res['classes']:
-                description = description + '\n课程代号：' + course['coursid']
+                description = description + '\n课程代号：' + course['courseid']
                 description = description + '\n课程名称：' + course['coursename']
-                description = description + '\n课程星期：' + course['time'][0]
+                description = description + '\n课程星期：' + str(course['time'][0])
                 description = description + '\n课程时间：' + dic[course['time'][1]]
                 description = description + '\n课程教师：' + course['teacher']
                 description = description + '\n课程教室：' + course['classroom']
-                description = description + '\n课程周数：' + course['week'] + '\n'
+                description = description + '\n课程周数：' + str(course['week']) + '\n'
         else:
             description = '请您重新进行绑定，若仍然失败请联系管理员。'
         return self.reply_single_news({
@@ -176,8 +177,9 @@ class NotificationHandler(WeChatHandler):
                     'true': '已批改',
                     'false': '未批改'}
             for course in res['classes']:
+                xsx = 'http://se.zhuangty.com:8000/learnhelper/' + self.user.username + '/courses/' + course['courseid'] + '/notices'
                 response_inform = requests.post('http://se.zhuangty.com:8000/learnhelper/'
-                                                + self.user.username + '/courses/' + course['coursid']
+                                                + self.user.username + '/courses/' + course['courseid']
                                                 + '/notices')
                 if response_inform.status_code == 200:
                     resp = json.loads(response_inform.content.decode())

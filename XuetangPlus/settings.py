@@ -177,6 +177,16 @@ def get_url(path, params=None):
     else:
         return full_path
 
+def get_redirect_url(input_url, app_id):
+    setting_url = get_url(input_url)
+
+    url_part1 = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='
+    url_part2 = '&redirect_uri=' + setting_url
+    url_part3 = '&response_type=code&scope=snsapi_base&state=1#wechat_redirect'
+
+    des = url_part1 + app_id + url_part2 + url_part3
+    print(setting_url)
+    return des
 
 # Logging configurations
 logging.basicConfig(

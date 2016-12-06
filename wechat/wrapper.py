@@ -83,6 +83,7 @@ class WeChatHandler(object):
     def is_text_command(self, *commands):
         return self.is_msg_type('text') and ((self.input['Content'].split() or [None])[0] in commands)
 
+    ##click调用
     def url_help(self):
         return settings.get_url('welcome/help')
 
@@ -99,7 +100,7 @@ class WeChatHandler(object):
         return  settings.get_url('life/calendar')
 
     def url_my_course(self):
-        return  settings.get_url('learn/course_list')
+        return  settings.get_url('learn/course_list', {'openid': self.user.open_id})
 
     def url_notification(self):
         return  settings.get_url('learn/notice_panel')
@@ -112,7 +113,7 @@ class WeChatHandler(object):
 
     def url_account_bind(self):
         return settings.get_url('welcome/account_bind', {'openid': self.user.open_id})
-
+    ###
 
 class WeChatEmptyHandler(WeChatHandler):
 

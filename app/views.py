@@ -34,3 +34,74 @@ class UserBind(APIView):
     def post(self):
         self.check_input('openid', 'username', 'password')
         self.validate_user()
+
+
+class MyCourse(APIView):
+    def get(self):
+        self.check_input('openid')
+        user = User.get_by_openid(self.input['openid'])
+        if user.student_id == '':
+            return {'valid': False}
+        else:
+            response = requests.post('http://se.zhuangty.com:8000/curriculum/' + user.username)
+            if response.status_code == 200:
+                res = json.loads(response.content.decode())
+                dic = {
+                    1: '8:00',
+                    2: '9:50',
+                    3: '13:30',
+                    4: '15:20',
+                    5: '17:05',
+                    6: '19:20',
+                }
+                courses = []
+                for course in res['classes']:
+                    new_course = {}
+                    new_course['课程代号'] = course['courseid']
+                    new_course['课程名称'] = course['coursename']
+                    new_course['课程星期'] = course['time'][0]
+                    new_course['课程时间'] = dic[course['time'][1]]
+                    new_course['课程教师'] = course['teacher']
+                    new_course['课程教室'] = course['classroom']
+                    new_course['课程周数'] = course['week']
+                    courses.append(new_course)
+                return {'valid': True,
+                        'student_id': user.student_id,
+                        'courses': courses}
+
+
+class CourseInfo(APIView):
+    def get(self):
+        self.check_input('openid', 'course_id')
+        user = User.get_by_openid(self.input['openid'])
+        response = requests.post('http://se.zhuangty.com:8000/curriculum/' + user.username)
+        result = {}
+        if response.status_code == 200:
+            res = json.loads(response.content.decode())
+            dic = {
+                1: '8:00',
+                2: '9:50',
+                3: '13:30',
+                4: '15:20',
+                5: '17:05',
+                6: '19:20',
+            }
+            for course in res['classes']:
+                if course['courseid'] == self.input['course_id']:
+                    result['course_id'] = course['courseid']
+                    result['course_day'] = course['time'][0]
+                    result['course_time'] = dic[course['time'][1]]
+                    result['course_teacher'] = course['teacher']
+                    result['course_classroom'] = course['classroom']
+                    result['week'] = course['week']
+
+        response = requests.post('http://se.zhuangty.com:8000/learnhelper/' + user.username + '/courses')
+        if response.status_code == 200:
+            res = json.loads(response.content.decode())
+            for course in res['courses']:
+                if course['courseid'] == self.input['course_id']:
+                    result['course_newfile'] = course['newfile']
+                    result['course_unreadnotice'] = course['unreadnotice']
+                    result['course_name'] = course['coursename']
+                    result['course_unsubmittedoperations'] = course['unsubmittedoperations']
+        return result
