@@ -84,10 +84,34 @@ class WeChatHandler(object):
         return self.is_msg_type('text') and ((self.input['Content'].split() or [None])[0] in commands)
 
     def url_help(self):
-        return settings.get_url('')
+        return settings.get_url('welcome/help')
+
+    def url_course_search(self):
+        return  settings.get_url('learn/search_course')
+
+    def url_communicate_student(self):
+        return  settings.get_url('learn/communication_s')
+
+    def url_communicate_teacher(self):
+        return  settings.get_url('learn/communication_t')
+
+    def url_my_calendar(self):
+        return  settings.get_url('life/calendar')
+
+    def url_my_course(self):
+        return  settings.get_url('learn/course_list')
+
+    def url_notification(self):
+        return  settings.get_url('learn/notice_panel')
+
+    def url_school_calendar(self):
+        return  settings.get_url('u/help')
+
+    def url_navigation(self):
+        return  settings.get_url('life/search_location')
 
     def url_account_bind(self):
-        return settings.get_url('welcome/account_bind')
+        return settings.get_url('welcome/account_bind', {'openid': self.user.open_id})
 
 
 class WeChatEmptyHandler(WeChatHandler):

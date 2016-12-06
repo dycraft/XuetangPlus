@@ -9,7 +9,9 @@ class CustomWeChatView(WeChatView):
     lib = WeChatLib(WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET)
 
     handlers = [
-        HelpOrSubscribeHandler,
+        HelpOrSubscribeHandler, UnbindOrUnsubscribeHandler, BindAccountHandler, ViewPersonalInformationHandler,
+        CourseSearchHandler, MyCourseHandler, CommunicateHandler, NotificationHandler, MyCalendarHandler,
+        SchoolCalendarHandler, NavigationHandler
     ]
 
     error_message_handler = ErrorHandler
@@ -98,10 +100,6 @@ class CustomWeChatView(WeChatView):
             }
         ]
     }
-
-    @classmethod
-    def get_book_btn(cls):
-        return cls.menu['button'][-1]
 
     @classmethod
     def update_menu(cls):

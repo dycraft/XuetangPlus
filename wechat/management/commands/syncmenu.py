@@ -18,11 +18,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         CustomWeChatView.update_menu()
-        act_btns = CustomWeChatView.get_book_btn().get('sub_button', list())
-        self.logger.info('Updated %d activities', len(act_btns))
-        self.logger.info('=' * 32)
-        for idx, act in enumerate(act_btns):
-            self.logger.info('%d. %s (%s)', idx, act.get('name', ''), act.get('key', ''))
 
 
 Command.logger.setLevel(logging.DEBUG)
