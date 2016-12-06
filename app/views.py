@@ -2,7 +2,7 @@ from codex.baseerror import *
 from codex.baseview import APIView
 from wechat.models import User
 import requests
-import simplejson
+import json
 
 class UserBind(APIView):
 
@@ -15,7 +15,7 @@ class UserBind(APIView):
                'password': str(self.input['password'])}
         response = requests.post('http://se.zhuangty.com:8000/users/register', json = dic)
         if response.status_code == 200:
-            res = simplejson.loads(response.content.decode())
+            res = json.loads(response.content.decode())
             user = User.get_by_openid(self.input['openid'])
             user.username = res['username']
             user.student_id = res['information']['studentnumber']

@@ -2,7 +2,7 @@
 #
 from wechat.wrapper import WeChatHandler
 import requests
-import simplejson
+import json
 
 __author__ = "Epsirom"
 
@@ -126,7 +126,7 @@ class MyCourseHandler(WeChatHandler):
             6: '19:20',
         }
         if response.status_code == 200:
-            res = simplejson.loads(response.content.decode())
+            res = json.loads(response.content.decode())
             for course in res['classes']:
                 description = description + '\n课程代号：' + course['coursid']
                 description = description + '\n课程名称：' + course['coursename']
@@ -170,7 +170,7 @@ class NotificationHandler(WeChatHandler):
         response = requests.post('http://se.zhuangty.com:8000/curriculum/' + self.user.username)
         if response.status_code == 200:
             description = '公告：'
-            res = simplejson.loads(response.content.decode())
+            res = json.loads(response.content.decode())
             dic = { 'read': '已读',
                     'unread': '未读',
                     'true': '已批改',
@@ -180,7 +180,7 @@ class NotificationHandler(WeChatHandler):
                                                 + self.user.username + '/courses/' + course['coursid']
                                                 + '/notices')
                 if response_inform.status_code == 200:
-                    resp = simplejson.loads(response_inform.content.decode())
+                    resp = json.loads(response_inform.content.decode())
                     description = description + '\n标题：' + resp['title']
                     description = description + '\n发布时间：' + resp['publishtime']
                     description = description + '\n状态：' + dic[resp['state']]
@@ -198,7 +198,7 @@ class NotificationHandler(WeChatHandler):
                                                 + self.user.username + '/courses/' + course['coursid']
                                                 + '/assignments')
                 if response_work.status_code == 200:
-                    resp = simplejson.loads(response_work.content.decode())
+                    resp = json.loads(response_work.content.decode())
                     description = description + '\n标题：' + resp['title']
                     description = description + '\n作业内容：' + resp['detail']
                     description = description + '\n发布时间：' + resp['startdate']
