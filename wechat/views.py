@@ -24,7 +24,7 @@ class CustomWeChatView(WeChatView):
         'my_course': 'LEARN_COURSE',
         'communicate': 'LEARN_COMMUNICATE',
         'notification': 'LEARN_NOTIFICATION',
-        'library_remains': 'LIFE_LIBRARY',
+        'library_remains': 'LIFE_LIBRARY_REMAINS',
         'my_calendar': 'LIFE_MY_CALENDAR',
         'school_calendar': 'LIFE_SCHOOL_CALENDAR',
         'navigation': 'LIFE_NAVIGATION',
@@ -36,8 +36,8 @@ class CustomWeChatView(WeChatView):
         'account_bind': 'welcome/account_bind',
         'search_course': 'learn/search_course',
         'course_list': 'learn/course_list',
-        'communication': 'learn/communication',
-        'notice_panel': 'learn/notice_panel',
+        'communicate': 'learn/communicate',
+        'notication': 'learn/notification',
         'calendar': 'life/calendar',
     }
 
