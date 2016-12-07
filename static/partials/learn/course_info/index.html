@@ -21,7 +21,7 @@
                     <div class="weui-form-preview__hd">
                         <div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">课程名称</label>
-                            <span class="weui-form-preview__value" id="course_name">软件工程(3)</span>
+                            <span class="weui-form-preview__value" id="course_name"></span>
                         </div>
                     </div>
                     <div class="weui-form-preview__bd">
@@ -30,20 +30,24 @@
                             <span class="weui-form-preview__value" id="course_time"></span>
                         </div>
                         <div class="weui-form-preview__item">
-                            <label class="weui-form-preview__label">学时</label>
-                            <span class="weui-form-preview__value">80</span>
+                            <label class="weui-form-preview__label" >周数</label>
+                            <span class="weui-form-preview__value" id="course_week"></span>
                         </div>
-                        <div class="weui-form-preview__item">
-                            <label class="weui-form-preview__label">考核方式</label>
-                            <span class="weui-form-preview__value">考试</span>
+                        <div class="weui-form-preview__item"  id="course_new_file_holder">
+                            <label class="weui-form-preview__label">新文件</label>
+                            <span class="weui-form-preview__value" id="course_new_file"></span>
                         </div>
-                        <div class="weui-form-preview__item">
-                            <label class="weui-form-preview__label">教学模式</label>
-                            <span class="weui-form-preview__value">MOOC课程+课堂讲授+项目实践</span>
+                        <div class="weui-form-preview__item"  id="course_unread_notice_holder">
+                            <label class="weui-form-preview__label">未读公告</label>
+                            <span class="weui-form-preview__value" id="course_unread_notice"></span>
+                        </div>
+                        <div class="weui-form-preview__item" id="course_unsubmitted_operations_holder">
+                            <label class="weui-form-preview__label">未交作业</label>
+                            <span class="weui-form-preview__value" id="course_unsubmitted_operations"></span>
                         </div>
                         <div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">教室位置</label>
-                            <span class="weui-form-preview__value">6A301</span>
+                            <span class="weui-form-preview__value" id="course_classroom"></span>
                         </div>
                         <!--div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">课程简介</label>
@@ -53,17 +57,17 @@
                     <div class="weui-form-preview__hd">
                         <div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">教师名称</label>
-                            <span class="weui-form-preview__value">刘强 刘璘</span>
+                            <span class="weui-form-preview__value" id="course_teacher"></span>
                         </div>
                     </div>
                     <div class="weui-form-preview__bd">
                         <div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">电子邮件</label>
-                            <span class="weui-form-preview__value">liuqiang@mail.tsinghua.edu.cn</span>
+                            <span class="weui-form-preview__value">无</span>
                         </div>
                         <div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">电话</label>
-                            <span class="weui-form-preview__value">010-62795395</span>
+                            <span class="weui-form-preview__value">无</span>
                         </div>
                         <!--div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">简介</label>
@@ -77,7 +81,7 @@
 
                 <div class="page__category js_categoryInner" style>
                     <div class="weui-cells page__category-content">
-                        <a class="weui-cell weui-cell_access js_item" data-id="communication" href="javascript:;">
+                        <a class="weui-cell weui-cell_access js_item" data-id="communication" href="javascript:;" id="communicate_holder">
                             <div class="weui-cell__bd">
                                 <p>师生交流</p>
                             </div>
@@ -108,10 +112,8 @@
 
         <script>
             $(function () {
-                console.log({openid: urlParam.openid, course_id: urlParam.course_id})
                 api.get('/api/course/information', {openid: urlParam.openid, course_id: urlParam.course_id}, function (data) {
                     showCourseInfo(data);
-                    console.log(data);
                 }, dftFail);
             });
         </script>

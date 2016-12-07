@@ -3,6 +3,10 @@ from codex.baseview import APIView
 from wechat.models import User
 import requests
 import json
+import time
+import datetime
+from XuetangPlus.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
+from wechat.wrapper import WeChatLib
 
 class UserBind(APIView):
 
@@ -34,6 +38,7 @@ class UserBind(APIView):
     def post(self):
         self.check_input('openid', 'username', 'password')
         self.validate_user()
+
 
 class MyCourse(APIView):
     def get(self):
@@ -92,17 +97,115 @@ class CourseInfo(APIView):
                     result['course_time'] = dic[course['time'][1]]
                     result['course_teacher'] = course['teacher']
                     result['course_classroom'] = course['classroom']
-                    result['week'] = course['week']
+                    result['course_week'] = self.map_week(course['week'])
+                    result['course_name'] = course['coursename']
 
         response = requests.post('http://se.zhuangty.com:8000/learnhelper/' + user.username + '/courses')
         if response.status_code == 200:
             res = json.loads(response.content.decode())
             for course in res['courses']:
                 if course['courseid'] == self.input['course_id']:
-                    result['course_newfile'] = course['newfile']
-                    result['course_unreadnotice'] = course['unreadnotice']
-                    result['course_name'] = course['coursename']
-                    result['course_unsubmittedoperations'] = course['unsubmittedoperations']
+                    result['course_new_file'] = course['newfile']
+                    result['course_unread_notice'] = course['unreadnotice']
+                    result['course_unsubmitted_operations'] = course['unsubmittedoperations']
+        return result
+
+    def map_week(self, week_list):
+        start = 0
+        current = 0
+        result = ''
+        while current < 16:
+            if week_list[current] == 0 and current > start:
+                if current > start + 1:
+                    result += str(start + 1) + '-' + str(current) + ','
+                else:
+                    result += str(current) + ','
+                start = current + 1
+            current += 1
+        if current > start + 1:
+            result += str(start + 1) + '-' + str(current)
+        else:
+            result += str(current)
+
+        return result
+
+class NoticePanel(APIView):
+    def get(self):
+        self.check_input('openid')
+        user = User.get_by_openid(self.input['openid'])
+        response = requests.post('http://se.zhuangty.com:8000/curriculum/' + user.username)
+        result = {'公告': [],
+                  '作业': [],
+                  '文件': []}
+        if response.status_code == 200:
+            res = json.loads(response.content.decode())
+            dic = {'read': '已读',
+                   'unread': '未读',
+                   True: '已批改',
+                   False: '未批改'}
+            course_set = []
+            for course in res['classes']:
+                if course['courseid'] in course_set:
+                    continue
+                course_set.append(course['courseid'])
+                response_inform = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                                + user.username + '/courses/' + course['courseid']
+                                                + '/notices')
+                if response_inform.status_code == 200:
+                    resp = json.loads(response_inform.content.decode())
+                    for notice in resp['notices']:
+                        inform = {}
+                        inform['title'] = notice['title']
+                        inform['publish_time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(notice['publishtime'] / 1000))
+                        inform['state'] = dic[notice['state']]
+                        inform['content'] = notice['content']
+                        result['公告'].append(inform)
+            course_set = []
+            for course in res['classes']:
+                if course['courseid'] in course_set:
+                    continue
+                course_set.append(course['courseid'])
+
+                response_work = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                              + user.username + '/courses/' + course['courseid']
+                                              + '/assignments')
+                if response_work.status_code == 200:
+                    resp = json.loads(response_work.content.decode())
+                    for assignment in resp['assignments']:
+                        work = {}
+                        if assignment['duedate'] / 1000 > time.mktime(datetime.datetime.now().timetuple()):
+                            work['processing'] = True
+                        else:
+                            work['processing'] = False
+                        work['title'] = assignment['title']
+                        work['detail'] = assignment['detail']
+                        work['start_time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(assignment['startdate'] / 1000))
+                        work['end_time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(assignment['duedate'] / 1000))
+                        work['scored'] = dic[assignment['scored']]
+                        work['evaluating_teacher'] = assignment['evaluatingteacher']
+                        work['evaluating_time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(assignment['evaluatingdate'] / 1000))
+                        work['comment'] = assignment['comment']
+                        work['grade'] = str(assignment['grade'])
+                        result['作业'].append(work)
+            course_set = []
+            for course in res['classes']:
+                if course['courseid'] in course_set:
+                    continue
+                course_set.append(course['courseid'])
+                response_work = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                              + user.username + '/courses/' + course['courseid']
+                                              + '/documents')
+                if response_work.status_code == 200:
+                    resp = json.loads(response_work.content.decode())
+                    for document in resp['documents']:
+                        file = {}
+                        file['title'] = document['title']
+                        file['explanation'] = document['explanation']
+                        file['updating_time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(document['updatingtime'] / 1000))
+                        file['state'] = document['state']
+                        file['size'] = document['size']
+                        file['download_url'] = document['url']
+                        result['文件'].append(file)
         return result
 
 class Map(APIView):

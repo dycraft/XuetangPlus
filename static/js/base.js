@@ -4,7 +4,6 @@
 
 function getQueryParams(qs) {
     qs = qs.split('+').join(' ');
-    console.log(qs)
     var params = {},
         tokens,
         re = /[?&]?([^=]+)=([^&]*)/g;

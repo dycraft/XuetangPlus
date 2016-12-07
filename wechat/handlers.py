@@ -3,6 +3,7 @@
 from wechat.wrapper import WeChatHandler
 import requests
 import json
+import time
 
 __author__ = "Epsirom"
 
@@ -28,9 +29,9 @@ class DefaultHandler(WeChatHandler):
 class HelpOrSubscribeHandler(WeChatHandler):
 
     def check(self):
-        # return self.is_text('帮助', 'help') or self.is_event('scan', 'subscribe') or \
-        #        self.is_event_click(self.view.event_keys['help'])
-        return self.is_text('帮助', 'help') or self.is_event('scan', 'subscribe')
+        return self.is_text('帮助', 'help') or self.is_event('scan', 'subscribe') or \
+                self.is_event_click(self.view.event_keys['help'])
+        #return self.is_text('帮助', 'help') or self.is_event('scan', 'subscribe')
 
     def handle(self):
         return self.reply_single_news({
@@ -62,10 +63,10 @@ class UnbindOrUnsubscribeHandler(WeChatHandler):
             return self.reply_text("请您重新进行绑定，若仍然失败请联系管理员。")
 
 
-class BindAccountHandler(WeChatHandler):
+class AccountBindHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('绑定')
+        return self.is_text('绑定') or self.is_event_click(self.view.event_keys['account_bind'])
 
     def handle(self):
         if self.user.username == '':
@@ -96,7 +97,7 @@ class ViewPersonalInformationHandler(WeChatHandler):
 class CourseSearchHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('查找课程')
+        return self.is_text('查找课程') or self.is_event_click(self.view.event_keys['course_search'])
 
     def handle(self):
         if self.user.username == '':
@@ -111,36 +112,15 @@ class CourseSearchHandler(WeChatHandler):
 class MyCourseHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('我的课程')
+        return self.is_text('我的课程') or self.is_event_click(self.view.event_keys['my_course'])
 
     def handle(self):
         if self.user.username == '':
             return  self.reply_text("请先进行绑定")
-        response = requests.post('http://se.zhuangty.com:8000/curriculum/' + self.user.username)
-        dic = {
-            1: '8:00',
-            2: '9:50',
-            3: '13:30',
-            4: '15:20',
-            5: '17:05',
-            6: '19:20',
-        }
-        description = '查看您的课程列表'
-        if response.status_code == 200:
-            res = json.loads(response.content.decode())
-            for course in res['classes']:
-                description = description + '\n课程代号：' + course['courseid']
-                description = description + '\n课程名称：' + course['coursename']
-                description = description + '\n课程星期：' + str(course['time'][0])
-                description = description + '\n课程时间：' + dic[course['time'][1]]
-                description = description + '\n课程教师：' + course['teacher']
-                description = description + '\n课程教室：' + course['classroom']
-                description = description + '\n课程周数：' + str(course['week']) + '\n'
-        else:
-            description = '请您重新进行绑定，若仍然失败请联系管理员。'
+
         return self.reply_single_news({
             'Title': '欢迎查看您的课程',
-            'Description': description,
+            'Description': '点击查看课程列表',
             'Url': self.url_my_course(),
         })
 
@@ -148,93 +128,60 @@ class MyCourseHandler(WeChatHandler):
 class CommunicateHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('师生交流')
+        return self.is_text('师生交流') or self.is_event_click(self.view.event_keys['communicate'])
 
     def handle(self):
         if self.user.username == '':
             return  self.reply_text("请先进行绑定")
+        if self.user.position == 'teacher':
+            return self.reply_single_news({
+                'Title': '欢迎使用师生交流',
+                'Description': '有一门课程有新消息，点击查看。',
+                'Url': self.url_communicate_teacher(),
+            })
         return self.reply_single_news({
             'Title': '欢迎使用师生交流',
             'Description': '有一门课程有新消息，点击查看。',
-            'Url': self.url_communicate(),
+            'Url': self.url_communicate_student(),
         })
 
 
 class NotificationHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('通知面板')
+        return self.is_text('通知面板') or self.is_event_click(self.view.event_keys['notification'])
 
     def handle(self):
         if self.user.username == '':
             return  self.reply_text("请先进行绑定")
-        response = requests.post('http://se.zhuangty.com:8000/curriculum/' + self.user.username)
-        if response.status_code == 200:
-            description = '公告：'
-            res = json.loads(response.content.decode())
-            dic = { 'read': '已读',
-                    'unread': '未读',
-                    'true': '已批改',
-                    'false': '未批改'}
-            for course in res['classes']:
-                xsx = 'http://se.zhuangty.com:8000/learnhelper/' + self.user.username + '/courses/' + course['courseid'] + '/notices'
-                response_inform = requests.post('http://se.zhuangty.com:8000/learnhelper/'
-                                                + self.user.username + '/courses/' + course['courseid']
-                                                + '/notices')
-                if response_inform.status_code == 200:
-                    resp = json.loads(response_inform.content.decode())
-                    description = description + '\n标题：' + resp['title']
-                    description = description + '\n发布时间：' + resp['publishtime']
-                    description = description + '\n状态：' + dic[resp['state']]
-                    description = description + '\n内容：' + resp['content'] + '\n\n'
-                else:
-                    return self.reply_single_news({
-                        'Title': '欢迎使用通知面板',
-                        'Description': '请您重新进行绑定，若仍然失败请联系管理员。',
-                        'Url': self.url_notification(),
-                    })
-
-            description += '\n作业：'
-            for course in res['classes']:
-                response_work = requests.post('http://se.zhuangty.com:8000/learnhelper/'
-                                                + self.user.username + '/courses/' + course['coursid']
-                                                + '/assignments')
-                if response_work.status_code == 200:
-                    resp = json.loads(response_work.content.decode())
-                    description = description + '\n标题：' + resp['title']
-                    description = description + '\n作业内容：' + resp['detail']
-                    description = description + '\n发布时间：' + resp['startdate']
-                    description = description + '\n截止时间：' + resp['duedate']
-                    description = description + '\n批改状态：' + dic[resp['scored']]
-                    description = description + '\n批改老师：' + resp['evaluatingteacher']
-                    description = description + '\n批改时间：' + resp['evaluatingdate']
-                    description = description + '\n批注：' + resp['comment']
-                    description = description + '\n作业分数：' + resp['grade'] + '\n\n'
-                else:
-                    return self.reply_single_news({
-                        'Title': '欢迎使用通知面板',
-                        'Description': '请您重新进行绑定，若仍然失败请联系管理员。',
-                        'Url': self.url_notification(),
-                    })
-        else:
-            return self.reply_single_news({
-                'Title': '欢迎使用通知面板',
-                'Description': '请您重新进行绑定，若仍然失败请联系管理员。',
-                'Url': self.url_notification(),
-            })
-
-
         return self.reply_single_news({
             'Title': '欢迎使用通知面板',
-            'Description': description,
+            'Description': '查看各个课程的公告与作业',
             'Url': self.url_notification(),
         })
+
+
+class LibraryRemainsHandler(WeChatHandler):
+    def check(self):
+        return self.is_text('文图') or self.is_event_click(self.view.event_keys['library_remains'])
+
+    def handle(self):
+        response = requests.post('http://se.zhuangty.com:8000/library/hs')
+        if response.status_code == 200:
+            res = json.loads(response.content.decode())
+            reply = "文图剩余座位\n"
+            reply += '\n'.join([area['name'] + '：' + str(area['left'])
+                                + '/' + str(area['left'] + area['used']) for area in res['areas']])
+            return self.reply_text(reply)
+
+        else:
+            return self.reply_text('很抱歉，现在无法查询到剩余座位，请稍后再试。')
 
 
 class MyCalendarHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('我的日历')
+        return self.is_text('我的日历') or self.is_event_click(self.view.event_keys['my_calendar'])
 
     def handle(self):
         if self.user.username == '':
@@ -249,22 +196,24 @@ class MyCalendarHandler(WeChatHandler):
 class SchoolCalendarHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('校园日历')
+        return self.is_text('校历') or self.is_event_click(self.view.event_keys['school_calendar'])
 
     def handle(self):
-        if self.user.username == '':
-            return  self.reply_text("请先进行绑定")
-        return self.reply_single_news({
-            'Title': '欢迎使用校园日历',
-            'Description': '方便查看校园日历',
-            'Url': self.url_school_calendar(),
-        })
+        response = requests.post('http://se.zhuangty.com:8000/events')
+        if response.status_code == 200:
+            res = json.loads(response.content.decode())
+            reply = '\n'.join(['距 ' + event['name'] + (' 开始' if event['status'] == 'begin' else ' 结束')
+                       + '还有' + str(event['remainingdays']) + '天' for event in res['events']])
+            return self.reply_text(reply)
+
+        else:
+            return self.reply_text('很抱歉，现在无法查询到校历资讯，请稍后再试。')
 
 
 class NavigationHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('地图')
+        return self.is_text('地图') or self.is_event_click(self.view.event_keys['navigation'])
 
     def handle(self):
         if self.user.username == '':

@@ -18,25 +18,9 @@
             </div>
             <div class="page__bd">
                 <div class="weui-panel weui-panel_access">
-                    <div class="weui-panel__hd">未读公告</div>
-                    <div class="weui-panel__bd">
-                        <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
-                            <div class="weui-media-box__bd">
-                                <h4 class="weui-media-box__title">后八周组队报名</h4>
-                                <p class="weui-media-box__desc">请大家在课程讨论“后八周大作业组队报名区”填写组队信息 </p>
-                            </div>
-                        </a>
-                        <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
-                            <div class="weui-media-box__bd">
-                                <h4 class="weui-media-box__title">关于周四（11月3日）课堂展示的安排</h4>
-                                <p class="weui-media-box__desc">微信抢票应用开发接近尾声，本周四（11月3日）课上每个小组要展示自己的工作成果，要求准备PPT汇报，每个小组的时间不超过4分钟。由于小组数量较多，一个小组汇报完成等待提问时，下一个小组上去换自己的机器。汇报内容主要包括以下部分：
-    （1）目标：说明原定的开发目标（功能列表和性能指标）以及实际完成情况
-    （2）开发：主要介绍设计实现中遇到的重点和难点问题及其解决方法
-    （3）测试：包括测试场景设计、功能测试缺陷汇总、性能测试结果等
-    （4）其他（可选）：新功能（简单说明并截图展示）、修复原有代码的缺陷、惨痛的失败教训等
-    希望各小组认真规划好汇报内容，展示出自己最好的成果，期待你们的出色表现！</p>
-                            </div>
-                        </a>
+                    <div class="weui-panel__hd">公告</div>
+                    <div class="weui-panel__bd" id="inform_list">
+
                     </div>
                     <div class="weui-panel__ft">
                         <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
@@ -46,18 +30,9 @@
                     </div>
                 </div>
                 <div class="weui-panel weui-panel_access">
-                    <div class="weui-panel__hd">未交作业</div>
-                    <div class="weui-panel__bd">
-                        <div class="weui-media-box weui-media-box_text">
-                            <h4 class="weui-media-box__title">迟交：编写生命游戏</h4>
-                            <p class="weui-media-box__desc">尚未提交“编写生命游戏程序”作业的同学在此提交，截止时间是10月7日，超过该时间不再接受补交作业；已经提交作业的同学不用提交。</p>
-                        </div>
-                        <div class="weui-media-box weui-media-box_text">
-                            <h4 class="weui-media-box__title">产品需求定义与交互设计</h4>
-                            <p class="weui-media-box__desc">请各项目组针对选定开发产品，基于产品的定位和规划，完成产品需求定义和交互设计，包括以下内容：
-    1、确定系统的边界，定义用户和系统的交互场景，绘制系统用例图和顺序图（采用EA、ProcessOn等UML建模工具）；
-    2、设计系统的交互界面，并用图形化原型工具绘制界面原型（采用墨刀、Moqups、Proto.io、Uxpin，Fluidui）。</p>
-                        </div>
+                    <div class="weui-panel__hd">作业</div>
+                    <div class="weui-panel__bd" id="work_list">
+
                     </div>
                     <div class="weui-panel__ft">
                         <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
@@ -67,24 +42,15 @@
                     </div>
                 </div>
                 <div class="weui-panel">
-                    <div class="weui-panel__hd">新的课件</div>
-                    <div class="weui-panel__bd">
-                        <div class="weui-media-box weui-media-box_text">
-                            <h4 class="weui-media-box__title">NSEC2013会议第二轮通知</h4>
-                            <ul class="weui-media-box__info">
-                                <li class="weui-media-box__info__meta">196.8K</li>
-                                <li class="weui-media-box__info__meta">2016-11-24</li>
-                                <li class="weui-media-box__info__meta weui-media-box__info__meta_extra">项目实战资料</li>
-                            </ul>
-                        </div>
-                        <div class="weui-media-box weui-media-box_text">
-                            <h4 class="weui-media-box__title">NSEC2013会议手册</h4>
-                            <ul class="weui-media-box__info">
-                                <li class="weui-media-box__info__meta">1.15M</li>
-                                <li class="weui-media-box__info__meta">2016-11-24</li>
-                                <li class="weui-media-box__info__meta weui-media-box__info__meta_extra">项目实战资料</li>
-                            </ul>
-                        </div>
+                    <div class="weui-panel__hd">课件</div>
+                    <div class="weui-panel__bd" id="document_list">
+
+                    </div>
+                    <div class="weui-panel__ft">
+                        <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
+                            <div class="weui-cell__bd">查看更多</div>
+                            <span class="weui-cell__ft"></span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -92,5 +58,16 @@
 
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig.min.js"></script>
+        <script type="text/javascript" src="/js/jquery.js"></script>
+        <script type="text/javascript" src="/js/base.js"></script>
+        <script type="text/javascript" src="/js/notice_panel.js"></script>
+        <script>
+            $(function () {
+                api.get('/api/notice/panel', {openid: urlParam.openid}, function (data) {
+                    showNotification(data);
+                }, dftFail);
+            });
+        </script>
+
     </body>
 </html>

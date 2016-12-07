@@ -99,10 +99,10 @@ class WeChatHandler(object):
         return  settings.get_url('life/calendar')
 
     def url_my_course(self):
-        return  settings.get_url('learn/course_list')
+        return  settings.get_url('learn/course_list', {'openid': self.user.open_id})
 
     def url_notification(self):
-        return  settings.get_url('learn/notice_panel')
+        return  settings.get_url('learn/notice_panel', {'openid': self.user.open_id})
 
     def url_school_calendar(self):
         return  settings.get_url('u/help')
