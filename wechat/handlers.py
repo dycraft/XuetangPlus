@@ -265,8 +265,8 @@ class NavigationHandler(WeChatHandler):
         return self.is_text('地图')
 
     def handle(self):
-        if self.user.username == '':
-            return  self.reply_text("请先进行绑定")
+        #if self.user.username == '':
+         #   return  self.reply_text("请先进行绑定")
         return self.reply_single_news({
             'Title': '欢迎使用地图',
             'Description': '方便查看地图',

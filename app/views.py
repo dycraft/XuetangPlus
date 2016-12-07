@@ -3,6 +3,8 @@ from codex.baseview import APIView
 from wechat.models import User
 import requests
 import json
+from wechat.wrapper import WeChatLib
+from XuetangPlus.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
 
 class UserBind(APIView):
 
@@ -34,3 +36,26 @@ class UserBind(APIView):
     def post(self):
         self.check_input('openid', 'username', 'password')
         self.validate_user()
+
+class Map(APIView):
+    lib = WeChatLib(WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET)
+
+    def get(self):
+        if 'type' in self.input:
+            params = self.input
+            ans = self.lib.changeLocationIndex(params['lati'], params['longi'], params['type'])
+            return ans
+        elif 'keyword' in self.input:
+            params = self.input
+            ans = self.lib.getRecommendAddress(params['keyword'])
+            return ans
+        access_token = self.lib.get_wechat_access_token()
+        ticket = self.lib.get_wechat_jsapi_ticket()
+        answer = [('access_token', access_token), ('ticket', ticket)]
+        result = json.dumps(dict(answer))
+        print("get all tickets")
+
+        return result
+
+    def post(self):
+        return

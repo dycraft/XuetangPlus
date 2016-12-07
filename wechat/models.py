@@ -5,8 +5,8 @@ from codex.baseerror import LogicError
 
 class User(models.Model):
     open_id = models.CharField(max_length=64, unique=True, db_index=True)
-    student_id = models.CharField(max_length=32, unique=True, db_index=True)
-    username = models.CharField(max_length=32, unique=True, db_index=True, default='')
+    student_id = models.CharField(max_length=32, db_index=True)
+    username = models.CharField(max_length=32, db_index=True, default='')
     department = models.CharField(max_length=64, default='')
     position = models.CharField(max_length=32, default='')
     email = models.CharField(max_length=32, default='')

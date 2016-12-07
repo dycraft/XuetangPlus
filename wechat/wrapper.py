@@ -191,6 +191,50 @@ class WeChatLib(object):
             cls.logger.info('Got access token %s', cls.access_token)
         return cls.access_token
 
+    def get_wechat_jsapi_ticket(self):
+        print("wait jsapi_ticket")
+        res = self._http_get(
+            'https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=%s&type=jsapi' % (
+                self.access_token
+            )
+        )
+        rjson = json.loads(res)
+        print("get jsapi_ticket")
+        if rjson.get('errcode'):
+            raise WeChatError(rjson['errcode'], rjson['errmsg'])
+        return rjson['ticket']
+
+    def changeLocationIndex(self, lati, longi, type):
+        print("wait to change")
+        res = self._http_get(
+            'http://apis.map.qq.com/ws/coord/v1/translate?locations=%s,%s&type=%s&key=NXSBZ-N7JWD-2B54G-H5JZ7-7SCWQ-VBBPP' % (
+                str(lati), str(longi), str(type)
+            )
+        )
+        rjson = json.loads(res)
+        print("change over")
+        if rjson.get('errcode'):
+            raise WeChatError(rjson['errcode'], rjson['errmsg'])
+        return rjson['locations']
+
+    def getRecommendAddress(self, pos):
+        print("wait for command")
+        pos = pos.encode("utf8")
+        pos = urllib.parse.quote(pos)
+        region = str("北京").encode("utf8")
+        region = urllib.parse.quote(region)
+        res = self._http_get(
+            'http://apis.map.qq.com/ws/place/v1/suggestion/?region=%s&keyword=%s&key=NXSBZ-N7JWD-2B54G-H5JZ7-7SCWQ-VBBPP' % (
+                region, pos
+            )
+        )
+        print("get command")
+        rjson = json.loads(res)
+
+        if rjson.get('errcode'):
+            raise WeChatError(rjson['errcode'], rjson['errmsg'])
+        return rjson['data']
+
     def get_wechat_menu(self):
         res = self._http_get(
             'https://api.weixin.qq.com/cgi-bin/menu/get?access_token=%s' % (
