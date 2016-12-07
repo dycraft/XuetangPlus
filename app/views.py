@@ -7,6 +7,7 @@ import time
 import datetime
 from XuetangPlus.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
 from wechat.wrapper import WeChatLib
+from XuetangPlus.settings import CONFIGS
 
 class UserBind(APIView):
 
@@ -134,15 +135,20 @@ class NoticePanel(APIView):
         self.check_input('openid')
         user = User.get_by_openid(self.input['openid'])
         response = requests.post('http://se.zhuangty.com:8000/curriculum/' + user.username)
-        result = {'公告': [],
-                  '作业': [],
-                  '文件': []}
+        result = {
+            'student_number': user.student_id,
+            'notices': [],
+            'assignments': [],
+            'files': []
+        }
         if response.status_code == 200:
             res = json.loads(response.content.decode())
-            dic = {'read': '已读',
-                   'unread': '未读',
-                   True: '已批改',
-                   False: '未批改'}
+            dic = {
+                'read': '已读',
+                'unread': '未读',
+                True: '已批改',
+                False: '未批改'
+            }
             course_set = []
             for course in res['classes']:
                 if course['courseid'] in course_set:
@@ -159,7 +165,7 @@ class NoticePanel(APIView):
                         inform['publish_time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(notice['publishtime'] / 1000))
                         inform['state'] = dic[notice['state']]
                         inform['content'] = notice['content']
-                        result['公告'].append(inform)
+                        result['notices'].append(inform)
             course_set = []
             for course in res['classes']:
                 if course['courseid'] in course_set:
@@ -186,7 +192,7 @@ class NoticePanel(APIView):
                         work['evaluating_time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(assignment['evaluatingdate'] / 1000))
                         work['comment'] = assignment['comment']
                         work['grade'] = str(assignment['grade'])
-                        result['作业'].append(work)
+                        result['assignments'].append(work)
             course_set = []
             for course in res['classes']:
                 if course['courseid'] in course_set:
@@ -205,7 +211,7 @@ class NoticePanel(APIView):
                         file['state'] = document['state']
                         file['size'] = document['size']
                         file['download_url'] = document['url']
-                        result['文件'].append(file)
+                        result['files'].append(file)
         return result
 
 class CourseComment(APIView):
@@ -258,3 +264,8 @@ class Map(APIView):
 
     def post(self):
         return
+
+class AppInfo(APIView):
+
+    def get(self):
+        return {'app_id':CONFIGS['WECHAT_APPID'], 'app_secret': CONFIGS['WECHAT_SECRET']}

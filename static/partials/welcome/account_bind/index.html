@@ -12,7 +12,7 @@
         <div class="weui-toptips weui-toptips_warn js_tooltips">Failed to load resource: 请求的 URL 在此服务器上找不到。</div>
 
         <div id="content">
-            <div id="validation_holder">
+            <div id="validation_holder" style="display: none">
                 <div class="page__hd">
                     <h1 class="page__title">绑定账号</h1>
                 </div>
@@ -24,7 +24,7 @@
                                 <label class="weui-label">学号/工号</label>
                             </div>
                             <div class="weui-cell_bd weui-cell_primary">
-                                <input class="weui-input" id="id_username" type="number" pattern="[0-9]*" placeholder="请输入学号/工号">
+                                <input class="weui-input" id="id_username" type="number" pattern="[0-9]*" placeholder="请输入学号/工号" required/>
                             </div>
                         </div>
                         <div class="weui-cell">
@@ -32,7 +32,7 @@
                                 <div class="weui-label">密码</div>
                             </div>
                             <div class="weui-cell_bd weui-cell_primary">
-                                <input type="password" id="id_password" class="weui-input" placeholder="请输入密码"/>
+                                <input type="password" id="id_password" class="weui-input" placeholder="请输入密码" required/>
                             </div>
                         </div>
                     </div>
@@ -42,17 +42,27 @@
                     </div>
                 </div>
             </div>
-            <div id="success_holder">
-                <div class="weui_msg">
-                    <div class="weui_icon_area"><i class="weui_icon_success weui_icon_msg"></i></div>
-                    <div class="weui_text_area">
-                        <h2 class="weui_msg_title">绑定成功</h2>
-                        <p class="weui_msg_desc">欢迎加入学堂+，赶紧使用吧</p>
+            <!--BEGIN dialog2-->
+            <div class="js_dialog" id="incorrectDialog" style="display: none;">
+                <div class="weui-mask"></div>
+                <div class="weui-dialog">
+                    <div class="weui-dialog__bd">账号密码不正确</div>
+                    <div class="weui-dialog__ft">
+                        <a href=" " class="weui-dialog__btn weui-dialog__btn_primary">知道了</a>
                     </div>
-                    <div class="weui_opr_area">
-                        <p class="weui_btn_area">
-                            <a href="#" class="weui_btn weui_btn_primary">确定</a>
-                        </p>
+                </div>
+            </div>
+            <!--END dialog2-->
+            <div id="success_holder" style="display: none">
+                <div class="weui-msg">
+                    <div class="weui-msg__icon-area"><i class="weui-icon-success weui-icon_msg"></i></div>
+                    <div class="weui-msg__text-area">
+                        <h2 class="weui-msg__title">操作成功</h2>
+                        <p class="weui-msg__desc">成功绑定了学号</p >
+                    </div>
+                    <div class="weui-msg__extra-area">
+                        <div class="weui-footer">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -68,14 +78,15 @@
             $(function () {
                 api.get('/api/account/bind', {openid: urlParam.openid}, function (data) {
                     showValidation(data != '');
-                }, dftFail);
+                });
             });
 
             var submitBind = function () {
             submitValidation(urlParam.openid, function (data) {
-                showValidation(true)
+                showValidation(true);
             }, function (errno, errmsg) {
-                showValidation(false)
+                showValidation(false);
+                $('#incorrectDialog').fadeIn(200);
             });
         };
         </script>

@@ -38,6 +38,7 @@ class HelpOrSubscribeHandler(WeChatHandler):
             'Title': self.get_message('help_title'),
             'Description': self.get_message('help_description'),
             'Url': self.url_help(),
+            'PicUrl': self.url_pic('/img/theme/help.png')
         })
 
 
@@ -48,7 +49,7 @@ class UnbindOrUnsubscribeHandler(WeChatHandler):
 
     def handle(self):
         if self.user.username == '':
-            return  self.reply_text("您还未绑定")
+            return self.reply_text("您还未绑定")
         response = requests.post('http://se.zhuangty.com:8000/users/' + self.user.username + '/cancel')
         if response.status_code == 200:
             self.user.username = ''
@@ -116,12 +117,15 @@ class MyCourseHandler(WeChatHandler):
 
     def handle(self):
         if self.user.username == '':
-            return  self.reply_text("请先进行绑定")
+            return self.reply_text("请先进行绑定")
+
+        print(self.url_pic('theme/my_course_png'))
 
         return self.reply_single_news({
             'Title': '欢迎查看您的课程',
             'Description': '点击查看课程列表',
             'Url': self.url_my_course(),
+            'PicUrl': self.url_pic('/img/theme/my_course.png')
         })
 
 
@@ -158,6 +162,7 @@ class NotificationHandler(WeChatHandler):
             'Title': '欢迎使用通知面板',
             'Description': '查看各个课程的公告与作业',
             'Url': self.url_notification(),
+            'PicUrl': self.url_pic('/img/theme/notification.png')
         })
 
 
@@ -179,6 +184,7 @@ class LibraryRemainsHandler(WeChatHandler):
 
 
 class MyCalendarHandler(WeChatHandler):
+
     def check(self):
         return self.is_text('我的日历') or self.is_event_click(self.view.event_keys['my_calendar'])
 

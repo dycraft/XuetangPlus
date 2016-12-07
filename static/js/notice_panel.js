@@ -5,7 +5,7 @@
 
 function showNotification(data) {
     console.log(data);
-    var informs = data['公告'], works = data['作业'], documents = data['文件'];
+    var informs = data['notices'], works = data['assignments'], documents = data['files'];
     var len = informs.length;
     var i, j;
     for(i = 0, j = 0;i < len;i++){

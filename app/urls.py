@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^course/comment/?$', CourseComment.as_view()),
     url(r'^notice/panel/?$', NoticePanel.as_view()),
     url(r'^map/?$', Map.as_view()),
+    url(r'^appinfo/?$', AppInfo.as_view()),
 ]

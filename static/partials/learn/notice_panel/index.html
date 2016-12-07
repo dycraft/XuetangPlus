@@ -14,7 +14,7 @@
         <div id="content">
             <div class="page__hd">
                 <h1 class="page__title">通知面板</h1>
-                <p class="page__desc">2014013434</p>
+                <p class="page__desc" id="student_number">2014013434</p>
             </div>
             <div class="page__bd">
                 <div class="weui-panel weui-panel_access">
@@ -63,7 +63,8 @@
         <script type="text/javascript" src="/js/notice_panel.js"></script>
         <script>
             $(function () {
-                api.get('/api/notice/panel', {openid: urlParam.openid}, function (data) {
+                api.get("/api/notice/panel", {openid: urlParam.openid}, function (data) {
+                    document.getElementById("student_number").innerHTML = data['student_number'];
                     showNotification(data);
                 }, dftFail);
             });

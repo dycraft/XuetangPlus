@@ -113,6 +113,9 @@ class WeChatHandler(object):
     def url_account_bind(self):
         return settings.get_url('welcome/account_bind', {'openid': self.user.open_id})
 
+    def url_pic(self, url):
+        return settings.get_url(url)
+
 
 class WeChatEmptyHandler(WeChatHandler):
 
