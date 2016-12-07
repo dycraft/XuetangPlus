@@ -4,7 +4,7 @@
 
 function getQueryParams(qs) {
     qs = qs.split('+').join(' ');
-
+    console.log(qs)
     var params = {},
         tokens,
         re = /[?&]?([^=]+)=([^&]*)/g;
@@ -17,6 +17,8 @@ function getQueryParams(qs) {
 }
 
 window.urlParam = getQueryParams(document.location.search);
+
+window.origin = document.location.origin;
 
 window.api = {
     get: function (url, data, success, fail, complete) {
@@ -53,3 +55,21 @@ window.api = {
         }).always(complete);
     }
 };
+
+window.dftFail = function (errno, errmsg, e) {
+    alert("加载失败: [" + errno + "] " + errmsg + " " + e + "\n请重试");
+};
+
+function hideElem(id) {
+    var dom = document.getElementById(id);
+    if (dom) {
+        dom.setAttribute('style', 'display:none');
+    }
+}
+
+function showElem(id) {
+    var dom = document.getElementById(id);
+    if (dom) {
+        dom.setAttribute('style', 'display:block');
+    }
+}

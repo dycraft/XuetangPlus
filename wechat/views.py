@@ -2,7 +2,7 @@ from wechat.wrapper import WeChatView, WeChatLib
 from wechat.handlers import *
 from wechat.models import *
 from XuetangPlus.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
-
+from XuetangPlus.settings import get_redirect_url
 
 class CustomWeChatView(WeChatView):
 
@@ -17,17 +17,23 @@ class CustomWeChatView(WeChatView):
     error_message_handler = ErrorHandler
     default_handler = DefaultHandler
 
+    appid = 'wx393df63f32c6bd3d'
+
     event_keys = {
-        'help': 'WELCOME_HELP',
-        'account_bind': 'WELCOME_BIND',
-        'search_course': 'LEARN_SEARCH',
-        'my_course': 'LEARN_COURSE',
-        'communicate': 'LEARN_COMMUNICATE',
-        'notification_assignment': 'LEARN_NOTIFICATION',
         'library_remains': 'LIFE_LIBRARY',
-        'my_calendar': 'LIFE_MY_CALENDAR',
         'school_calendar': 'LIFE_SCHOOL_CALENDAR',
         'navigation': 'LIFE_NAVIGATION',
+    }
+
+    # define url
+    event_urls = {
+        'help': 'welcome/help',
+        'account_bind': 'welcome/account_bind',
+        'search_course': 'learn/search_course',
+        'course_list': 'learn/course_list',
+        'communication': 'learn/communication',
+        'notice_panel': 'learn/notice_panel',
+        'calendar': 'life/calendar',
     }
 
     menu = {
@@ -36,14 +42,14 @@ class CustomWeChatView(WeChatView):
                 'name': '欢迎',
                 'sub_button': [
                     {
-                        'type': 'click',
+                        'type': 'view',
                         'name': '帮助',
-                        'key': event_keys['help'],
+                        'url': get_redirect_url(event_urls['help'], appid),
                     },
                     {
-                        'type': 'click',
+                        'type': 'view',
                         'name': '绑定账号',
-                        'key': event_keys['account_bind'],
+                        'url': get_redirect_url(event_urls['account_bind'], appid),
                     }
                 ]
             },
@@ -51,24 +57,24 @@ class CustomWeChatView(WeChatView):
                 'name': '爱学习',
                 'sub_button': [
                     {
-                        'type': 'click',
+                        'type': 'view',
                         'name': '课程搜索',
-                        'key': event_keys['search_course'],
+                        'url': get_redirect_url(event_urls['search_course'], appid),
                     },
                     {
-                        'type': 'click',
+                        'type': 'view',
                         'name': '本人课程',
-                        'key': event_keys['my_course'],
+                        'url': get_redirect_url(event_urls['course_list'], appid),
                     },
                     {
-                        'type': 'click',
+                        'type': 'view',
                         'name': '师生交流',
-                        'key': event_keys['communicate'],
+                        'url': get_redirect_url(event_urls['communication'], appid),
                     },
                     {
-                        'type': 'click',
+                        'type': 'view',
                         'name': '公告及作业',
-                        'key': event_keys['notification_assignment'],
+                        'url': get_redirect_url(event_urls['notice_panel'], appid),
                     },
                 ]
             },
@@ -81,9 +87,9 @@ class CustomWeChatView(WeChatView):
                         'key': event_keys['library_remains'],
                     },
                     {
-                        'type': 'click',
+                        'type': 'view',
                         'name': '个人日历',
-                        'key': event_keys['my_calendar'],
+                        'url': get_redirect_url(event_urls['calendar'], appid),
                     },
                     {
                         'type': 'click',
@@ -91,9 +97,9 @@ class CustomWeChatView(WeChatView):
                         'key': event_keys['school_calendar'],
                     },
                     {
-                        'type': 'click',
+                        'type': 'location_select',
                         'name': '校园导航',
-                        'key': event_keys['navigation'],
+                        'key': event_keys['navigation']
                     },
 
                 ]
@@ -104,3 +110,4 @@ class CustomWeChatView(WeChatView):
     @classmethod
     def update_menu(cls):
         return cls.lib.set_wechat_menu(cls.menu)
+

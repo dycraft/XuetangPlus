@@ -14,20 +14,20 @@
         <div id="content">
             <div class="page__hd">
                 <h1 class="page__title">课程信息</h1>
-                <p class="page__desc">34100325</p>
+                <p class="page__desc" id="course_id">34100325</p>
             </div>
             <div class="page__bd">
                 <div class="weui-form-preview">
                     <div class="weui-form-preview__hd">
                         <div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">课程名称</label>
-                            <span class="weui-form-preview__value">软件工程(3)</span>
+                            <span class="weui-form-preview__value" id="course_name">软件工程(3)</span>
                         </div>
                     </div>
                     <div class="weui-form-preview__bd">
                         <div class="weui-form-preview__item">
-                            <label class="weui-form-preview__label">学分</label>
-                            <span class="weui-form-preview__value">5</span>
+                            <label class="weui-form-preview__label">课程时间</label>
+                            <span class="weui-form-preview__value" id="course_time"></span>
                         </div>
                         <div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">学时</label>
@@ -102,5 +102,19 @@
 
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig.min.js"></script>
+        <script type="text/javascript" src="/js/jquery.js"></script>
+        <script type="text/javascript" src="/js/base.js"></script>
+        <script type="text/javascript" src="/js/course_info.js"></script>
+
+        <script>
+            $(function () {
+                console.log({openid: urlParam.openid, course_id: urlParam.course_id})
+                api.get('/api/course/information', {openid: urlParam.openid, course_id: urlParam.course_id}, function (data) {
+                    showCourseInfo(data);
+                    console.log(data);
+                }, dftFail);
+            });
+        </script>
+
     </body>
 </html>

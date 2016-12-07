@@ -34,25 +34,14 @@ function submitValidation(openid, success, fail) {
     return false;
 }
 
-function hideElem(id) {
-    var dom = document.getElementById(id);
-    if (dom) {
-        dom.setAttribute('style', 'display:none');
-    }
-}
-
-function showElem(id) {
-    var dom = document.getElementById(id);
-    if (dom) {
-        dom.setAttribute('style', 'display:block');
-    }
-}
-
 function showValidation(isValidated) {
     if (!isValidated) {
+        hideElem('success_holder')
+        showElem('validation_holder');
         document.getElementById('id_username').focus();
     }
     else {
-        hideElem('content');
+        hideElem('validation_holder')
+        showElem('success_holder');
     }
 }
