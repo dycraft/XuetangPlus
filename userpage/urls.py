@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from userpgae.views import *
+from userpage.views import *
 
 
 urlpatterns = [
