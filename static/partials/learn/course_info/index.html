@@ -87,7 +87,7 @@
                             </div>
                             <div class="weui-cell__ft"></div>
                         </a>
-                        <a class="weui-cell weui-cell_access js_item" data-id="comment" href="javascript:;">
+                        <a class="weui-cell weui-cell_access js_item" data-id="comment" onclick="getCommentList()">
                             <div class="weui-cell__bd">
                                 <p>课程评价</p>
                             </div>
@@ -111,11 +111,21 @@
         <script type="text/javascript" src="/js/course_info.js"></script>
 
         <script>
+            var course_id = urlParam.id;
             $(function () {
+                //console.log({openid: urlParam.openid, course_id: urlParam.course_id})
                 api.get('/api/course/information', {openid: urlParam.openid, course_id: urlParam.course_id}, function (data) {
                     showCourseInfo(data);
+                    console.log(data);
                 }, dftFail);
+                console.log(window.location);
             });
+
+            function getCommentList()
+            {
+                var currentpath = window.location.origin + window.location.pathname;
+                window.location.href = currentpath + "/../course_commentlist?id=" + course_id;
+            }
         </script>
 
     </body>

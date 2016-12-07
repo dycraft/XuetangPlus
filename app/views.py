@@ -1,6 +1,6 @@
 from codex.baseerror import *
 from codex.baseview import APIView
-from wechat.models import User
+from wechat.models import User, Comment
 import requests
 import json
 import time
@@ -207,6 +207,34 @@ class NoticePanel(APIView):
                         file['download_url'] = document['url']
                         result['文件'].append(file)
         return result
+
+class CourseComment(APIView):
+    def get(self):
+        params = self.input
+        course_id = params['id']
+        comments = Comment.objects.filter(courseid=course_id)
+
+        answer = []
+        for index in range(0, len(comments)):
+            answer.append((str(index), comments[index].toJson()))
+
+        return json.dumps({'comments': answer})
+
+    def post(self):
+        params = self.input
+        mark = params['mark']
+        comment = params['comment']
+        isanonymouse = params['isanonymouse']
+        userid = -1
+
+        timestamp = time.mktime(datetime.datetime.now().timetuple())
+        course_id = params['id']
+
+        if isanonymouse == False:
+            userid = self.user.id
+        Comment.objects.create(courseid=course_id, commenttime=timestamp, commenter=userid, content=comment, score=int(mark))
+
+        return 1
 
 class Map(APIView):
     lib = WeChatLib(WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET)

@@ -1,6 +1,7 @@
 from django.db import models
 
 from codex.baseerror import LogicError
+import json
 
 
 class User(models.Model):
@@ -27,7 +28,9 @@ class Course(models.Model):
 
 
 class Comment(models.Model):
-    commenter = models.IntegerField()
+    courseid = models.IntegerField(default=0)
+    commenttime = models.IntegerField(default=0)
+    commenter = models.IntegerField(default=0)
     content = models.CharField(max_length=512, default='')
     score = models.IntegerField()
 
@@ -36,3 +39,12 @@ class Comment(models.Model):
             return 'anonymous'
         else:
             return User.objects.get(id=self.commenter)
+
+    def toJson(self):
+        answer = []
+        answer.append(('courseid', self.courseid))
+        answer.append(('commenttime', self.commenttime))
+        answer.append(('commenter', self.commenter))
+        answer.append(('content', self.content))
+        answer.append(('score', self.score))
+        return json.dumps(dict(answer))
