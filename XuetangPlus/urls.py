@@ -22,5 +22,6 @@ from XuetangPlus.views import StaticFileView
 urlpatterns = [
     url(r'^wechat/?$', CustomWeChatView.as_view()),
     url(r'^admin/', admin.site.urls),
+    url(r'^api/', include('userpage.urls')),
     url(r'^', StaticFileView.as_view()),
 ]
