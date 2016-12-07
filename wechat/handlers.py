@@ -179,7 +179,6 @@ class LibraryRemainsHandler(WeChatHandler):
 
 
 class MyCalendarHandler(WeChatHandler):
-
     def check(self):
         return self.is_text('我的日历') or self.is_event_click(self.view.event_keys['my_calendar'])
 
