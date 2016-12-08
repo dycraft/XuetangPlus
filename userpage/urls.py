@@ -4,5 +4,5 @@ from userpage.views import *
 
 
 urlpatterns = [
-    # url(r'^account/bind/?$', UserBind.as_view()),
+    url(r'^welcome/account_bind/?$', AccountBind.as_view()),
 ]

@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
-        <title></title>
+        <title>绑定账号</title>
         <link rel="stylesheet" href="/lib/weui/weui.css"/>
         <link rel="stylesheet" href="/lib/weui/example.css">
         <link rel="stylesheet" href="/css/style.css">
@@ -12,6 +12,10 @@
         <div id="content"></div>
 
         <script type="text/template" id="tpl-main">
+            <div class="weui-toptips weui-toptips_warn js_tooltips" id="tips-empty">学号密码不能为空</div>
+            <div class="weui-toptips weui-toptips_warn js_tooltips" id="tips-fail">学号密码验证错误</div>
+            <div class="weui-toptips weui-toptips_warn js_tooltips" id="tips-duplicate">该学号已经绑定</div>
+            <div class="weui-toptips weui-toptips_warn js_tooltips" id="tips-unknown">未知错误</div>
             <div class="page__hd">
                 <h1 class="page__title">绑定账号</h1>
             </div>
@@ -23,7 +27,7 @@
                             <label class="weui-label">学号/工号</label>
                         </div>
                         <div class="weui-cell_bd weui-cell_primary">
-                            <input class="weui-input" type="number" pattern="[0-9]*" placeholder="请输入学号/工号" required />
+                            <input class="weui-input" type="number" pattern="[0-9]*" placeholder="请输入学号/工号" id="inputStudentID" required/>
                         </div>
                     </div>
                     <div class="weui-cell">
@@ -31,12 +35,12 @@
                             <label class="weui-label">密码</label>
                         </div>
                         <div class="weui-cell_bd weui-cell_primary">
-                            <input type="password" class="weui-input" placeholder="请输入密码" required />
+                            <input type="password" class="weui-input" placeholder="请输入密码" id="inputPassword" required/>
                         </div>
                     </div>
                 </div>
                 <div class="weui-btn-area">
-                    <a class="weui-btn weui-btn_primary" href="javascript:;" id="submitBtn">确认</a>
+                    <a class="weui-btn weui-btn_primary" id="submitBtn">确认</a>
                 </div>
             </div>
         </script>
@@ -53,25 +57,7 @@
                         <p class="weui-msg__desc">成功绑定了学号/工号</p >
                     </div>
                     <div class="weui-btn-area">
-                        <a class="weui-btn weui-btn_primary" onclick="page('/fail');" id="submitBtn">确认</a>
-                    </div>
-                </div>
-            </div>
-        </script>
-
-        <script type="text/template" id="tpl-fail">
-            <div class="page__hd">
-                <h1 class="page__title">绑定账号</h1>
-            </div>
-            <div class="page__bd">
-                <div class="weui-msg">
-                    <div class="weui-msg__icon-area"><i class="weui-icon-warn weui-icon_msg"></i></div>
-                    <div class="weui-msg__text-area">
-                        <h2 class="weui-msg__title">操作失败</h2>
-                        <p class="weui-msg__desc">学号/工号或密码验证错误</p>
-                    </div>
-                    <div class="weui-btn-area">
-                        <a class="weui-btn weui-btn_plain-primary" onclick="page('/');" id="submitBtn">返回</a>
+                        <a class="weui-btn weui-btn_primary" href="./help" id="submitBtn">确认</a>
                     </div>
                 </div>
             </div>
@@ -80,7 +66,7 @@
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/page.js"></script>
-        <script type="text/javascript" src="/js/base.js"></script>
+        <script type="text/javascript" src="/js/render.js"></script>
 
         <script type="text/javascript">
             $(function() {
@@ -91,28 +77,45 @@
                     main: function(ctx, next) {
                         ctx.data = {};
                         render('main', ctx.data);
+                        $('#submitBtn').click(function() {
+                            var username = $('#inputStudentID').val();
+                            var password = $('#inputPassword').val();
+
+                            if (username.length && password.length) {
+                                $.post('/api/welcome/account_bind', {
+                                    username: username,
+                                    password: password
+                                }, function(data) {
+                                    console.log(data.code);
+                                    if (data.code == 0) {
+                                        page('#!success');
+                                    } else if (data.code == 1) {
+                                        showToolTips('tips-empty');
+                                    } else if (data.code == 2) {
+                                        showToolTips('tips-duplicate');
+                                    } else if (data.code == 3) {
+                                        showToolTips('tips-fail');
+                                    } else {
+                                        showToolTips('tips-unknown');
+                                    }
+                                })
+                            } else {
+                                showToolTips('tips-empty');
+                            }
+                        });
                     },
                     success: function(ctx, next) {
                         ctx.data = {};
                         render('success', ctx.data);
-                    },
-                    fail: function(ctx, next) {
-                        ctx.data = {};
-                        render('fail', ctx.data);
                     }
                 };
 
                 page.base('/welcome/account_bind');
                 page('/', route.main);
-                page('/success', route.success);
-                page('/fail', route.fail);
+                page('success', route.success);
                 page('*', route.init);
+                page({hashbang: true});
                 page();
-
-                $('#submitBtn').click(function(e){
-                    page('/success');
-                    e.preventDefault();
-                })
             });
         </script>
     </body>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+        <title>课程信息</title>
+        <link rel="stylesheet" href="/lib/weui/weui.css"/>
+        <link rel="stylesheet" href="/lib/weui/example.css">
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body ontouchstart>
+        <div id="content"></div>
+
+        <script type="text/template" id="tpl-main">
+            <div class="page__hd">
+                <h1 class="page__title">课程信息</h1>
+                <p class="page__desc" id="course_id">34100325</p>
+            </div>
+            <div class="page__bd">
+                <div class="weui-form-preview">
+                    <div class="weui-form-preview__hd">
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程名称</label>
+                            <span class="weui-form-preview__value" id="course_name"></span>
+                        </div>
+                    </div>
+                    <div class="weui-form-preview__bd">
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程时间</label>
+                            <span class="weui-form-preview__value" id="course_time"></span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label" >周数</label>
+                            <span class="weui-form-preview__value" id="course_week"></span>
+                        </div>
+                        <div class="weui-form-preview__item"  id="course_new_file_holder">
+                            <label class="weui-form-preview__label">新文件</label>
+                            <span class="weui-form-preview__value" id="course_new_file"></span>
+                        </div>
+                        <div class="weui-form-preview__item"  id="course_unread_notice_holder">
+                            <label class="weui-form-preview__label">未读公告</label>
+                            <span class="weui-form-preview__value" id="course_unread_notice"></span>
+                        </div>
+                        <div class="weui-form-preview__item" id="course_unsubmitted_operations_holder">
+                            <label class="weui-form-preview__label">未交作业</label>
+                            <span class="weui-form-preview__value" id="course_unsubmitted_operations"></span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">教室位置</label>
+                            <span class="weui-form-preview__value" id="course_classroom"></span>
+                        </div>
+                    </div>
+                <div class="weui-form-preview__hd">
+                    <div class="weui-form-preview__item">
+                        <label class="weui-form-preview__label">教师名称</label>
+                        <span class="weui-form-preview__value" id="course_teacher"></span>
+                    </div>
+                </div>
+                <div class="weui-form-preview__bd">
+                    <div class="weui-form-preview__item">
+                        <label class="weui-form-preview__label">电子邮件</label>
+                        <span class="weui-form-preview__value">无</span>
+                    </div>
+                    <div class="weui-form-preview__item">
+                        <label class="weui-form-preview__label">电话</label>
+                        <span class="weui-form-preview__value">无</span>
+                    </div>
+                </div>
+
+                <div class="page__category js_categoryInner" style>
+                    <div class="weui-cells page__category-content">
+                        <a class="weui-cell weui-cell_access js_item" data-id="communication" href="javascript:;">
+                            <div class="weui-cell__bd">
+                                <p>师生交流</p>
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                        <a class="weui-cell weui-cell_access js_item" data-id="comment" href="#!comment">
+                            <div class="weui-cell__bd">
+                                <p>课程评价</p>
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                        <a class="weui-cell weui-cell_access js_item" data-id="comment" href="javascript:;">
+                            <div class="weui-cell__bd">
+                                <p>教室位置信息</p>
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script type="text/template" id="tpl-comment">
+            <div class="page__hd">
+                <h1 class="page__title">课程评价</h1>
+                <p class="page__desc">软件工程(3)</p>
+            </div>
+            <div class="page__bd">
+                <div class="weui-cells__title">评分</div>
+                <div class="weui-cells">
+                    <div class="weui-cell weui-cell_select">
+                        <div class="weui-cell__bd">
+                            <select class="weui-select" name="select1">
+                                <option selected="" value="5">5</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="weui-cells__title">评论内容</div>
+                <div class="weui-cells weui-cells_form">
+                    <div class="weui-cell weui-cell_switch">
+                        <div class="weui-cell__bd">匿名评论</div>
+                        <div class="weui-cell__ft">
+                            <input class="weui-switch" type="checkbox" checked="checked"/>
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__bd">
+                            <textarea class="weui-textarea" placeholder="请输入文本" rows="3"></textarea>
+                            <div class="weui-textarea-counter"><span>0</span>/200</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="weui-btn-area">
+                    <a class="weui-btn weui-btn_primary" href="javascript:" id="ok">确定</a>
+                    <a class="weui-btn weui-btn_warn" href="javascript:" id="delete">删除</a>
+                </div>
+            </div>
+        </script>
+
+        <script type="text/javascript" src="/lib/zepto.min.js"></script>
+        <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
+        <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/js/render.js"></script>
+
+        <script type="text/javascript">
+            $(function() {
+                var route = {
+                    init: function(ctx, next) {
+                        next();
+                    },
+                    main: function(ctx, next) {
+                        ctx.data = {};
+                        render('main', ctx.data);
+                    },
+                    comment: function(ctx, next) {
+                        ctx.data = {};
+                        render('comment', ctx.data);
+                    }
+                };
+
+                page.base('/learn/course_info');
+                page('/', route.main);
+                page('comment', route.comment);
+                page('*', route.init);
+                page({hashbang: true});
+                page();
+            });
+        </script>
+    </body>
+</html>
