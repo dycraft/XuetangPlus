@@ -32,7 +32,6 @@ class AccountBind(APIView):
 
         response = requests.post(url, json=params)
         result = json.loads(response.content.decode())
-        print(result)
         if response.status_code == 200 and result['message'] == 'Success':
             if not len(User.objects.filter(username=username)):
                 user = User.objects.create()
@@ -47,3 +46,36 @@ class AccountBind(APIView):
                 raise LogicError('Duplicated username.')
         else:
             raise ValidateError('Wrong username or password.')
+
+
+class CourseList(APIView):
+
+    def get(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + '2014013434'
+        response = requests.post(url)
+        result = json.loads(response.content.decode())
+        if response.status_code == 200 and result['message'] == 'Success':
+            start_time = [
+                '08:00',
+                '09:50',
+                '13:30',
+                '15:20',
+                '17:05',
+                '19:20',
+            ]
+            temp = result['classes']
+            classes = [[], [], [], [], [], [], []]
+            for t in temp:
+                day = t['time'][0] - 1
+                classes[day].append({
+                    'start': start_time[t['time'][1] - 1],
+                    'coursename': t['coursename'],
+                    'classroom': t['classroom']
+                })
+            for i in range(7):
+                classes[i] = sorted(classes[i], key=lambda d: d['start'])
+            return {
+                'classes': classes
+            }
+        else:
+            raise ValidateError('Illegal username.')

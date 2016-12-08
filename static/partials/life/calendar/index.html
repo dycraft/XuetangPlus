@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+        <title>个人日历</title>
+        <link rel="stylesheet" href="/lib/weui/weui.css"/>
+        <link rel="stylesheet" href="/lib/weui/example.css">
+        <link rel="stylesheet" href="/lib/calendar/fullcalendar.css">
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body ontouchstart>
+        <div id="content"></div>
+
+        <script type="text/template" id="tpl-main">
+            <div class="page__hd">
+                <h1 class="page__title">个人日历</h1>
+                <p class="page__desc">2016年12月3日</p>
+            </div>
+            <div class="page__bd">
+                <div class="page__category js_categoryInner" style>
+                    <div class="weui-cells page__category-content">
+                        <a class="weui-cell weui-cell_access js_item" data-id="communication" href="javascript:;">
+                            <div class="weui-cell__bd">
+                                <p>事件列表</p>
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                        <a class="weui-cell weui-cell_access js_item" data-id="comment" id="showActionSheet" href="javascript:;">
+                            <div class="weui-cell__bd">
+                                <p>添加事件</p>
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="weui-cells page__bd_spacing">
+                <div id='calendar'></div>
+            </div>
+            <!--BEGIN actionSheet-->
+            <div>
+                <div class="weui-mask" id="iosMask" style="display: none"></div>
+                <div class="weui-actionsheet" id="iosActionsheet">
+                    <div class="weui-actionsheet__menu">
+                        <div class="weui-actionsheet__cell">DDL</div>
+                        <div class="weui-actionsheet__cell">考试</div>
+                        <div class="weui-actionsheet__cell">备忘</div>
+                    </div>
+                    <div class="weui-actionsheet__action">
+                        <div class="weui-actionsheet__cell" id="iosActionsheetCancel">取消</div>
+                    </div>
+                </div>
+            </div>
+            <div class="weui-skin_android" id="androidActionsheet" style="display: none">
+                <div class="weui-mask"></div>
+                <div class="weui-actionsheet">
+                    <div class="weui-actionsheet__menu">
+                        <div class="weui-actionsheet__cell">DDL</div>
+                        <div class="weui-actionsheet__cell">考试</div>
+                        <div class="weui-actionsheet__cell">备忘</div>
+                    </div>
+                </div>
+            </div>
+            <!--END actionSheet-->
+        </script>
+
+        <script type="text/javascript" src="/lib/calendar/jquery.min.js"></script>
+        <script type="text/javascript" src="/lib/calendar/moment.min.js"></script>
+        <script type="text/javascript" src="/lib/calendar/fullcalendar.min.js"></script>
+        <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
+        <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/js/render.js"></script>
+
+        <script type="text/javascript">
+            $(function() {
+                var route = {
+                    init: function(ctx, next) {
+                        next();
+                    },
+                    main: function(ctx, next) {
+                        ctx.data = {};
+                        render('main', ctx.data);
+                        $(function() {
+                            if (getMobileOperatingSystem() == 'iOS') {
+                                var $iosActionsheet = $('#iosActionsheet');
+                                var $iosMask = $('#iosMask');
+                                function hideActionSheet() {
+                                    $iosActionsheet.removeClass('weui-actionsheet_toggle');
+                                    $iosMask.fadeOut(200);
+                                }
+                                $iosMask.on('click', hideActionSheet);
+                                $('#iosActionsheetCancel').on('click', hideActionSheet);
+                                $("#showActionSheet").on("click", function(){
+                                    $iosActionsheet.addClass('weui-actionsheet_toggle');
+                                    $iosMask.fadeIn(200);
+                                });
+                            } else {
+                                var $androidActionSheet = $('#androidActionsheet');
+                                var $androidMask = $androidActionSheet.find('.weui-mask');
+                                $("#showActionSheet").on('click', function(){
+                                    $androidActionSheet.fadeIn(200);
+                                    $androidMask.on('click',function () {
+                                        $androidActionSheet.fadeOut(200);
+                                    });
+                                });
+                            }
+                        });
+                        $(function() {
+                            $('#calendar').fullCalendar({
+                                header: {
+                    				left: 'prev,next today',
+                    				center: 'title',
+                    				right: 'month'
+                    			},
+                                navLinks: false,
+                    			editable: false,
+                    			eventLimit: false,
+                                events: [
+                                    {
+                    					title: 'DDL',
+                    					start: '2016-12-01'
+                    				}
+                                ]
+                            });
+                        });
+                    }
+                };
+
+                page.base('/life/calendar');
+                page('/', route.main);
+                page('*', route.init);
+                page({hashbang: true});
+                page();
+            });
+        </script>
+    </body>
+</html>
