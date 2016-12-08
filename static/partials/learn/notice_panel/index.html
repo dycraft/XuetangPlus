@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+        <title></title>
+        <link rel="stylesheet" href="/lib/weui/weui.css"/>
+        <link rel="stylesheet" href="/lib/weui/example.css">
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body ontouchstart>
+        <div id="content"></div>
+
+        <script type="text/template" id="tpl-main">
+            <div class="page__hd">
+                <h1 class="page__title">通知面板</h1>
+                <p class="page__desc">{{ student_number }}</p>
+            </div>
+            <div class="page__bd">
+                <div class="weui-panel weui-panel_access">
+                    <div class="weui-panel__hd">公告</div>
+                    <div class="weui-panel__bd">
+                        {% for notice in notices %}
+                        <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
+                            <div class="weui-media-box__bd">
+                                <h4 class="weui-media-box__title">{{ notice.title }}</h4>
+                                <p class="weui-media-box__desc">{{ notice.content }}</p>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <div class="weui-panel__ft">
+                        <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
+                            <div class="weui-cell__bd">查看更多</div>
+                            <span class="weui-cell__ft"></span>
+                        </a>
+                    </div>
+                </div>
+                <div class="weui-panel weui-panel_access">
+                    <div class="weui-panel__hd">作业</div>
+                    <div class="weui-panel__bd">
+                        {% for assignment in assignments %}
+                        <a class="weui-media-box weui-media-box_appmsg">
+                            <div class="weui-media-box__bd">
+                                <h4 class="weui-media-box__title">{{ assignment.title }}</h4>
+                                <p class="weui-media-box__desc">{{ assignment.detail }}</p>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <div class="weui-panel__ft">
+                        <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
+                            <div class="weui-cell__bd">查看更多</div>
+                            <span class="weui-cell__ft"></span>
+                        </a>
+                    </div>
+                </div>
+                <div class="weui-panel">
+                    <div class="weui-panel__hd">课件</div>
+                    <div class="weui-panel__bd">
+                        {% for file in files %}
+                        <div class="weui-media-box weui-media-box_text">
+                            <h4 class="weui-media-box__title">{{ file.title }}</h4>
+                            <ul class="weui-media-box__info">
+                                <li class="weui-media-box__info__meta">{{ file.size }}</li>
+                                <li class="weui-media-box__info__meta">{{ file.updating_time }}</li>
+                                <li class="weui-media-box__info__meta weui-media-box__info__meta_extra">{{ file.explanation }}</li>
+                            </ul>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="weui-panel__ft">
+                        <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
+                            <div class="weui-cell__bd">查看更多</div>
+                            <span class="weui-cell__ft"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script type="text/javascript" src="/lib/zepto.min.js"></script>
+        <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
+        <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/js/render.js"></script>
+
+        <script type="text/javascript">
+            $(function() {
+                var route = {
+                    init: function(ctx, next) {
+                        next();
+                    },
+                    main: function(ctx, next) {
+                        $.get('/api/learn/notice_panel', {}, function(data) {
+                            ctx.data = data.data;
+                            console.log(ctx.data);
+                            render('main', ctx.data);
+                        });
+                    }
+                }
+
+                page.base('/learn/notice_panel');
+                page('/', route.main);
+                page('*', route.init);
+                page({hashbang: true});
+                page();
+            });
+        </script>
+    </body>
+</html>
