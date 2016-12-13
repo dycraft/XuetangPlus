@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     #'django.contrib.staticfiles',
 
     'wechat',
+    'userpage',
 ]
 
 MIDDLEWARE_CLASSES = [

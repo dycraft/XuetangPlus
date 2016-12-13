@@ -57,8 +57,8 @@
                     <div class="weui-msg__icon-area"><i class="weui-icon-success weui-icon_msg"></i></div>
                     <div class="weui-msg__text-area">
                         <h2 class="weui-msg__title">操作成功</h2>
-                        <p class="weui-msg__desc">成功绑定了学号/工号</p >
-                        <p class="weui-msg__desc">{{ student_id }}</p >
+                        <p class="weui-msg__desc">成功绑定了学号/工号</p>
+                        <p class="weui-msg__desc">{{ student_id }}</p>
                     </div>
                     <div class="weui-btn-area">
                         <a class="weui-btn weui-btn_primary" id="submitBtn" onclick="wx.closeWindow();">确认</a>
@@ -87,51 +87,61 @@
 
         <script type="text/javascript">
             $(function() {
+                var locals = {};
+
                 var route = {
                     init: function(ctx, next) {
                         next();
                     },
                     main: function(ctx, next) {
-                        ctx.data = {};
-
-                        render('main', ctx.data);
-                        $('#submitBtn').click(function() {
-                            var student_id = $('#inputStudentID').val();
-                            var password = $('#inputPassword').val();
-
-                            if (student_id.length && password.length) {
-                                $.post('/api/welcome/account_bind', {
-                                    open_id: current_open_id,
-                                    student_id: student_id,
-                                    password: password
-                                }, function(data) {
-                                    if (data.code == 0) {
-                                        ctx.data = {'student_id': student_id};
-                                        page('#!success');
-                                    } else if (data.code == 1) {
-                                        showToolTips('tips-empty');
-                                    } else if (data.code == 2) {
-                                        showToolTips('tips-duplicate');
-                                    } else if (data.code == 3) {
-                                        showToolTips('tips-fail');
-                                    } else {
-                                        showToolTips('tips-unknown');
-                                    }
-                                })
+                        $.get('/api/welcome/check_bind/', {
+                            open_id: current_open_id
+                        }, function (data) {
+                            locals.student_id = data.data.student_id;
+                            var isBind = data.data.bind;
+                            if (isBind) {
+                                page.redirect('#!success');
                             } else {
-                                showToolTips('tips-empty');
+                                render('main', locals);
+                                $('#submitBtn').click(function() {
+                                    var student_id = $('#inputStudentID').val();
+                                    var password = $('#inputPassword').val();
+                                    if (student_id.length && password.length) {
+                                        $.post('/api/welcome/account_bind', {
+                                            open_id: current_open_id,
+                                            student_id: student_id,
+                                            password: password
+                                        }, function(data) {
+                                            if (data.code == 0) {
+                                                locals.student_id = student_id;
+                                                page('#!success');
+                                            } else if (data.code == 1) {
+                                                showToolTips('tips-empty');
+                                            } else if (data.code == 2) {
+                                                showToolTips('tips-duplicate');
+                                            } else if (data.code == 3) {
+                                                showToolTips('tips-fail');
+                                            } else {
+                                                showToolTips('tips-unknown');
+                                            }
+                                        })
+                                    } else {
+                                        showToolTips('tips-empty');
+                                    }
+                                });
                             }
                         });
                     },
                     success: function(ctx, next) {
-                        render('success', ctx.data);
+                        render('success', locals);
                         $('#unbindBtn').click(function() {
                             $.post('/api/welcome/unbind', {
                                 open_id: current_open_id,
                             }, function (data) {
-                                if (data.code == 0){
+                                if (data.code == 0) {
                                     alert('解绑成功');
-                                    page('/');
+                                    locals.student_id = undefined;
+                                    page(' ');
                                 } else {
                                     showToolTips('tips-fail');
                                 }
@@ -140,14 +150,6 @@
 
                     }
                 };
-
-                $.get('/api/welcome/check_bind/', {'open_id':current_open_id},
-                function (data) {
-                    var isBind = data.data['bind'];
-                    if(isBind){
-                        page('#!success');
-                    }
-                });
 
                 page.base('/welcome/account_bind');
                 page('/', route.main);

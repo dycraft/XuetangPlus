@@ -19,8 +19,8 @@ function getQueryParams(qs) {
 
 (function () {
     $.get('/api/openid/', {
-        'code':getQueryParams(document.location.search)['code']
+        'code':getQueryParams(document.location.search).code
     }, function(data){
-        current_open_id = data.data['openid'];
+        current_open_id = data.data.openid;
     });
 })();
