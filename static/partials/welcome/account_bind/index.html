@@ -68,6 +68,34 @@
                     </div>
                 </div>
             </div>
+            <div id="dialogs">
+                <!--BEGIN iosUnbind-->
+                <div class="js_dialog" id="iosUnbind" style="display: none;">
+                    <div class="weui-mask"></div>
+                    <div class="weui-dialog">
+                        <div class="weui-dialog__hd"><strong class="weui-dialog__title">解绑操作</strong></div>
+                        <div class="weui-dialog__bd">请确认是否解绑？</div>
+                        <div class="weui-dialog__ft">
+                            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default">取消</a>
+                            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" id="iosConfirmUnbind">确认</a>
+                        </div>
+                    </div>
+                </div>
+                <!--END iosUnbind-->
+                <!--BEGIN androidUnbind-->
+                <div class="js_dialog" id="androidUnbind" style="display: none;">
+                    <div class="weui-mask"></div>
+                    <div class="weui-dialog weui-skin_android">
+                        <div class="weui-dialog__hd"><strong class="weui-dialog__title">解绑操作</strong></div>
+                        <div class="weui-dialog__bd">请确认是否解绑？</div>
+                        <div class="weui-dialog__ft">
+                            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default">取消</a>
+                            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" id="androidConfirmUnbind">确认</a>
+                        </div>
+                    </div>
+                </div>
+                <!--END androidUnbind-->
+            </div>
         </script>
 
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
@@ -103,6 +131,7 @@
                                 page.redirect('#!success');
                             } else {
                                 render('main', locals);
+
                                 $('#submitBtn').click(function() {
                                     var student_id = $('#inputStudentID').val();
                                     var password = $('#inputPassword').val();
@@ -134,12 +163,27 @@
                     },
                     success: function(ctx, next) {
                         render('success', locals);
+
+                        var $unbind, $confirmUnbind;
+                        if (getMobileOperatingSystem() == 'iOS') {
+                            $unbind = $('#iosUnbind');
+                            $confirmUnbind = $('#iosConfirmUnbind');
+                        } else {
+                            $unbind = $('#androidUnbind');
+                            $confirmUnbind = $('#androidConfirmUnbind');
+                        }
                         $('#unbindBtn').click(function() {
+                            $unbind.fadeIn(200);
+                        });
+                        $('.weui-dialog__btn_default').click(function() {
+                            $(this).parents('.js_dialog').fadeOut(200);
+                        });
+                        $confirmUnbind.click(function() {
                             $.post('/api/welcome/unbind', {
                                 open_id: current_open_id,
                             }, function (data) {
+                                $unbind.fadeOut(200);
                                 if (data.code == 0) {
-                                    alert('解绑成功');
                                     locals.student_id = undefined;
                                     page(' ');
                                 } else {
@@ -147,7 +191,6 @@
                                 }
                             })
                         });
-
                     }
                 };
 
