@@ -1,16 +1,17 @@
 from django.db import models
 
 from codex.baseerror import LogicError
+import json
 
 
 class User(models.Model):
-    #open_id = models.CharField(max_length=64, unique=True, db_index=True)
-    student_id = models.CharField(max_length=32, unique=True, db_index=True)
-    username = models.CharField(max_length=32, unique=True, db_index=True)
-    department = models.CharField(max_length=64, db_index=True, default='')
-    position = models.CharField(max_length=32, db_index=True, default='')
-    email = models.CharField(max_length=32, db_index=True, default='')
-    realname = models.CharField(max_length=32, db_index=True, default='')
+    open_id = models.CharField(max_length=64, unique=True, db_index=True)
+    student_id = models.CharField(max_length=32, db_index=True)
+    username = models.CharField(max_length=32, db_index=True, default='')
+    department = models.CharField(max_length=64, default='')
+    position = models.CharField(max_length=32, default='')
+    email = models.CharField(max_length=32, default='')
+    realname = models.CharField(max_length=32, default='')
 
     @classmethod
     def get_by_openid(cls, openid):
@@ -18,3 +19,32 @@ class User(models.Model):
             return cls.objects.get(open_id=openid)
         except cls.DoesNotExist:
             raise LogicError('User not found')
+
+
+class Course(models.Model):
+    name = models.CharField(max_length=128)
+    courseid = models.CharField(max_length=128)
+    comments = models.CharField(max_length=1024, default='[]')
+
+
+class Comment(models.Model):
+    courseid = models.IntegerField(default=0)
+    commenttime = models.IntegerField(default=0)
+    commenter = models.IntegerField(default=0)
+    content = models.CharField(max_length=512, default='')
+    score = models.IntegerField()
+
+    def get_commenter_name(self):
+        if self.commenter == -1:
+            return 'anonymous'
+        else:
+            return User.objects.get(id=self.commenter)
+
+    def toJson(self):
+        answer = []
+        answer.append(('courseid', self.courseid))
+        answer.append(('commenttime', self.commenttime))
+        answer.append(('commenter', self.commenter))
+        answer.append(('content', self.content))
+        answer.append(('score', self.score))
+        return json.dumps(dict(answer))

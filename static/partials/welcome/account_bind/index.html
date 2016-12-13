@@ -42,6 +42,9 @@
                 <div class="weui-btn-area">
                     <a class="weui-btn weui-btn_primary" id="submitBtn">确认</a>
                 </div>
+                <div class="weui-btn-area">
+                    <a class="weui-btn weui-btn_default" id="closeBtn" onclick="wx.closeWindow();">返回</a>
+                </div>
             </div>
         </script>
 
@@ -55,9 +58,13 @@
                     <div class="weui-msg__text-area">
                         <h2 class="weui-msg__title">操作成功</h2>
                         <p class="weui-msg__desc">成功绑定了学号/工号</p >
+                        <p class="weui-msg__desc">{{ student_id }}</p >
                     </div>
                     <div class="weui-btn-area">
-                        <a class="weui-btn weui-btn_primary" href="./help" id="submitBtn">确认</a>
+                        <a class="weui-btn weui-btn_primary" id="submitBtn" onclick="wx.closeWindow();">确认</a>
+                    </div>
+                    <div class="weui-btn-area">
+                        <a class="weui-btn weui-btn_warn" id="unbindBtn">解绑</a>
                     </div>
                 </div>
             </div>
@@ -66,7 +73,17 @@
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/js/openid.js"></script>
         <script type="text/javascript" src="/js/render.js"></script>
+
+        <!--调用JSSDK-->
+        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
+        <script type="text/javascript">
+            var jssdk_function_list = ['closeWindow'];
+            callJSSDK(jssdk_function_list);
+        </script>
+
 
         <script type="text/javascript">
             $(function() {
@@ -76,17 +93,20 @@
                     },
                     main: function(ctx, next) {
                         ctx.data = {};
+
                         render('main', ctx.data);
                         $('#submitBtn').click(function() {
-                            var username = $('#inputStudentID').val();
+                            var student_id = $('#inputStudentID').val();
                             var password = $('#inputPassword').val();
 
-                            if (username.length && password.length) {
+                            if (student_id.length && password.length) {
                                 $.post('/api/welcome/account_bind', {
-                                    username: username,
+                                    open_id: current_open_id,
+                                    student_id: student_id,
                                     password: password
                                 }, function(data) {
                                     if (data.code == 0) {
+                                        ctx.data = {'student_id': student_id};
                                         page('#!success');
                                     } else if (data.code == 1) {
                                         showToolTips('tips-empty');
@@ -104,18 +124,39 @@
                         });
                     },
                     success: function(ctx, next) {
-                        ctx.data = {};
                         render('success', ctx.data);
+                        $('#unbindBtn').click(function() {
+                            $.post('/api/welcome/unbind', {
+                                open_id: current_open_id,
+                            }, function (data) {
+                                if (data.code == 0){
+                                    alert('解绑成功');
+                                    page('/');
+                                } else {
+                                    showToolTips('tips-fail');
+                                }
+                            })
+                        });
+
                     }
                 };
+
+                $.get('/api/welcome/check_bind/', {'open_id':current_open_id},
+                function (data) {
+                    var isBind = data.data['bind'];
+                    if(isBind){
+                        page('#!success');
+                    }
+                });
 
                 page.base('/welcome/account_bind');
                 page('/', route.main);
                 page('success', route.success);
-                page('*', route.init);
                 page({hashbang: true});
                 page();
+
             });
         </script>
+
     </body>
 </html>
