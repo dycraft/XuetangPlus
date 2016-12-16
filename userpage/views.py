@@ -39,6 +39,10 @@ class AccountBind(APIView):
             LogicError('no such openid')
 
     def post(self):
+        self.input['open_id'] = 'oJWbgwg4IgwuYr8DMW0zFvKA1Gcc'
+        self.input['student_id'] = '2014013421'
+        self.input['password'] = 'xsx345997420QXX'
+
         self.check_input('open_id', 'student_id', 'password')
 
         student_id = self.input['student_id']
@@ -74,6 +78,7 @@ class AccountBind(APIView):
         else:
 
             raise ValidateError('Wrong username or password.')
+
 
 class CheckBind(APIView):
 
@@ -344,6 +349,51 @@ class Map(APIView):
         return
 
 
+class ChatMenu(APIView):
+
+    def get(self):
+        self.check_input('openid')
+        chats = Chatting.filter_by_openid(self.input['openid'])
+        result = []
+        for c in chats:
+            dic = {}
+            if(c.open_id1 == self.input['openid']):
+                dic['communicator'] = c.open_id2
+            else:
+                dic['communicator'] = c.open_id1
+            dic['head_content'] = ''
+            x = Message.objects.filter(id = c.content)
+            if len(x) > 0:
+                dic['head_content'] = x[0].content
+            dic['update_time'] = c.update_time
+            dic['is_updated'] =c.is_updated
+            result.append(dic)
+        return sorted(result, key=lambda d: d['update_time'])
+
+    def post(self):
+        return
+
+
+class ChatArea(APIView):
+
+    def get(self):
+        self.check_input('openid', 'communicator_id')
+        chats = Chatting.filter_by_chater_id(self.input['openid'], self.input['communicator_id'])
+        if len(chats) == 0:
+            Chatting.objects.create(open_id1 = self.input['openid'], open_id2 = self.input['communicator_id'])
+            return []
+
+        msgs = Message.filter_by_chater_id(self.input['openid'], self.input['communicator_id'])
+        for msg in msgs:
+            if msg.create_time < int(current_stamp()) - 30 * 86400:
+                msg.delete()
+
+        return
+
+    def post(self):
+        return
+
+
 class GetOpenId(APIView):
 
     def get(self):
@@ -415,3 +465,61 @@ class GetJSSDK(APIView):
             'timestamp': stamp,
             'signature': signature
         }
+
+
+class EventDetail(APIView):
+    def get(self):
+        self.check_input('openid', 'id')
+        user = User.get_by_openid(self.input['openid'])
+        event_id_list = json.loads(user.event_list)
+        event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
+        id = self.input['id']
+        if len(event_list) > id:
+            return {'name':event_list[id - 1].name, 'date': str(event_list[id - 1].date).split(' ')[0], 'content': event_list[id - 1].content}
+        raise InputError('The given id is out of range')
+
+
+    def post(self):
+        self.input['openid'] = 'oJWbgwg4IgwuYr8DMW0zFvKA1Gcc'
+        self.input['name'] = '事件12'
+        self.input['date'] = '2016-12-18'
+        self.input['content'] = '事件12的内容有点多'
+
+        self.check_input('openid', 'name', 'date', 'content')
+        event = Event.objects.create(name = self.input['name'], date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d'), content = self.input['content'])
+        id = User.get_by_openid(self.input['openid']).add_event(event.id)
+        return {
+                'id': id,
+            }
+
+
+class EventList(APIView):
+    def get(self):
+        self.input['openid'] = 'oJWbgwg4IgwuYr8DMW0zFvKA1Gcc'
+        self.input['date'] = '2016-12-12'
+        self.check_input('openid')
+        if 'date' not in self.input:
+            date = datetime.date.today()
+        else:
+            date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d')
+        user = User.get_by_openid(self.input['openid'])
+        event_id_list = json.loads(user.event_list)
+        event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
+
+        result = {}
+        count = 0
+        for e in event_list:
+            if time.mktime(e.date.timetuple()) > time.mktime(date.timetuple()):
+                count += 1
+                e_date = str(e.date).split(' ')[0]
+                if e_date in result:
+                    result[e_date].append({'name':e.name, 'date': e_date, 'content': e.content})
+                elif count < 10:
+                    result[e_date] = [{'name':e.name, 'date': e_date, 'content': e.content}]
+                else:
+                    break
+            else:
+                user.del_event(e.id)
+        return result
+    def post(self):
+        return
