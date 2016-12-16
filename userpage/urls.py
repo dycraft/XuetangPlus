@@ -10,9 +10,13 @@ urlpatterns = [
     url(r'^welcome/check_bind/?$', CheckBind.as_view()),
     url(r'^welcome/unbind/?$', UnBind.as_view()),
     url(r'^learn/course_list/?$', CourseList.as_view()),
+    url(r'^learn/notice_panel/?$', NoticePanel.as_view()),
     url(r'^course/information/?$', CourseInfo.as_view()),
     url(r'^course/comment/?$', CourseComment.as_view()),
-    url(r'^learn/notice_panel/?$', NoticePanel.as_view()),
+    url(r'^communicate/menu?$', ChatMenu.as_view()),
+    url(r'^communicate/area?$', ChatArea.as_view()),
+    url(r'^event/list?$', EventList.as_view()),
+    url(r'^event/detail?$', EventDetail.as_view()),
 
     url(r'^jssdk/?$', GetJSSDK.as_view())
 ]
