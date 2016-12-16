@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+        <title></title>
+        <style type="text/css">
+        #container{
+            min-width: 600px;
+            min-height: 600px;
+        }
+    </style>
+        <link rel="stylesheet" href="/lib/weui/weui.css"/>
+        <link rel="stylesheet" href="/lib/weui/example.css">
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body ontouchstart>
+        <div class="weui-toptips weui-toptips_warn js_tooltips">Failed to load resource: 请求的 URL 在此服务器上找不到。</div>
+
+        <div id="content">
+            <div class="page__hd">
+                <h1 class="page__title">教室位置查询</h1>
+                <p class="page__desc">搜索栏</p>
+            </div>
+            <div class="page__bd">
+                <div class="weui-search-bar" id="searchBar">
+                    <form class="weui-search-bar__form">
+                        <div class="weui-search-bar__box">
+                            <i class="weui-icon-search"></i>
+                            <input type="search" class="weui-search-bar__input" id="searchInput" placeholder="搜索" required/>
+                            <a href="javascript:" class="weui-icon-clear" id="searchClear"></a>
+                        </div>
+                        <label class="weui-search-bar__label" id="searchText">
+                            <i class="weui-icon-search"></i>
+                            <span>搜索</span>
+                        </label>
+                    </form>
+                    <a href="javascript:" class="weui-search-bar__cancel-btn" id="searchCancel">取消</a>
+                    <button type="submit" class="search_btn" onclick="searchPos()">确定</button>
+                </div>
+
+                <div class="weui-cells searchbar-result" id="searchResult">
+                    <div class="weui-cell weui-cell_access">
+                        <div id="searchResultPanel" style="border:1px solid #C0C0C0;width:150px;height:auto; display:none;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="page__ft">
+            </div>
+            <div id="infoDiv"></div>
+            <div id="container"></div>
+        </div>
+
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
+        <script type="text/javascript" src="/lib/zepto.min.js"></script>
+        <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
+        <script type="text/javascript" src="/lib/calendar/jquery.min.js"></script>
+        <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=SCdHCBrff5wHYw2c7oss9nbhyZt3Rkq4"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+
+        <script type="text/javascript">
+            $(function(){
+                var $searchBar = $('#searchBar'),
+                    $searchResult = $('#searchResult'),
+                    $searchText = $('#searchText'),
+                    $searchInput = $('#searchInput'),
+                    $searchClear = $('#searchClear'),
+                    $searchCancel = $('#searchCancel');
+                function hideSearchResult(){
+                    $searchResult.hide();
+                    $searchInput.val('');
+                }
+                function cancelSearch(){
+                    hideSearchResult();
+                    $searchBar.removeClass('weui-search-bar_focusing');
+                    $searchText.show();
+                }
+                $searchText.on('click', function(){
+                    $searchBar.addClass('weui-search-bar_focusing');
+                    $searchInput.focus();
+                });
+                $searchInput
+                  .on('blur', function () {
+                    if(!this.value.length) cancelSearch();
+                  })
+                  .on('input', function(){
+                    if(this.value.length) {
+                      $searchResult.show();
+                    } else {
+                      $searchResult.hide();
+                    }
+                  });
+                $searchClear.on('click', function(){
+                    hideSearchResult();
+                    $searchInput.focus();
+                });
+                $searchCancel.on('click', function(){
+                    cancelSearch();
+                    $searchInput.blur();
+                });
+            });
+        </script>
+
+        <script>
+            $.ajaxSetup({
+                async : false
+            });
+
+            window.map = 0;
+            window.currentPos = 0;
+            window.walkingService = 0;
+            window.startLL = 0
+
+            window.signature = undefined;
+            window.appId = undefined;
+            window.timestamp = undefined;
+            window.nonceStr = undefined;
+
+            $(function() {
+                url = window.location.href;
+                callJSSDK(['getLocation']);
+
+                next_step();
+            });
+
+            function next_step()
+            {
+                var currentlati = 0;
+                var currentlongi = 0;
+
+                alert("inside next_step");
+
+                wx.ready(function(){
+                    alert("ready");
+                    wx.getLocation({
+                        type: 'wgs84',
+                        success: function(res) {
+                            currentlati = res.latitude;
+                            currentlongi = res.longitude;
+
+                            startLL = new BMap.Point(currentlongi, currentlati);
+
+                            translateCallback = function (data){
+                                  if(data.status === 0)
+                                  {
+                                      startLL = data.points[0];
+                                      map = new BMap.Map("container");
+                                      map.centerAndZoom(startLL, 18);
+
+                                      currentPos = new BMap.Marker(startLL);
+                                      map.addOverlay(currentPos);
+                                  }
+                            };
+
+                            setTimeout(function(){
+                                var convertor = new BMap.Convertor();
+                                var pointArr = [];
+                                pointArr.push(startLL);
+                                convertor.translate(pointArr, 1, 5, translateCallback)
+                            }, 1000);
+                        }
+                    });
+                });
+            }
+
+
+        </script>
+
+        <script type="text/javascript">
+            // 百度地图API功能
+            function G(id) {
+                return document.getElementById(id);
+            }
+
+            var ac = new BMap.Autocomplete(    //建立一个自动完成的对象
+                {"input" : "searchInput"
+                ,"location" : map
+            });
+
+            ac.addEventListener("onhighlight", function(e) {  //鼠标放在下拉列表上的事件
+            var str = "";
+                var _value = e.fromitem.value;
+                var value = "";
+                if (e.fromitem.index > -1) {
+                    value = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                }
+                str = "FromItem<br />index = " + e.fromitem.index + "<br />value = " + value;
+
+                value = "";
+                if (e.toitem.index > -1) {
+                    _value = e.toitem.value;
+                    value = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                }
+                str += "<br />ToItem<br />index = " + e.toitem.index + "<br />value = " + value;
+                G("searchResultPanel").innerHTML = str;
+            });
+
+            var myValue;
+            ac.addEventListener("onconfirm", function(e) {    //鼠标点击下拉列表后的事件
+            var _value = e.item.value;
+                myValue = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+                G("searchResultPanel").innerHTML ="onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue;
+            });
+
+        </script>
+
+        <script type="text/javascript">
+            var endPos = 0;
+
+           function searchPos(){
+                function myFun(){
+                    endLL = local.getResults().getPoi(0).point;    //获取第一个智能搜索的结果
+                    endPos = new BMap.Marker(endLL);
+                    map.addOverlay(endPos);
+                    window.walkingService = new BMap.WalkingRoute(map, {renderOptions: {map: map, panel: "infoDiv", autoViewport: true}});
+
+                    window.walkingService.search(startLL, endLL);
+                }
+                var local = new BMap.LocalSearch(map, { //智能搜索
+                  onSearchComplete: myFun
+                });
+                local.search($('#searchInput').val());
+           }
+        </script>
+    </body>
+</html>

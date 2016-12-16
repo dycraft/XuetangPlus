@@ -13,7 +13,6 @@ urlpatterns = [
     url(r'^course/information/?$', CourseInfo.as_view()),
     url(r'^course/comment/?$', CourseComment.as_view()),
     url(r'^learn/notice_panel/?$', NoticePanel.as_view()),
-    url(r'^map/?$', Map.as_view()),
 
     url(r'^jssdk/?$', GetJSSDK.as_view())
 ]

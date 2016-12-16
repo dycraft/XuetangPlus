@@ -13,7 +13,7 @@ from django.template.loader import get_template
 
 from XuetangPlus import settings
 from codex.baseview import BaseView
-from wechat.models import User
+from wechat.models import User, WechatConfirmation
 
 
 __author__ = "Epsirom"
@@ -179,20 +179,7 @@ class WeChatLib(object):
 
     @classmethod
     def get_wechat_access_token(cls):
-        if datetime.datetime.now() >= cls.access_token_expire:
-            print("appid=%s secret=%s" %(cls.appid, cls.secret))
-            res = cls._http_get(
-                'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s' % (
-                    cls.appid, cls.secret
-                )
-            )
-            rjson = json.loads(res)
-            if rjson.get('errcode'):
-                raise WeChatError(rjson['errcode'], rjson['errmsg'])
-            cls.access_token = rjson['access_token']
-            cls.access_token_expire = datetime.datetime.now() + datetime.timedelta(seconds=rjson['expires_in'] - 300)
-            cls.logger.info('Got access token %s', cls.access_token)
-        return cls.access_token
+        return WechatConfirmation.objects.get(id=1).get_access_token()
 
     def get_wechat_menu(self):
         res = self._http_get(

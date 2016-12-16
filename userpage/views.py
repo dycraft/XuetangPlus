@@ -316,34 +316,6 @@ class CourseComment(APIView):
 
         return 1
 
-
-class Map(APIView):
-    lib = WeChatLib(WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET)
-
-    def get(self):
-        if 'type' in self.input:
-            params = self.input
-            ans = self.lib.changeLocationIndex(params['lati'], params['longi'], params['type'])
-            return ans
-        elif 'keyword' in self.input:
-            params = self.input
-            ans = self.lib.getRecommendAddress(params['keyword'])
-            return ans
-        else:
-            raise LogicError('Map Error')
-
-        access_token = self.lib.get_wechat_access_token()
-        ticket = self.lib.get_wechat_jsapi_ticket()
-        answer = [('access_token', access_token), ('ticket', ticket)]
-        result = json.dumps(dict(answer))
-        print("get all tickets")
-
-        return result
-
-    def post(self):
-        return
-
-
 class GetOpenId(APIView):
 
     def get(self):
@@ -369,24 +341,8 @@ class GetJSSDK(APIView):
     def get(self):
         self.check_input('url')
 
-        access_token_url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='
-        access_token_url += CONFIGS['WECHAT_APPID']
-        access_token_url += '&secret='
-        access_token_url += CONFIGS['WECHAT_SECRET']
-
-        response = requests.get(access_token_url)
-        result = json.loads(response.content.decode())
-
-        access_token = result['access_token']
-
-        jsapi_ticket_url = 'https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token='
-        jsapi_ticket_url += access_token
-        jsapi_ticket_url += '&type=jsapi'
-
-        response = requests.get(jsapi_ticket_url)
-        result = json.loads(response.content.decode())
-
-        jsapi_ticket = result['ticket']
+        confirm = WechatConfirmation.objects.get(id=1)
+        jsapi_ticket = confirm.get_jssdk_ticket()
 
         current_url = self.input['url']
         new_url = ''
@@ -408,6 +364,8 @@ class GetJSSDK(APIView):
         signature_string += new_url
 
         signature = hashlib.sha1(signature_string.encode()).hexdigest()
+
+        print(CONFIGS['WECHAT_APPID'], rstr, stamp, signature)
 
         return {
             'app_id': CONFIGS['WECHAT_APPID'],
