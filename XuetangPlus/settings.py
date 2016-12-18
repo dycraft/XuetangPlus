@@ -178,7 +178,7 @@ def get_url(path, params=None):
     else:
         return full_path
 
-##记得修改公众号回调域名
+##remember to set server ip
 def get_redirect_url(input_url):
     setting_url = get_url(input_url)
 
