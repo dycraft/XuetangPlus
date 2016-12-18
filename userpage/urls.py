@@ -6,6 +6,7 @@ from userpage.views import *
 
 
 urlpatterns = [
+    url(r'^welcome/openid/?$', GetOpenId.as_view()),
     url(r'^welcome/account_bind/?$', AccountBind.as_view()),
     url(r'^welcome/check_bind/?$', CheckBind.as_view()),
     url(r'^welcome/unbind/?$', UnBind.as_view()),

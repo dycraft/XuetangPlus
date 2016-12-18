@@ -17,10 +17,11 @@ function getQueryParams(qs) {
     return params;
 }
 
-(function () {
-    $.get('/api/openid/', {
+function getOpenId(next) {
+    $.get('/api/welcome/openid/', {
         'code':getQueryParams(document.location.search).code
     }, function(data){
         current_open_id = data.data.openid;
+        next();
     });
-})();
+}

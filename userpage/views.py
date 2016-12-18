@@ -39,10 +39,6 @@ class AccountBind(APIView):
             LogicError('no such openid')
 
     def post(self):
-        self.input['open_id'] = 'oJWbgwg4IgwuYr8DMW0zFvKA1Gcc'
-        self.input['student_id'] = '2014013421'
-        self.input['password'] = 'xsx345997420QXX'
-
         self.check_input('open_id', 'student_id', 'password')
 
         student_id = self.input['student_id']
@@ -64,6 +60,7 @@ class AccountBind(APIView):
         if response.status_code == 200:
 
             try:
+
                 user = User.get_by_openid(open_id)
                 user.username = result['username']
                 user.student_id = result['information']['studentnumber']
@@ -84,6 +81,7 @@ class CheckBind(APIView):
 
     def get(self):
         self.check_input('open_id')
+
         user = User.get_by_openid(self.input['open_id'])
 
         if user.student_id == '':
@@ -370,6 +368,7 @@ class GetOpenId(APIView):
 
     def get(self):
         self.check_input('code')
+
         url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='
         url += CONFIGS['WECHAT_APPID']
         url += '&secret='

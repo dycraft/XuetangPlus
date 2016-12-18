@@ -179,7 +179,12 @@ class WeChatLib(object):
 
     @classmethod
     def get_wechat_access_token(cls):
-        return WechatConfirmation.objects.get(id=1).get_access_token()
+        try:
+            wechat_confirm = WechatConfirmation.objects.get(id=1)
+            return wechat_confirm.get_access_token()
+        except:
+            wechat_confirm = WechatConfirmation.objects.create()
+            return wechat_confirm.get_access_token()
 
     def get_wechat_menu(self):
         res = self._http_get(
