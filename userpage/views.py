@@ -27,16 +27,16 @@ start_time = [
 class AccountBind(APIView):
 
     def get(self):
-        self.check_input('openid')
+        self.check_input('open_id')
 
         try:
-            user = User.get_by_openid(self.input['openid'])
+            user = User.get_by_openid(self.input['open_id'])
             return {
                 'student_id': user.student_id
             }
 
         except:
-            LogicError('no such openid')
+            LogicError('no such open_id')
 
     def post(self):
         self.check_input('open_id', 'student_id', 'password')
@@ -121,8 +121,8 @@ class UnBind(APIView):
 class CourseList(APIView):
 
     def get(self):
-        self.check_input('openid')
-        user = User.get_by_openid(self.input['openid'])
+        self.check_input('open_id')
+        user = User.get_by_openid(self.input['open_id'])
 
         if user.student_id == '':
             raise LogicError('has not bind')
@@ -150,11 +150,11 @@ class CourseList(APIView):
             raise LogicError('Response Error')
 
 
-class NoticePanel(APIView):
+class GetCourseId(APIView):
 
     def get(self):
-        self.check_input('openid')
-        user = User.get_by_openid(self.input['openid'])
+        self.check_input('open_id')
+        user = User.get_by_openid(self.input['open_id'])
 
         if user.student_id == '':
             raise LogicError('user has not bind')
@@ -162,102 +162,101 @@ class NoticePanel(APIView):
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         response = requests.post(url)
 
-        return_val = {
-            'student_number': user.student_id,
-        }
-
         if response.status_code == 200:
             result = json.loads(response.content.decode())
             course_ids = list(set([c['courseid'] for c in result['classes']]))
 
-            for course_id in course_ids:
-                response_notice = requests.post('http://se.zhuangty.com:8000/learnhelper/'
-                                                + user.student_id + '/courses/' + course_id
-                                                + '/notices')
-
-                if response_notice.status_code == 200:
-
-                    result_notice = json.loads(response_notice.content.decode())
-
-                    for notice in result_notice['notices']:
-                        notice['publish_time'] = stamp2localstr(notice['publishtime'])
-
-                    return_val['notices'] = result_notice['notices']
-
-                else:
-                    raise LogicError('Response Error')
-
-                response_assignment = requests.post('http://se.zhuangty.com:8000/learnhelper/'
-                                              + user.student_id + '/courses/' + course_id
-                                              + '/assignments')
-
-                if response_assignment.status_code == 200:
-                    result_assignment = json.loads(response_assignment.content.decode())
-
-                    for assignment in result_assignment['assignments']:
-
-                        if assignment['duedate'] > current_stamp():
-                            assignment['processing'] = True
-                        else:
-                            assignment['processing'] = False
-
-                        assignment['start_time'] = stamp2localstr(assignment['startdate'])
-                        assignment['end_time'] = stamp2localstr(assignment['duedate'])
-                        assignment['evaluating_time'] = stamp2localstr(assignment['evaluatingdate'])
-
-                    result_notice['assignments'] = result_assignment['assignments']
-
-                else:
-                    raise LogicError('Response Error')
-
-                response_file = requests.post('http://se.zhuangty.com:8000/learnhelper/'
-                                              + user.student_id + '/courses/' + course_id
-                                              + '/documents')
-                if response_file.status_code == 200:
-                    result_file = json.loads( response_file.content.decode())
-
-                    for file in result_file['documents']:
-                        file['updating_time'] = stamp2localstr(file['updatingtime'])
-
-                    return_val['files'] = result_file['documents']
-
-                else:
-                    raise LogicError('Response Error')
-
-        return return_val
+        return course_ids
 
 
 class NoticeList(APIView):
 
     def get(self):
-        self.check_input('openid')
-        user = User.get_by_openid(self.input['openid'])
+        self.check_input('open_id', 'course_ids')
+        user = User.get_by_openid(self.input['open_id'])
 
-        if user.student_id == '':
-            raise LogicError('user has not bind')
+        course_ids = self.input['course_ids']
+        for course_id in course_ids:
+            response_notice = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                            + user.student_id + '/courses/' + course_id
+                                            + '/notices')
+            if response_notice.status_code == 200:
+                result_notice = json.loads(response_notice.content.decode())
 
-        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-        response = requests.post(url)
+                for notice in result_notice['notices']:
+                    notice['publish_time'] = stamp2localstr(notice['publishtime'])
 
-        return_val = {
-            'student_number': user.student_id,
-        }
+            else:
+                raise LogicError("Response Error in NoticeList")
 
-        if response.status_code == 200:
-            result = json.loads(response.content.decode())
-            course_ids = list(set([c['courseid'] for c in result['classes']]))
+        return result_notice['notices']
 
-            for course_id in course_ids:
-                response_notice = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+
+class AssignmentList(APIView):
+
+    def get(self):
+        self.check_input('open_id', 'course_ids')
+        user = User.get_by_openid(self.input['open_id'])
+
+        course_ids = self.input['course_ids']
+        for course_id in course_ids:
+            response_assignment = requests.post('http://se.zhuangty.com:8000/learnhelper/'
                                                 + user.student_id + '/courses/' + course_id
-                                                + '/notices')
+                                                + '/assignments')
+            if response_assignment.status_code == 200:
+                result_assignment = json.loads(response_assignment.content.decode())
+
+                for assignment in result_assignment['assignments']:
+
+                    if assignment['duedate'] > current_stamp():
+                        assignment['processing'] = True
+                    else:
+                        assignment['processing'] = False
+
+                    assignment['start_time'] = stamp2localstr(assignment['startdate'])
+                    assignment['end_time'] = stamp2localstr(assignment['duedate'])
+                    assignment['evaluating_time'] = stamp2localstr(assignment['evaluatingdate'])
+            else:
+                raise LogicError('Response Error')
+
+        return result_assignment['assignments']
+
+
+class SlideList(APIView):
+
+    def get(self):
+        self.check_input('open_id', 'course_ids')
+        user = User.get_by_openid(self.input['open_id'])
+
+        course_ids = self.input['course_ids']
+
+        for course_id in course_ids:
+            response_file = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                          + user.student_id + '/courses/' + course_id
+                                          + '/documents')
+            if response_file.status_code == 200:
+                result_file = json.loads(response_file.content.decode())
+
+                for file in result_file['documents']:
+                    file['updating_time'] = stamp2localstr(file['updatingtime'])
+
+            else:
+                raise LogicError('Response Error')
+
+        return result_file['documents']
+
+
+class MeInfo(APIView):
+
+    def get(self):
+        self.check_input('')
 
 
 class CourseInfo(APIView):
 
     def get(self):
-        self.check_input('openid', 'course_id')
-        user = User.get_by_openid(self.input['openid'])
+        self.check_input('open_id', 'course_id')
+        user = User.get_by_openid(self.input['open_id'])
 
         url = 'http://se.zhuangty.com:8000/curriculum/'
         params = {
@@ -348,12 +347,12 @@ class CourseComment(APIView):
 class ChatMenu(APIView):
 
     def get(self):
-        self.check_input('openid')
-        chats = Chatting.filter_by_openid(self.input['openid'])
+        self.check_input('open_id')
+        chats = Chatting.filter_by_openid(self.input['open_id'])
         result = []
         for c in chats:
             dic = {}
-            if(c.open_id1 == self.input['openid']):
+            if(c.open_id1 == self.input['open_id']):
                 dic['communicator'] = c.open_id2
             else:
                 dic['communicator'] = c.open_id1
@@ -373,13 +372,13 @@ class ChatMenu(APIView):
 class ChatArea(APIView):
 
     def get(self):
-        self.check_input('openid', 'communicator_id')
-        chats = Chatting.filter_by_chater_id(self.input['openid'], self.input['communicator_id'])
+        self.check_input('open_id', 'communicator_id')
+        chats = Chatting.filter_by_chater_id(self.input['open_id'], self.input['communicator_id'])
         if len(chats) == 0:
-            Chatting.objects.create(open_id1 = self.input['openid'], open_id2 = self.input['communicator_id'])
+            Chatting.objects.create(open_id1 = self.input['open_id'], open_id2 = self.input['communicator_id'])
             return []
 
-        msgs = Message.filter_by_chater_id(self.input['openid'], self.input['communicator_id'])
+        msgs = Message.filter_by_chater_id(self.input['open_id'], self.input['communicator_id'])
         for msg in msgs:
             if msg.create_time < int(current_stamp()) - 30 * 86400:
                 msg.delete()
@@ -406,8 +405,10 @@ class GetOpenId(APIView):
         response = requests.get(url)
         result = json.loads(response.content.decode())
 
+        print(result)
+
         return {
-            'openid': result['openid']
+            'openid': result['open_id']
         }
 
 
@@ -450,7 +451,7 @@ class GetJSSDK(APIView):
 
 class EventDetail(APIView):
     def get(self):
-        self.check_input('openid', 'id')
+        self.check_input('open_id', 'id')
         user = User.get_by_openid(self.input['openid'])
         event_id_list = json.loads(user.event_list)
         event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
@@ -471,7 +472,7 @@ class EventDetail(APIView):
 
 class EventList(APIView):
     def get(self):
-        self.check_input('openid')
+        self.check_input('open_id')
         if 'date' not in self.input:
             date = datetime.date.today()
         else:

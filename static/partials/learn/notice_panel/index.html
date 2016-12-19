@@ -157,6 +157,22 @@
                 </div>
             </div>
         </script>
+        <script type="text/template" id="tpl-unbind">
+            <div class="page__bd">
+                <div class="weui-msg">
+                    <div class="weui-msg__icon-area"><i class="weui-icon-warn weui-icon_msg"></i></div>
+                    <div class="weui-msg__text-area">
+                        <h2 class="weui-msg__title">尚未绑定</h2>
+                        <p class="weui-msg__desc">请您先绑定学号/工号，之后再使用此功能</p>
+                    </div>
+                    <div class="weui-btn-area">
+                        <a class="weui-btn weui-btn_default" id="backBtn" onclick="wx.closeWindow();">返回</a>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+
 
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
@@ -175,10 +191,7 @@
         <script type="text/javascript">
 
                 var locals = {};
-                locals.current_page = 1;
-                locals.current_open_id = '';
-
-
+                var openid;
                 var route = {
                     init: function(ctx, next) {
                         next();
@@ -212,34 +225,39 @@
                         });
                     },
                     not_bind: function (ctx, next) {
-                        $.get('/api/learn/notice_panel/assignment', {}, function(data) {
-                            ctx.data = data.data;
-                            console.log(ctx.data);
-                            render('main', ctx.data);
-                        });
+                        render('unbind');
                     },
                 }
 
 
-                getOpenId(function(open_id) {
-                    openid =  open_id;
+                getOpenId(function(get_open_id) {
+                    alert(get_open_id)
+                    openid = get_open_id;
                     page.base('/learn/notice_panel');
                      $.get('/api/welcome/check_bind/', {
                         open_id: openid
                     }, function (data) {
+
                          locals.student_id = data.data.student_id;
+                         console.log(data.data);
                          var isBind = data.data.bind;
                          if (isBind) {
-                             page.redirect('#!success');
+                             page.redirect('#!unbind');
                          } else {
-                             page('notice', route.notice);
-                             page('', route.assignment);
-                             page('/', route.slide);
-                             page('/', route.me);
-                             page('/', route.not_bind);
-                             page('*', route.init);
-                             page({hashbang: true});
-                             page();
+                             $.get('/api/learn/notice_panel/get_course_id'), {
+                                 open_id:openid
+                             }, function (data) {
+                                 console.log(data.data)
+                                 locals.course_id = data.data.
+                                 page('notice?page=1', route.notice);
+                                 page('', route.assignment);
+                                 page('', route.slide);
+                                 page('', route.me);
+                                 page('unbind', route.not_bind);
+                                 page('*', route.init);
+                                 page({hashbang: true});
+                                 page();
+                             }
                          }
                      });
                 });

@@ -196,8 +196,8 @@
                 }
             };
 
-            getOpenId(function(open_id) {
-                openid =  open_id;
+            getOpenId(function(get_open_id) {
+                openid =  get_open_id;
                 page.base('/welcome/account_bind');
                 page('/', route.main);
                 page('success', route.success);
