@@ -18,7 +18,6 @@
         $.get('/api/welcome/openid/', {
             'code': getQueryParams(document.location.search).code
         }, function(data){
-            console.log(data.data)
             next(data.data.open_id);
         });
     };

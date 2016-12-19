@@ -12,10 +12,6 @@
         <div id="content"></div>
 
         <script type="text/template" id="tpl-main">
-            <div class="weui-toptips weui-toptips_warn js_tooltips" id="tips-empty">学号密码不能为空</div>
-            <div class="weui-toptips weui-toptips_warn js_tooltips" id="tips-fail">学号密码验证错误</div>
-            <div class="weui-toptips weui-toptips_warn js_tooltips" id="tips-duplicate">该学号已经绑定</div>
-            <div class="weui-toptips weui-toptips_warn js_tooltips" id="tips-unknown">未知错误</div>
             <div class="page__hd">
                 <h1 class="page__title">绑定账号</h1>
             </div>
@@ -68,39 +64,12 @@
                     </div>
                 </div>
             </div>
-            <div id="dialogs">
-                <!--BEGIN iosUnbind-->
-                <div class="js_dialog" id="iosUnbind" style="display: none;">
-                    <div class="weui-mask"></div>
-                    <div class="weui-dialog">
-                        <div class="weui-dialog__hd"><strong class="weui-dialog__title">解绑操作</strong></div>
-                        <div class="weui-dialog__bd">请确认是否解绑？</div>
-                        <div class="weui-dialog__ft">
-                            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default">取消</a>
-                            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" id="iosConfirmUnbind">确认</a>
-                        </div>
-                    </div>
-                </div>
-                <!--END iosUnbind-->
-                <!--BEGIN androidUnbind-->
-                <div class="js_dialog" id="androidUnbind" style="display: none;">
-                    <div class="weui-mask"></div>
-                    <div class="weui-dialog weui-skin_android">
-                        <div class="weui-dialog__hd"><strong class="weui-dialog__title">解绑操作</strong></div>
-                        <div class="weui-dialog__bd">请确认是否解绑？</div>
-                        <div class="weui-dialog__ft">
-                            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default">取消</a>
-                            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" id="androidConfirmUnbind">确认</a>
-                        </div>
-                    </div>
-                </div>
-                <!--END androidUnbind-->
-            </div>
         </script>
 
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/lib/weui/weui.min.js"></script>
         <script type="text/javascript" src="/js/openid.js"></script>
         <script type="text/javascript" src="/js/render.js"></script>
 
@@ -112,9 +81,8 @@
             callJSSDK(jssdk_function_list);
         </script>
 
-
         <script type="text/javascript">
-            window.onload = function () {
+            $(function() {
                 var locals = {};
                 var openid;
 
@@ -142,21 +110,27 @@
                                             student_id: student_id,
                                             password: password
                                         }, function (data) {
-                                            if (data.code == 0) {
+                                            switch(data.code) {
+                                            case 0:
                                                 locals.student_id = student_id;
                                                 page('#!success');
-                                            } else if (data.code == 1) {
-                                                showToolTips('tips-empty');
-                                            } else if (data.code == 2) {
-                                                showToolTips('tips-duplicate');
-                                            } else if (data.code == 3) {
-                                                showToolTips('tips-fail');
-                                            } else {
-                                                showToolTips('tips-unknown');
-                                            }
+                                                break;
+                                            case 1:
+                                                weui.topTips('学号密码不能为空');
+                                                break;
+                                            case 2:
+                                                weui.topTips('该学号已经绑定');
+                                                break;
+                                            case 3:
+                                                weui.topTips('学号密码验证错误');
+                                                break;
+                                            default:
+                                                weui.topTips('未知错误');
+                                                break;
+                                            };
                                         })
                                     } else {
-                                        showToolTips('tips-empty');
+                                        weui.topTips('学号密码不能为空');
                                     }
                                 });
                             }
@@ -165,32 +139,32 @@
                     success: function (ctx, next) {
                         render('success', locals);
 
-                        var $unbind, $confirmUnbind;
-                        if (getMobileOperatingSystem() == 'iOS') {
-                            $unbind = $('#iosUnbind');
-                            $confirmUnbind = $('#iosConfirmUnbind');
-                        } else {
-                            $unbind = $('#androidUnbind');
-                            $confirmUnbind = $('#androidConfirmUnbind');
-                        }
                         $('#unbindBtn').click(function () {
-                            $unbind.fadeIn(200);
-                        });
-                        $('.weui-dialog__btn_default').click(function () {
-                            $(this).parents('.js_dialog').fadeOut(200);
-                        });
-                        $confirmUnbind.click(function () {
-                            $.post('/api/welcome/unbind', {
-                                open_id: openid,
-                            }, function (data) {
-                                $unbind.fadeOut(200);
-                                if (data.code == 0) {
-                                    locals.student_id = undefined;
-                                    page(' ');
-                                } else {
-                                    showToolTips('tips-fail');
-                                }
-                            })
+                            weui.dialog({
+                                title: '解绑操作',
+                                content: '请确认是否解绑？',
+                                buttons: [{
+                                    label: '取消',
+                                    type: 'default'
+                                }, {
+                                    label: '确定',
+                                    type: 'primary',
+                                    onClick: function () {
+                                        $.post('/api/welcome/unbind', {
+                                            open_id: openid
+                                        }, function (data) {
+                                            if (data.code == 0) {
+                                                locals.student_id = undefined;
+                                                page('/');
+                                            } else if (data.code < 0) {
+                                                weui.topTips('未知错误');
+                                            } else {
+                                                weui.topTips('解绑失败');
+                                            }
+                                        });
+                                    }
+                                }]
+                            });
                         });
                     }
                 };
@@ -200,12 +174,11 @@
                     page.base('/welcome/account_bind');
                     page('/', route.main);
                     page('success', route.success);
+                    page('*', route.init);
                     page({hashbang: true});
                     page();
                 });
-            }
-
+            });
         </script>
-
     </body>
 </html>
