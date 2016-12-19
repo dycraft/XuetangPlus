@@ -19,6 +19,7 @@
                         <p class="page__desc">{{ student_number }}</p>
                     </div>
                     <div class="page__bd">
+                        {% if clickTab == 1 %}
                         <div class="weui-panel weui-panel_access">
                             <div class="weui-panel__hd">公告</div>
                             <div class="weui-panel__bd">
@@ -38,6 +39,8 @@
                                 </a>
                             </div>
                         </div>
+                        {% endif %}
+                        {% if clickTab == 2 %}
                         <div class="weui-panel weui-panel_access">
                             <div class="weui-panel__hd">作业</div>
                             <div class="weui-panel__bd">
@@ -57,7 +60,9 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="weui-panel">
+                        {% endif %}
+                        {% if clickTab == 3 %}
+                        <div class="weui-panel weui-panel_access">
                             <div class="weui-panel__hd">课件</div>
                             <div class="weui-panel__bd">
                                 {% for file in files %}
@@ -76,12 +81,19 @@
                                     <div class="weui-cell__bd">查看更多</div>
                                     <span class="weui-cell__ft"></span>
                                 </a>
-                            </div>
+                            </div>s
                         </div>
+                        {% endif %}
+                        {% if clickTab == 4 %}
+                        <div class="weui-panel weui-panel_access">
+                            <div class="weui-panel__hd">个人信息</div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
+                <div>{{ clickTab }}</div>
                 <div class="weui-tabbar">
-                    {% if clickTab == 0 %}
+                    {% if clickTab == 1 %}
                         <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/notice_green.png" alt="" class="weui-tabbar__icon">
@@ -99,7 +111,7 @@
                         </a>
                     {% endif %}
 
-                    {% if clickTab == 0 %}
+                    {% if clickTab == 2 %}
                         <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/assignment_green.png" alt="" class="weui-tabbar__icon">
@@ -117,7 +129,7 @@
                         </a>
                     {% endif %}
 
-                    {% if clickTab == 0 %}
+                    {% if clickTab == 3 %}
                         <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/slide_green.png" alt="" class="weui-tabbar__icon">
@@ -136,7 +148,7 @@
                     {% endif %}
 
 
-                    {% if clickTab == 0 %}
+                    {% if clickTab == 4 %}
                         <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/me_green.png" alt="" class="weui-tabbar__icon">
@@ -157,6 +169,7 @@
                 </div>
             </div>
         </script>
+
         <script type="text/template" id="tpl-unbind">
             <div class="page__bd">
                 <div class="weui-msg">
@@ -189,78 +202,83 @@
         </script>
 
         <script type="text/javascript">
-
-                var locals = {};
-                var openid;
-                var route = {
-                    init: function(ctx, next) {
-                        next();
-                    },
-                    notice: function(ctx, next) {
-                        $.get('/api/learn/notice_panel/notice', {}, function(data) {
-                            ctx.data = data.data;
-                            console.log(ctx.data);
-                            render('main', ctx.data);
-                        });
-                    },
-                    assignment: function (ctx, next) {
-                        $.get('/api/learn/notice_panel/assignment', {}, function(data) {
-                            ctx.data = data.data;
-                            console.log(ctx.data);
-                            render('main', ctx.data);
-                        });
-                    },
-                    slide: function (ctx, next) {
-                        $.get('/api/learn/notice_panel/slide', {}, function(data) {
-                            ctx.data = data.data;
-                            console.log(ctx.data);
-                            render('main', ctx.data);
-                        });
-                    },
-                    me: function (ctx, next) {
-                        $.get('/api/learn/notice_panel/me', {}, function(data) {
-                            ctx.data = data.data;
-                            console.log(ctx.data);
-                            render('main', ctx.data);
-                        });
-                    },
-                    not_bind: function (ctx, next) {
-                        render('unbind');
-                    },
-                }
-
-
-                getOpenId(function(get_open_id) {
-                    alert(get_open_id)
-                    openid = get_open_id;
-                    page.base('/learn/notice_panel');
-                     $.get('/api/welcome/check_bind/', {
-                        open_id: openid
+            var locals = {};
+            var route = {
+                init: function(ctx, next) {
+                    next();
+                },
+                main: function(ctx, next) {
+                    $.get('/api/welcome/check_bind/', {
+                        open_id: locals.open_id
                     }, function (data) {
-
-                         locals.student_id = data.data.student_id;
-                         console.log(data.data);
-                         var isBind = data.data.bind;
-                         if (isBind) {
-                             page.redirect('#!unbind');
-                         } else {
-                             $.get('/api/learn/notice_panel/get_course_id'), {
-                                 open_id:openid
-                             }, function (data) {
-                                 console.log(data.data)
-                                 locals.course_id = data.data.
-                                 page('notice?page=1', route.notice);
-                                 page('', route.assignment);
-                                 page('', route.slide);
-                                 page('', route.me);
-                                 page('unbind', route.not_bind);
-                                 page('*', route.init);
-                                 page({hashbang: true});
-                                 page();
-                             }
+                        locals.student_id = data.data.student_id;
+                        console.log(data.data);
+                        var isBind = data.data.bind;
+                        if (!isBind) {
+                            page.redirect('#!unbind');
+                        } else {
+                            $.get('/api/learn/notice_panel/get_course_id', {
+                                open_id: locals.open_id
+                            }, function (data) {
+                                console.log(data.data)
+                                locals.course_id = data.data
+                            });
+                            locals.clickTab = 1;
+                            locals.page_num = 1;
+                            page('notice', locals);
                          }
                      });
-                });
+                },
+                notice: function(ctx, next) {
+                    $.get('/api/learn/notice_panel/notice', {}, function(data) {
+                        ctx.data = data.data;
+                        console.log(ctx.data);
+                        render('main', locals);
+                    });
+                },
+                assignment: function (ctx, next) {
+                    alert('23')
+                    $.get('/api/learn/notice_panel/assignment', {}, function(data) {
+                        ctx.data = data.data;
+                        console.log(ctx.data);
+                        render('main', locals);
+                    });
+                },
+                slide: function (ctx, next) {
+                    alert('24')
+                    $.get('/api/learn/notice_panel/slide', {}, function(data) {
+                        ctx.data = data.data;
+                        console.log(ctx.data);
+                        render('main', locals);
+                    });
+                },
+                me: function (ctx, next) {
+                    alert('25')
+                    $.get('/api/learn/notice_panel/me', {}, function(data) {
+                        ctx.data = data.data;
+                        console.log(ctx.data);
+                        render('main', locals);
+                    });
+                },
+                not_bind: function (ctx, next) {
+                    alert('fcuk')
+                    render('unbind', locals);
+                },
+            }
+
+
+            getOpenId(function(get_open_id) {
+                locals.open_id = get_open_id;
+                page.base('/learn/notice_panel');
+                page('/', route.main);
+                page('assignment', route.assignment);
+                page('slide', route.slide);
+                page('me', route.me);
+                page('unbind', route.not_bind);
+                page('*', route.init);
+                page({hashbang: true});
+                page();
+            });
 
 
         </script>

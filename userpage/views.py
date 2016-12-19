@@ -154,6 +154,8 @@ class GetCourseId(APIView):
 
     def get(self):
         self.check_input('open_id')
+        print('here')
+        print(self.input)
         user = User.get_by_openid(self.input['open_id'])
 
         if user.student_id == '':
@@ -393,7 +395,7 @@ class GetOpenId(APIView):
 
     def get(self):
         self.check_input('code')
-
+        #print('getopenid')
         url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='
         url += CONFIGS['WECHAT_APPID']
         url += '&secret='
@@ -404,11 +406,10 @@ class GetOpenId(APIView):
 
         response = requests.get(url)
         result = json.loads(response.content.decode())
-
-        print(result)
-
+        #print(result['openid'])
+        #this openid is defined by TX
         return {
-            'openid': result['open_id']
+            'open_id': result['openid']
         }
 
 

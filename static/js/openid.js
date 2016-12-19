@@ -3,7 +3,6 @@
  */
 
 (function() {
-
     var getQueryParams = function(qs) {
         qs = qs.split('+').join(' ');
         var params = {},
@@ -19,7 +18,8 @@
         $.get('/api/welcome/openid/', {
             'code': getQueryParams(document.location.search).code
         }, function(data){
-            next(data.data.openid);
+            console.log(data.data)
+            next(data.data.open_id);
         });
     };
 })();
