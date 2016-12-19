@@ -227,6 +227,32 @@ class NoticePanel(APIView):
         return return_val
 
 
+class NoticeList(APIView):
+
+    def get(self):
+        self.check_input('openid')
+        user = User.get_by_openid(self.input['openid'])
+
+        if user.student_id == '':
+            raise LogicError('user has not bind')
+
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
+        response = requests.post(url)
+
+        return_val = {
+            'student_number': user.student_id,
+        }
+
+        if response.status_code == 200:
+            result = json.loads(response.content.decode())
+            course_ids = list(set([c['courseid'] for c in result['classes']]))
+
+            for course_id in course_ids:
+                response_notice = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                                + user.student_id + '/courses/' + course_id
+                                                + '/notices')
+
+
 class CourseInfo(APIView):
 
     def get(self):

@@ -78,6 +78,9 @@ celerybeat-schedule
 # dotenv
 .env
 
+# django
+migrations/
+
 # virtualenv
 venv/
 ENV/

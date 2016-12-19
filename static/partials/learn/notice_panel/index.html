@@ -9,72 +9,151 @@
         <link rel="stylesheet" href="/css/style.css">
     </head>
     <body ontouchstart>
-        <div id="content"></div>
+        <div id="content" style="height:100%"></div>
 
         <script type="text/template" id="tpl-main">
-            <div class="page__hd">
-                <h1 class="page__title">通知面板</h1>
-                <p class="page__desc">{{ student_number }}</p>
-            </div>
-            <div class="page__bd">
-                <div class="weui-panel weui-panel_access">
-                    <div class="weui-panel__hd">公告</div>
-                    <div class="weui-panel__bd">
-                        {% for notice in notices %}
-                        <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
-                            <div class="weui-media-box__bd">
-                                <h4 class="weui-media-box__title">{{ notice.title }}</h4>
-                                <p class="weui-media-box__desc">{{ notice.content }}</p>
+            <div class="weui-tab">
+                <div class="weui-tab__panel">
+                    <div class="page__hd">
+                        <h1 class="page__title">通知面板</h1>
+                        <p class="page__desc">{{ student_number }}</p>
+                    </div>
+                    <div class="page__bd">
+                        <div class="weui-panel weui-panel_access">
+                            <div class="weui-panel__hd">公告</div>
+                            <div class="weui-panel__bd">
+                                {% for notice in notices %}
+                                <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
+                                    <div class="weui-media-box__bd">
+                                        <h4 class="weui-media-box__title">{{ notice.title }}</h4>
+                                        <p class="weui-media-box__desc">{{ notice.content }}</p>
+                                    </div>
+                                </a>
+                                {% endfor %}
                             </div>
-                        </a>
-                        {% endfor %}
-                    </div>
-                    <div class="weui-panel__ft">
-                        <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
-                            <div class="weui-cell__bd">查看更多</div>
-                            <span class="weui-cell__ft"></span>
-                        </a>
-                    </div>
-                </div>
-                <div class="weui-panel weui-panel_access">
-                    <div class="weui-panel__hd">作业</div>
-                    <div class="weui-panel__bd">
-                        {% for assignment in assignments %}
-                        <a class="weui-media-box weui-media-box_appmsg">
-                            <div class="weui-media-box__bd">
-                                <h4 class="weui-media-box__title">{{ assignment.title }}</h4>
-                                <p class="weui-media-box__desc">{{ assignment.detail }}</p>
+                            <div class="weui-panel__ft">
+                                <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
+                                    <div class="weui-cell__bd">查看更多</div>
+                                    <span class="weui-cell__ft"></span>
+                                </a>
                             </div>
-                        </a>
-                        {% endfor %}
-                    </div>
-                    <div class="weui-panel__ft">
-                        <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
-                            <div class="weui-cell__bd">查看更多</div>
-                            <span class="weui-cell__ft"></span>
-                        </a>
-                    </div>
-                </div>
-                <div class="weui-panel">
-                    <div class="weui-panel__hd">课件</div>
-                    <div class="weui-panel__bd">
-                        {% for file in files %}
-                        <div class="weui-media-box weui-media-box_text">
-                            <h4 class="weui-media-box__title">{{ file.title }}</h4>
-                            <ul class="weui-media-box__info">
-                                <li class="weui-media-box__info__meta">{{ file.size }}</li>
-                                <li class="weui-media-box__info__meta">{{ file.updating_time }}</li>
-                                <li class="weui-media-box__info__meta weui-media-box__info__meta_extra">{{ file.explanation }}</li>
-                            </ul>
                         </div>
-                        {% endfor %}
+                        <div class="weui-panel weui-panel_access">
+                            <div class="weui-panel__hd">作业</div>
+                            <div class="weui-panel__bd">
+                                {% for assignment in assignments %}
+                                <a class="weui-media-box weui-media-box_appmsg">
+                                    <div class="weui-media-box__bd">
+                                        <h4 class="weui-media-box__title">{{ assignment.title }}</h4>
+                                        <p class="weui-media-box__desc">{{ assignment.detail }}</p>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            </div>
+                            <div class="weui-panel__ft">
+                                <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
+                                    <div class="weui-cell__bd">查看更多</div>
+                                    <span class="weui-cell__ft"></span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="weui-panel">
+                            <div class="weui-panel__hd">课件</div>
+                            <div class="weui-panel__bd">
+                                {% for file in files %}
+                                <div class="weui-media-box weui-media-box_text">
+                                    <h4 class="weui-media-box__title">{{ file.title }}</h4>
+                                    <ul class="weui-media-box__info">
+                                        <li class="weui-media-box__info__meta">{{ file.size }}</li>
+                                        <li class="weui-media-box__info__meta">{{ file.updating_time }}</li>
+                                        <li class="weui-media-box__info__meta weui-media-box__info__meta_extra">{{ file.explanation }}</li>
+                                    </ul>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="weui-panel__ft">
+                                <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
+                                    <div class="weui-cell__bd">查看更多</div>
+                                    <span class="weui-cell__ft"></span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="weui-panel__ft">
-                        <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
-                            <div class="weui-cell__bd">查看更多</div>
-                            <span class="weui-cell__ft"></span>
+                </div>
+                <div class="weui-tabbar">
+                    {% if clickTab == 0 %}
+                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
+                            <span style="display: inline-block;position: relative;">
+                                <img src="../../img/icon/notice_green.png" alt="" class="weui-tabbar__icon">
+                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                            </span>
+                            <p class="weui-tabbar__label">公告</p>
                         </a>
-                    </div>
+                    {% else %}
+                        <a href="javascript:;" class="weui-tabbar__item">
+                            <span style="display: inline-block;position: relative;">
+                                <img src="../../img/icon/notice_white.png" alt="" class="weui-tabbar__icon">
+                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                            </span>
+                            <p class="weui-tabbar__label">公告</p>
+                        </a>
+                    {% endif %}
+
+                    {% if clickTab == 0 %}
+                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
+                            <span style="display: inline-block;position: relative;">
+                                <img src="../../img/icon/assignment_green.png" alt="" class="weui-tabbar__icon">
+                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                            </span>
+                            <p class="weui-tabbar__label">作业</p>
+                        </a>
+                    {% else %}
+                        <a href="javascript:;" class="weui-tabbar__item">
+                            <span style="display: inline-block;position: relative;">
+                                <img src="../../img/icon/assignment_white.png" alt="" class="weui-tabbar__icon">
+                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                            </span>
+                            <p class="weui-tabbar__label">作业</p>
+                        </a>
+                    {% endif %}
+
+                    {% if clickTab == 0 %}
+                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
+                            <span style="display: inline-block;position: relative;">
+                                <img src="../../img/icon/slide_green.png" alt="" class="weui-tabbar__icon">
+                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                            </span>
+                            <p class="weui-tabbar__label">课件</p>
+                        </a>
+                    {% else %}
+                        <a href="javascript:;" class="weui-tabbar__item">
+                            <span style="display: inline-block;position: relative;">
+                                <img src="../../img/icon/slide_white.png" alt="" class="weui-tabbar__icon">
+                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                            </span>
+                            <p class="weui-tabbar__label">课件</p>
+                        </a>
+                    {% endif %}
+
+
+                    {% if clickTab == 0 %}
+                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
+                            <span style="display: inline-block;position: relative;">
+                                <img src="../../img/icon/me_green.png" alt="" class="weui-tabbar__icon">
+                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                            </span>
+                            <p class="weui-tabbar__label">我</p>
+                        </a>
+                    {% else %}
+                        <a href="javascript:;" class="weui-tabbar__item">
+                            <span style="display: inline-block;position: relative;">
+                                <img src="../../img/icon/me_white.png" alt="" class="weui-tabbar__icon">
+                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                            </span>
+                            <p class="weui-tabbar__label">我</p>
+                        </a>
+                    {% endif %}
+
                 </div>
             </div>
         </script>
@@ -82,29 +161,90 @@
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/js/openid.js"></script>
         <script type="text/javascript" src="/js/render.js"></script>
 
+        <!--调用JSSDK-->
+        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
         <script type="text/javascript">
-            $(function() {
+            var jssdk_function_list = ['closeWindow'];
+            callJSSDK(jssdk_function_list);
+        </script>
+
+        <script type="text/javascript">
+
+                var locals = {};
+                locals.current_page = 1;
+                locals.current_open_id = '';
+
+
                 var route = {
                     init: function(ctx, next) {
                         next();
                     },
-                    main: function(ctx, next) {
-                        $.get('/api/learn/notice_panel', {}, function(data) {
+                    notice: function(ctx, next) {
+                        $.get('/api/learn/notice_panel/notice', {}, function(data) {
                             ctx.data = data.data;
                             console.log(ctx.data);
                             render('main', ctx.data);
                         });
-                    }
+                    },
+                    assignment: function (ctx, next) {
+                        $.get('/api/learn/notice_panel/assignment', {}, function(data) {
+                            ctx.data = data.data;
+                            console.log(ctx.data);
+                            render('main', ctx.data);
+                        });
+                    },
+                    slide: function (ctx, next) {
+                        $.get('/api/learn/notice_panel/slide', {}, function(data) {
+                            ctx.data = data.data;
+                            console.log(ctx.data);
+                            render('main', ctx.data);
+                        });
+                    },
+                    me: function (ctx, next) {
+                        $.get('/api/learn/notice_panel/me', {}, function(data) {
+                            ctx.data = data.data;
+                            console.log(ctx.data);
+                            render('main', ctx.data);
+                        });
+                    },
+                    not_bind: function (ctx, next) {
+                        $.get('/api/learn/notice_panel/assignment', {}, function(data) {
+                            ctx.data = data.data;
+                            console.log(ctx.data);
+                            render('main', ctx.data);
+                        });
+                    },
                 }
 
-                page.base('/learn/notice_panel');
-                page('/', route.main);
-                page('*', route.init);
-                page({hashbang: true});
-                page();
-            });
+
+                getOpenId(function(open_id) {
+                    openid =  open_id;
+                    page.base('/learn/notice_panel');
+                     $.get('/api/welcome/check_bind/', {
+                        open_id: openid
+                    }, function (data) {
+                         locals.student_id = data.data.student_id;
+                         var isBind = data.data.bind;
+                         if (isBind) {
+                             page.redirect('#!success');
+                         } else {
+                             page('notice', route.notice);
+                             page('', route.assignment);
+                             page('/', route.slide);
+                             page('/', route.me);
+                             page('/', route.not_bind);
+                             page('*', route.init);
+                             page({hashbang: true});
+                             page();
+                         }
+                     });
+                });
+
+
         </script>
     </body>
 </html>

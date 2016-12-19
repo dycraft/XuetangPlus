@@ -2,26 +2,24 @@
  * Created by guzhicheng on 12/13/16.
  */
 
-var current_open_id = '';
+(function() {
 
-function getQueryParams(qs) {
-    qs = qs.split('+').join(' ');
-    var params = {},
-        tokens,
-        re = /[?&]?([^=]+)=([^&]*)/g;
+    var getQueryParams = function(qs) {
+        qs = qs.split('+').join(' ');
+        var params = {},
+            tokens,
+            re = /[?&]?([^=]+)=([^&]*)/g;
+        while ((tokens = re.exec(qs))) {
+            params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+        }
+        return params;
+    };
 
-    while (tokens = re.exec(qs)) {
-        params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
-    }
-
-    return params;
-}
-
-function getOpenId(next) {
-    $.get('/api/welcome/openid/', {
-        'code':getQueryParams(document.location.search).code
-    }, function(data){
-        current_open_id = data.data.openid;
-        next();
-    });
-}
+    window.getOpenId = function(next) {
+        $.get('/api/welcome/openid/', {
+            'code': getQueryParams(document.location.search).code
+        }, function(data){
+            next(data.data.openid);
+        });
+    };
+})();

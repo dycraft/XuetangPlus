@@ -115,92 +115,95 @@
 
         <script type="text/javascript">
 
-                var locals = {};
+            var locals = {};
+            var openid;
 
-                var route = {
-                    init: function(ctx, next) {
-                        next();
-                    },
-                    main: function(ctx, next) {
-                        $.get('/api/welcome/check_bind/', {
-                            open_id: current_open_id
-                        }, function (data) {
-                            locals.student_id = data.data.student_id;
-                            var isBind = data.data.bind;
-                            if (isBind) {
-                                page.redirect('#!success');
-                            } else {
-                                render('main', locals);
+            var route = {
+                init: function(ctx, next) {
+                    next();
+                },
+                main: function(ctx, next) {
 
-                                $('#submitBtn').click(function() {
-                                    var student_id = $('#inputStudentID').val();
-                                    var password = $('#inputPassword').val();
-                                    if (student_id.length && password.length) {
-                                        $.post('/api/welcome/account_bind', {
-                                            open_id: current_open_id,
-                                            student_id: student_id,
-                                            password: password
-                                        }, function(data) {
-                                            if (data.code == 0) {
-                                                locals.student_id = student_id;
-                                                page('#!success');
-                                            } else if (data.code == 1) {
-                                                showToolTips('tips-empty');
-                                            } else if (data.code == 2) {
-                                                showToolTips('tips-duplicate');
-                                            } else if (data.code == 3) {
-                                                showToolTips('tips-fail');
-                                            } else {
-                                                showToolTips('tips-unknown');
-                                            }
-                                        })
-                                    } else {
-                                        showToolTips('tips-empty');
-                                    }
-                                });
-                            }
-                        });
-                    },
-                    success: function(ctx, next) {
-                        render('success', locals);
-
-                        var $unbind, $confirmUnbind;
-                        if (getMobileOperatingSystem() == 'iOS') {
-                            $unbind = $('#iosUnbind');
-                            $confirmUnbind = $('#iosConfirmUnbind');
+                    $.get('/api/welcome/check_bind/', {
+                        open_id: openid
+                    }, function (data) {
+                        locals.student_id = data.data.student_id;
+                        var isBind = data.data.bind;
+                        if (isBind) {
+                            page.redirect('#!success');
                         } else {
-                            $unbind = $('#androidUnbind');
-                            $confirmUnbind = $('#androidConfirmUnbind');
-                        }
-                        $('#unbindBtn').click(function() {
-                            $unbind.fadeIn(200);
-                        });
-                        $('.weui-dialog__btn_default').click(function() {
-                            $(this).parents('.js_dialog').fadeOut(200);
-                        });
-                        $confirmUnbind.click(function() {
-                            $.post('/api/welcome/unbind', {
-                                open_id: current_open_id,
-                            }, function (data) {
-                                $unbind.fadeOut(200);
-                                if (data.code == 0) {
-                                    locals.student_id = undefined;
-                                    page(' ');
-                                } else {
-                                    showToolTips('tips-fail');
-                                }
-                            })
-                        });
-                    }
-                };
+                            render('main', locals);
 
-                getOpenId(function() {
-                    page.base('/welcome/account_bind');
-                    page('/', route.main);
-                    page('success', route.success);
-                    page({hashbang: true});
-                    page();
-                });
+                            $('#submitBtn').click(function() {
+                                var student_id = $('#inputStudentID').val();
+                                var password = $('#inputPassword').val();
+                                if (student_id.length && password.length) {
+                                    $.post('/api/welcome/account_bind', {
+                                        open_id: openid,
+                                        student_id: student_id,
+                                        password: password
+                                    }, function(data) {
+                                        if (data.code == 0) {
+                                            locals.student_id = student_id;
+                                            page('#!success');
+                                        } else if (data.code == 1) {
+                                            showToolTips('tips-empty');
+                                        } else if (data.code == 2) {
+                                            showToolTips('tips-duplicate');
+                                        } else if (data.code == 3) {
+                                            showToolTips('tips-fail');
+                                        } else {
+                                            showToolTips('tips-unknown');
+                                        }
+                                    })
+                                } else {
+                                    showToolTips('tips-empty');
+                                }
+                            });
+                        }
+                    });
+                },
+                success: function(ctx, next) {
+                    render('success', locals);
+
+                    var $unbind, $confirmUnbind;
+                    if (getMobileOperatingSystem() == 'iOS') {
+                        $unbind = $('#iosUnbind');
+                        $confirmUnbind = $('#iosConfirmUnbind');
+                    } else {
+                        $unbind = $('#androidUnbind');
+                        $confirmUnbind = $('#androidConfirmUnbind');
+                    }
+                    $('#unbindBtn').click(function() {
+                        $unbind.fadeIn(200);
+                    });
+                    $('.weui-dialog__btn_default').click(function() {
+                        $(this).parents('.js_dialog').fadeOut(200);
+                    });
+                    $confirmUnbind.click(function() {
+                        $.post('/api/welcome/unbind', {
+                            open_id: openid,
+                        }, function (data) {
+                            $unbind.fadeOut(200);
+                            if (data.code == 0) {
+                                locals.student_id = undefined;
+                                page(' ');
+                            } else {
+                                showToolTips('tips-fail');
+                            }
+                        })
+                    });
+                }
+            };
+
+            getOpenId(function(open_id) {
+                openid =  open_id;
+                page.base('/welcome/account_bind');
+                page('/', route.main);
+                page('success', route.success);
+                page({hashbang: true});
+                page();
+            });
 
         </script>
 
