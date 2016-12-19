@@ -15,18 +15,27 @@
         <script type="text/template" id="tpl-main">
             <div class="page__hd">
                 <h1 class="page__title">个人日历</h1>
-                <p class="page__desc">2016年12月3日</p>
+                <p class="page__desc">{{ now }}</p>
             </div>
             <div class="page__bd">
                 <div class="page__category js_categoryInner" style>
+                    <div class="weui-cells page__bd_spacing">
+                        <div id='calendar'></div>
+                    </div>
                     <div class="weui-cells page__category-content">
-                        <a class="weui-cell weui-cell_access js_item" data-id="communication" href="javascript:;">
+                        <a class="weui-cell weui-cell_access js_item" id="showSelectFormat" href="javascript:;">
+                            <div class="weui-cell__bd">
+                                <p>显示格式</p>
+                            </div>
+                            <div class="weui-cell__ft"></div>
+                        </a>
+                        <a class="weui-cell weui-cell_access js_item" id="eventListBtn">
                             <div class="weui-cell__bd">
                                 <p>事件列表</p>
                             </div>
                             <div class="weui-cell__ft"></div>
                         </a>
-                        <a class="weui-cell weui-cell_access js_item" data-id="comment" id="showActionSheet" href="javascript:;">
+                        <a class="weui-cell weui-cell_access js_item" id="eventAddBtn">
                             <div class="weui-cell__bd">
                                 <p>添加事件</p>
                             </div>
@@ -35,34 +44,76 @@
                     </div>
                 </div>
             </div>
-            <div class="weui-cells page__bd_spacing">
-                <div id='calendar'></div>
+        </script>
+
+        <script type="text/template" id='tpl-add'>
+            <div class="page__hd">
+                <h1 class="page__title">添加事件</h1>
+                <p class="page__desc">{{ now }}</p>
             </div>
-            <!--BEGIN actionSheet-->
-            <div>
-                <div class="weui-mask" id="iosMask" style="display: none"></div>
-                <div class="weui-actionsheet" id="iosActionsheet">
-                    <div class="weui-actionsheet__menu">
-                        <div class="weui-actionsheet__cell">DDL</div>
-                        <div class="weui-actionsheet__cell">考试</div>
-                        <div class="weui-actionsheet__cell">备忘</div>
+            <div class="page__bd">
+                <div id="form">
+                    <div class="weui-cells__title">事件名称</div>
+                    <div class="weui-cells">
+                        <div class="weui-cell weui-cells_form">
+                            <div class="weui-cell__bd">
+                                <input type="text" class="weui-input" id="inputName" required placeholder="请输入事件名称" emptyTips="请输入事件名称" maxlength="20">
+                            </div>
+                        </div>
                     </div>
-                    <div class="weui-actionsheet__action">
-                        <div class="weui-actionsheet__cell" id="iosActionsheetCancel">取消</div>
+                    <div class="weui-cells__title">事件日期</div>
+                    <div class="weui-cells">
+                        <div class="weui-cell weui-cells_form">
+                            <div class="weui-cell__bd">
+                                <input type="date" class="weui-input" id="inputDate" required emptyTips="请输入事件日期" value="">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="weui-cells__title">事件内容</div>
+                    <div class="weui-cells weui-cells_form">
+                        <div class="weui-cell">
+                            <div class="weui-cell__bd">
+                                <textarea class="weui-textarea" id="inputContent" required placeholder="请输入事件内容" emptyTips="请输入事件内容" rows="5" maxlength="200"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="weui-btn-area">
+                        <a class="weui-btn weui-btn_primary" id="confirmBtn">确定</a>
                     </div>
                 </div>
             </div>
-            <div class="weui-skin_android" id="androidActionsheet" style="display: none">
-                <div class="weui-mask"></div>
-                <div class="weui-actionsheet">
-                    <div class="weui-actionsheet__menu">
-                        <div class="weui-actionsheet__cell">DDL</div>
-                        <div class="weui-actionsheet__cell">考试</div>
-                        <div class="weui-actionsheet__cell">备忘</div>
+        </script>
+
+        <script type="text/template" id="tpl-list">
+            <div class="page__hd">
+                <h1 class="page__title">事件列表</h1>
+                <p class="page__desc">{{ now }}</p>
+            </div>
+            <div class="page__bd">
+                {% for day in events %}
+                <div class="weui-panel weui-panel_access">
+                    <div class="weui-panel__hd">{{ day[0].date }}</div>
+                    <div class="weui-panel__bd">
+                        {% for event in day %}
+                        <a class="weui-media-box weui-media-box_appmsg">
+                            <div class="weui-media-box__bd">
+                                <h4 class="weui-media-box__title">{{ event.name }}</h4>
+                                <p class="weui-media-box__desc">{{ event.content }}</p>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="weui-panel weui-panel_access">
+                    <div class="weui-panel__ft">
+                        <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
+                            <div class="weui-cell__bd">查看更多</div>
+                            <span class="weui-cell__ft"></span>
+                        </a>
                     </div>
                 </div>
             </div>
-            <!--END actionSheet-->
         </script>
 
         <script type="text/javascript" src="/lib/calendar/jquery.min.js"></script>
@@ -70,68 +121,125 @@
         <script type="text/javascript" src="/lib/calendar/fullcalendar.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/lib/weui/weui.min.js"></script>
+        <script type="text/javascript" src="/js/openid.js"></script>
         <script type="text/javascript" src="/js/render.js"></script>
+
+        <!--调用JSSDK-->
+        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
+        <script type="text/javascript">
+            var jssdk_function_list = ['closeWindow'];
+            callJSSDK(jssdk_function_list);
+        </script>
 
         <script type="text/javascript">
             $(function() {
+                var locals = {
+                    now: moment().format('YYYY-MM-DD')
+                };
+                var openid;
+
                 var route = {
-                    init: function(ctx, next) {
+                    init: function (ctx, next) {
                         next();
                     },
-                    main: function(ctx, next) {
-                        ctx.data = {};
-                        render('main', ctx.data);
-                        $(function() {
-                            if (getMobileOperatingSystem() == 'iOS') {
-                                var $iosActionsheet = $('#iosActionsheet');
-                                var $iosMask = $('#iosMask');
-                                function hideActionSheet() {
-                                    $iosActionsheet.removeClass('weui-actionsheet_toggle');
-                                    $iosMask.fadeOut(200);
-                                }
-                                $iosMask.on('click', hideActionSheet);
-                                $('#iosActionsheetCancel').on('click', hideActionSheet);
-                                $("#showActionSheet").on("click", function(){
-                                    $iosActionsheet.addClass('weui-actionsheet_toggle');
-                                    $iosMask.fadeIn(200);
-                                });
-                            } else {
-                                var $androidActionSheet = $('#androidActionsheet');
-                                var $androidMask = $androidActionSheet.find('.weui-mask');
-                                $("#showActionSheet").on('click', function(){
-                                    $androidActionSheet.fadeIn(200);
-                                    $androidMask.on('click',function () {
-                                        $androidActionSheet.fadeOut(200);
-                                    });
-                                });
-                            }
+                    main: function (ctx, next) {
+                        render('main', locals);
+                        $('#calendar').fullCalendar({
+                            header: {
+                                left: 'prev',
+                				center: 'title',
+                                right: 'next',
+                			},
+                            navLinks: false,
+                			editable: true,
+                			eventLimit: false,
+                            events: [
+                                {
+                					title: 'DDL',
+                					start: '2016-12-01'
+                				}
+                            ]
                         });
-                        $(function() {
-                            $('#calendar').fullCalendar({
-                                header: {
-                    				left: 'prev,next today',
-                    				center: 'title',
-                    				right: 'month'
-                    			},
-                                navLinks: false,
-                    			editable: false,
-                    			eventLimit: false,
-                                events: [
-                                    {
-                    					title: 'DDL',
-                    					start: '2016-12-01'
-                    				}
-                                ]
+                        $('#showSelectFormat').click(function () {
+                            weui.actionSheet([
+                                {
+                                    label: '月',
+                                    onClick: function () {
+                                        $('#calendar').fullCalendar('changeView', 'month');
+                                    }
+                                }, {
+                                    label: '周',
+                                    onClick: function () {
+                                        $('#calendar').fullCalendar('changeView', 'listWeek');
+                                    }
+                                }, {
+                                    label: '日',
+                                    onClick: function () {
+                                        $('#calendar').fullCalendar('changeView', 'listDay');
+                                    }
+                                }
+                            ], [
+                                {
+                                    label: '取消'
+                                }
+                            ]);
+                        });
+                        $('#eventListBtn').click(function () {
+                            page('#!list');
+                        });
+                        $('#eventAddBtn').click(function () {
+                            page('#!add');
+                        });
+                    },
+                    add: function (ctx, next) {
+                        render('add', locals);
+                        $('#inputDate').val(locals.now);
+                        $('#confirmBtn').click(function () {
+                            weui.form.validate('#form', function (error) {
+                                if (!error) {
+                                    var loading = weui.loading('提交中...');
+                                    $.post('/api/event/detail', {
+                                        open_id: openid,
+                                        name: $('#inputName').val(),
+                                        date: $('#inputDate').val(),
+                                        content: $('#inputContent').val()
+                                    }, function (data) {
+                                        loading.hide();
+                                        weui.toast('提交成功', {
+                                            duration: 1500,
+                                            callback: function () {
+                                                page('');
+                                            }
+                                        });
+                                    });
+                                }
                             });
+                        });
+                    },
+                    list: function (ctx, next) {
+                        var loading = weui.loading('数据加载中...');
+                        $.get('/api/event/list', {
+                            open_id: openid
+                        }, function (data) {
+                            loading.hide();
+                            locals.events = data.data.events;
+                            render('list', locals);
                         });
                     }
                 };
 
-                page.base('/life/calendar');
-                page('/', route.main);
-                page('*', route.init);
-                page({hashbang: true});
-                page();
+                getOpenId(function (get_open_id) {
+                    openid = get_open_id;
+                    page.base('/life/calendar');
+                    page('/', route.main);
+                    page('add', route.add);
+                    page('list', route.list);
+                    page('*', route.init);
+                    page({hashbang: true});
+                    page();
+                });
             });
         </script>
     </body>

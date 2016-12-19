@@ -451,9 +451,10 @@ class GetJSSDK(APIView):
 
 
 class EventDetail(APIView):
+
     def get(self):
         self.check_input('open_id', 'id')
-        user = User.get_by_openid(self.input['openid'])
+        user = User.get_by_openid(self.input['open_id'])
         event_id_list = json.loads(user.event_list)
         event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
         id = self.input['id']
@@ -462,41 +463,46 @@ class EventDetail(APIView):
         raise InputError('The given id is out of range')
 
     def post(self):
-
-        self.check_input('openid', 'name', 'date', 'content')
+        self.check_input('open_id', 'name', 'date', 'content')
         event = Event.objects.create(name = self.input['name'], date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d'), content = self.input['content'])
-        id = User.get_by_openid(self.input['openid']).add_event(event.id)
+        id = User.get_by_openid(self.input['open_id']).add_event(event.id)
         return {
-                'id': id,
-            }
+            'id': id
+        }
 
 
 class EventList(APIView):
+
     def get(self):
         self.check_input('open_id')
         if 'date' not in self.input:
             date = datetime.date.today()
         else:
             date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d')
-        user = User.get_by_openid(self.input['openid'])
+        user = User.get_by_openid(self.input['open_id'])
         event_id_list = json.loads(user.event_list)
         event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
 
-        result = {}
+        result = []
+        for i in range(10):
+            result.append([])
         count = 0
         for e in event_list:
             if time.mktime(e.date.timetuple()) > time.mktime(date.timetuple()):
                 count += 1
                 e_date = str(e.date).split(' ')[0]
                 if e_date in result:
-                    result[e_date].append({'name':e.name, 'date': e_date, 'content': e.content})
+                    result[count-1].append({'name':e.name, 'date': e_date, 'content': e.content})
                 elif count < 10:
-                    result[e_date] = [{'name':e.name, 'date': e_date, 'content': e.content}]
+                    result[count-1] = [{'name':e.name, 'date': e_date, 'content': e.content}]
                 else:
                     break
             else:
                 user.del_event(e.id)
-        return result
-
-    def post(self):
-        return
+        new = []
+        for i in range(10):
+            if len(result[i]) > 0:
+                new.append(result[i]);
+        return {
+            'events': new
+        }
