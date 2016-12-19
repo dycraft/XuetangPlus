@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
-        <title></title>
+        <title>个人课程</title>
         <link rel="stylesheet" href="/lib/weui/weui.css"/>
         <link rel="stylesheet" href="/lib/weui/example.css">
         <link rel="stylesheet" href="/css/style.css">
@@ -13,7 +13,7 @@
 
         <script type="text/template" id="tpl-main">
             <div class="page__hd">
-                <h1 class="page__title">本人课程</h1>
+                <h1 class="page__title">个人课程</h1>
                 <p class="page__desc" id="student_id"></p>
             </div>
             <div class="page__bd">
@@ -38,33 +38,60 @@
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/lib/weui/weui.min.js"></script>
         <script type="text/javascript" src="/js/openid.js"></script>
         <script type="text/javascript" src="/js/render.js"></script>
 
+        <!--调用JSSDK-->
+        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
+        <script type="text/javascript">
+            var jssdk_function_list = ['closeWindow'];
+            callJSSDK(jssdk_function_list);
+        </script>
+
         <script type="text/javascript">
             $(function() {
+                var locals = {};
+                var openid;
+
                 var route = {
                     init: function(ctx, next) {
                         next();
                     },
                     main: function(ctx, next) {
-                        ctx.data = {
-                            week: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-                            one: 1
-                        };
-                        $.get('/api/learn/course_list', {}, function(data) {
-                            ctx.data.classes = data.data.classes;
-                            console.log(ctx.data);
-                            render('main', ctx.data);
+                        $.get('/api/welcome/check_bind/', {
+                            open_id: openid
+                        }, function (data) {
+                            locals.student_id = data.data.student_id;
+                            var isBind = data.data.bind;
+                            if (isBind) {
+                                locals.week = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+                                locals.one = 1;
+                                $.get('/api/learn/course_list', {
+                                    open_id: openid
+                                }, function(data) {
+                                    console.log(data);
+                                    locals.classes = data.data.classes;
+                                    render('main', locals);
+                                });
+                            } else {
+                                weui.alert('请绑定学号', function(){
+                                    wx.closeWindow();
+                                });
+                            }
                         });
                     }
                 }
 
-                page.base('/learn/course_list');
-                page('/', route.main);
-                page('*', route.init);
-                page({hashbang: true});
-                page();
+                getOpenId(function (get_open_id) {
+                    openid = get_open_id;
+                    page.base('/learn/course_list');
+                    page('/', route.main);
+                    page('*', route.init);
+                    page({hashbang: true});
+                    page();
+                });
             });
         </script>
     </body>

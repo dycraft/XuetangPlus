@@ -155,7 +155,7 @@
                                         }, function (data) {
                                             if (data.code == 0) {
                                                 locals.student_id = undefined;
-                                                page('/');
+                                                page('');
                                             } else if (data.code < 0) {
                                                 weui.topTips('未知错误');
                                             } else {

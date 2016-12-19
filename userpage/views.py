@@ -127,7 +127,7 @@ class CourseList(APIView):
         if user.student_id == '':
             raise LogicError('has not bind')
 
-        url = 'http://se.zhuangty.com:8000/users/register' + user.student_id
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         response = requests.post(url)
 
         if response.status_code == 200:

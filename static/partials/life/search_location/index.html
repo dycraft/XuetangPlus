@@ -52,9 +52,9 @@
         </div>
 
         <script type="text/javascript" src="/js/JSSDK.js"></script>
-        <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/calendar/jquery.min.js"></script>
+        <script type="text/javascript" src="/lib/weui/weui.min.js"></script>
         <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=SCdHCBrff5wHYw2c7oss9nbhyZt3Rkq4"></script>
         <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 
@@ -102,6 +102,8 @@
         </script>
 
         <script>
+            weui.searchBar('#searchBar');
+
             $.ajaxSetup({
                 async : false
             });
