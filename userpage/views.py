@@ -36,7 +36,7 @@ class AccountBind(APIView):
             }
 
         except:
-            LogicError('no such open_id')
+            raise LogicError('no such open_id')
 
     def post(self):
         self.check_input('open_id', 'student_id', 'password')
@@ -45,7 +45,7 @@ class AccountBind(APIView):
         password = self.input['password']
         open_id = self.input['open_id']
 
-        if not student_id and password:
+        if not (student_id and password):
             raise InputError('Empty student_id or password.')
 
         url = 'http://se.zhuangty.com:8000/users/register'
@@ -71,7 +71,7 @@ class AccountBind(APIView):
                 user.save()
 
             except:
-                raise LogicError('Duplicated username.')
+                raise LogicError('no such open_id')
         else:
 
             raise ValidateError('Wrong username or password.')
@@ -81,19 +81,22 @@ class CheckBind(APIView):
 
     def get(self):
         self.check_input('open_id')
+        try:
+            user = User.get_by_openid(self.input['open_id'])
 
-        user = User.get_by_openid(self.input['open_id'])
+            if user.student_id == '':
+                return {
+                    'bind': False,
+                }
 
-        if user.student_id == '':
-            return {
-                'bind': False,
-            }
+            else:
+                return {
+                    'bind': True,
+                    'student_id': user.student_id,
+                }
 
-        else:
-            return {
-                'bind': True,
-                'student_id': user.student_id,
-            }
+        except:
+            raise LogicError('no such open_id')
 
 
 class UnBind(APIView):
@@ -115,7 +118,7 @@ class UnBind(APIView):
                 user.save()
 
         except:
-            raise LogicError('does not exist openid')
+            raise LogicError('no such openid')
 
 
 class CourseList(APIView):
@@ -346,6 +349,7 @@ class CourseComment(APIView):
 
         return 1
 
+
 class ChatMenu(APIView):
 
     def get(self):
@@ -484,25 +488,19 @@ class EventList(APIView):
         event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
 
         result = []
-        for i in range(10):
-            result.append([])
+        record = []
         count = 0
         for e in event_list:
             if time.mktime(e.date.timetuple()) > time.mktime(date.timetuple()):
                 count += 1
                 e_date = str(e.date).split(' ')[0]
-                if e_date in result:
-                    result[count-1].append({'name':e.name, 'date': e_date, 'content': e.content})
+                if e_date in record:
+                    result[len(result) - 1].append({'name':e.name, 'date': e_date, 'content': e.content})
                 elif count < 10:
-                    result[count-1] = [{'name':e.name, 'date': e_date, 'content': e.content}]
+                    record.append(e_date)
+                    result.append([{'name':e.name, 'date': e_date, 'content': e.content}])
                 else:
                     break
             else:
                 user.del_event(e.id)
-        new = []
-        for i in range(10):
-            if len(result[i]) > 0:
-                new.append(result[i]);
-        return {
-            'events': new
-        }
+        return result
