@@ -153,12 +153,13 @@ class CourseList(APIView):
             raise LogicError('Response Error')
 
 
-class GetCourseId(APIView):
+class NoticeList(APIView):
 
     def get(self):
-        self.check_input('open_id')
-        print('here')
-        print(self.input)
+        self.check_input('open_id', 'page')
+
+        pagenum = int(self.input['page'])
+
         user = User.get_by_openid(self.input['open_id'])
 
         if user.student_id == '':
@@ -168,19 +169,11 @@ class GetCourseId(APIView):
         response = requests.post(url)
 
         if response.status_code == 200:
-            result = json.loads(response.content.decode())
-            course_ids = list(set([c['courseid'] for c in result['classes']]))
+            response_course = json.loads(response.content.decode())
+            course_ids = list(set([c['courseid'] for c in response_course['classes']]))
 
-        return course_ids
+        result = []
 
-
-class NoticeList(APIView):
-
-    def get(self):
-        self.check_input('open_id', 'course_ids')
-        user = User.get_by_openid(self.input['open_id'])
-
-        course_ids = self.input['course_ids']
         for course_id in course_ids:
             response_notice = requests.post('http://se.zhuangty.com:8000/learnhelper/'
                                             + user.student_id + '/courses/' + course_id
@@ -188,22 +181,56 @@ class NoticeList(APIView):
             if response_notice.status_code == 200:
                 result_notice = json.loads(response_notice.content.decode())
 
+                for rc in response_course['classes']:
+                    if rc['courseid'] == course_id:
+                        course_name = rc['coursename']
+                        break
+
                 for notice in result_notice['notices']:
-                    notice['publish_time'] = stamp2localstr(notice['publishtime'])
+                    notice['coursename'] = course_name
+
+                result += result_notice['notices']
 
             else:
                 raise LogicError("Response Error in NoticeList")
 
-        return result_notice['notices']
+        length = len(result)
+        result = sorted(result, key=lambda n: n['publishtime'], reverse=True)[10 * (pagenum - 1): 10 * pagenum]
+        for index, r in enumerate(result):
+            r['index'] = index + 1
+            r['publishtime'] = stamp_to_localstr_date(r['publishtime'])
+            r['content'] = r['content'].replace('\r\n', '</br>')
+
+
+        #print(result[0])
+
+        return {
+            'total': length,
+            'notices': result
+        }
 
 
 class AssignmentList(APIView):
 
     def get(self):
-        self.check_input('open_id', 'course_ids')
+        self.check_input('open_id', 'page')
+
+        pagenum = int(self.input['page'])
+
         user = User.get_by_openid(self.input['open_id'])
 
-        course_ids = self.input['course_ids']
+        if user.student_id == '':
+            raise LogicError('user has not bind')
+
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
+        response = requests.post(url)
+
+        if response.status_code == 200:
+            response_course = json.loads(response.content.decode())
+            course_ids = list(set([c['courseid'] for c in response_course['classes']]))
+
+        result = []
+
         for course_id in course_ids:
             response_assignment = requests.post('http://se.zhuangty.com:8000/learnhelper/'
                                                 + user.student_id + '/courses/' + course_id
@@ -211,29 +238,61 @@ class AssignmentList(APIView):
             if response_assignment.status_code == 200:
                 result_assignment = json.loads(response_assignment.content.decode())
 
+                for rc in response_course['classes']:
+                    if rc['courseid'] == course_id:
+                        course_name = rc['coursename']
+                        break
+
                 for assignment in result_assignment['assignments']:
+                    assignment['coursename'] = course_name
 
                     if assignment['duedate'] > current_stamp():
                         assignment['processing'] = True
                     else:
                         assignment['processing'] = False
 
-                    assignment['start_time'] = stamp2localstr(assignment['startdate'])
-                    assignment['end_time'] = stamp2localstr(assignment['duedate'])
-                    assignment['evaluating_time'] = stamp2localstr(assignment['evaluatingdate'])
+                    assignment['startdate'] = stamp_to_localstr_date(assignment['startdate'])
+                    assignment['evaluatingdate'] = stamp_to_localstr_date(assignment['evaluatingdate'])
+
+                result += result_assignment['assignments']
             else:
                 raise LogicError('Response Error')
 
-        return result_assignment['assignments']
+        length = len(result)
+        result = sorted(result, key=lambda a: a['duedate'], reverse=True)[10 * (pagenum - 1): 10 * pagenum]
+        for index, r in enumerate(result):
+            r['index'] = index + 1
+            r['duedate'] = stamp_to_localstr_date(r['duedate'])
+            r['detail'] = r['detail'].replace('\r\n', '</br>')
+            r['comment'] = r['comment'].replace('\r\n', '</br>')
+            print(r['filename'])
+
+        return {
+            'total': length,
+            'assignments': result
+        }
 
 
 class SlideList(APIView):
 
     def get(self):
-        self.check_input('open_id', 'course_ids')
+        self.check_input('open_id')
+
+        pagenum = int(self.input['page'])
+
         user = User.get_by_openid(self.input['open_id'])
 
-        course_ids = self.input['course_ids']
+        if user.student_id == '':
+            raise LogicError('user has not bind')
+
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
+        response = requests.post(url)
+
+        if response.status_code == 200:
+            response_course = json.loads(response.content.decode())
+            course_ids = list(set([c['courseid'] for c in response_course['classes']]))
+
+        result = []
 
         for course_id in course_ids:
             response_file = requests.post('http://se.zhuangty.com:8000/learnhelper/'
@@ -242,13 +301,31 @@ class SlideList(APIView):
             if response_file.status_code == 200:
                 result_file = json.loads(response_file.content.decode())
 
+                for rc in response_course['classes']:
+                    if rc['courseid'] == course_id:
+                        course_name = rc['coursename']
+                        break
+
                 for file in result_file['documents']:
-                    file['updating_time'] = stamp2localstr(file['updatingtime'])
+                    file['coursename'] = course_name
+
+                result += result_file['documents']
 
             else:
                 raise LogicError('Response Error')
 
-        return result_file['documents']
+        length = len(result)
+        result = sorted(result, key=lambda a: a['updatingtime'], reverse=True)[10 * (pagenum - 1): 10 * pagenum]
+        for index, r in enumerate(result):
+            r['index'] = index + 1
+            r['updatingtime'] = stamp_to_localstr_date(r['updatingtime'])
+
+        print(result)
+
+        return {
+            'total': length,
+            'slides': result
+        }
 
 
 class MeInfo(APIView):
@@ -504,3 +581,6 @@ class EventList(APIView):
             else:
                 user.del_event(e.id)
         return result
+
+    def post(self):
+        return

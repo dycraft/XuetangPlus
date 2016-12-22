@@ -111,7 +111,7 @@ class WeChatHandler(object):
         return settings.get_url('life/search_location')
 
     def url_account_bind(self):
-        return settings.get_url('welcome/account_bind', {'openid': self.user.open_id})
+        return settings.get_redirect_url('welcome/account_bind')
 
     def url_pic(self, url):
         return settings.get_url(url)

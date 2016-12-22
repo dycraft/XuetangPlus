@@ -21,13 +21,16 @@
                     <div class="page__bd">
                         {% if clickTab == 1 %}
                         <div class="weui-panel weui-panel_access">
-                            <div class="weui-panel__hd">公告</div>
+                            <div class="weui-panel__hd">公告(共{{ total }}条)</div>
                             <div class="weui-panel__bd">
                                 {% for notice in notices %}
-                                <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
+                                <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg"
+                                   id = "notice_{{ notice.index }}">
                                     <div class="weui-media-box__bd">
+                                        <h5 class="weui-media-box__title">{{ notice.coursename }}</h5>
                                         <h4 class="weui-media-box__title">{{ notice.title }}</h4>
-                                        <p class="weui-media-box__desc">{{ notice.content }}</p>
+                                        <p class="weui-media-box__desc">发布者：{{ notice.publisher }}</p>
+                                        <p class="weui-media-box__desc">发布时间：{{ notice.publishtime }}</p>
                                     </div>
                                 </a>
                                 {% endfor %}
@@ -42,13 +45,15 @@
                         {% endif %}
                         {% if clickTab == 2 %}
                         <div class="weui-panel weui-panel_access">
-                            <div class="weui-panel__hd">作业</div>
+                            <div class="weui-panel__hd">作业(共{{ total }}条)</div>
                             <div class="weui-panel__bd">
                                 {% for assignment in assignments %}
-                                <a class="weui-media-box weui-media-box_appmsg">
+                                <a class="weui-media-box weui-media-box_appmsg" id = "assignment_{{ assignment.index }}">
                                     <div class="weui-media-box__bd">
+                                        <h5 class="weui-media-box__title">{{ assignment.coursename }}</h5>
                                         <h4 class="weui-media-box__title">{{ assignment.title }}</h4>
-                                        <p class="weui-media-box__desc">{{ assignment.detail }}</p>
+                                        <p class="weui-media-box__desc">起始日期：{{ assignment.startdate }}</p>
+                                        <p class="weui-media-box__desc">截止日期：{{ assignment.duedate }}</p>
                                     </div>
                                 </a>
                                 {% endfor %}
@@ -63,17 +68,22 @@
                         {% endif %}
                         {% if clickTab == 3 %}
                         <div class="weui-panel weui-panel_access">
-                            <div class="weui-panel__hd">课件</div>
+                            <div class="weui-panel__hd">课件(共{{ total }}条)</div>
                             <div class="weui-panel__bd">
-                                {% for file in files %}
-                                <div class="weui-media-box weui-media-box_text">
-                                    <h4 class="weui-media-box__title">{{ file.title }}</h4>
-                                    <ul class="weui-media-box__info">
-                                        <li class="weui-media-box__info__meta">{{ file.size }}</li>
-                                        <li class="weui-media-box__info__meta">{{ file.updating_time }}</li>
-                                        <li class="weui-media-box__info__meta weui-media-box__info__meta_extra">{{ file.explanation }}</li>
-                                    </ul>
-                                </div>
+                                {% for slide in slides %}
+                                <a class="weui-media-box weui-media-box_appmsg" id = "slide_{{ slide.index }}">
+                                    <div class="weui-media-box__bd">
+                                        <h5 class="weui-media-box__title">{{ slide.coursename }}</h5>
+                                        <h4 class="weui-media-box__title">{{ slide.title }}</h4>
+                                        <p class="weui-media-box__desc">发布日期：{{ slide.updatingtime }}</p>
+                                        {% if slide.explanation == '' %}
+                                            <p class="weui-media-box__desc">尚无简述</p>
+                                        {% else %}
+                                             <p class="weui-media-box__desc">简述：{{ slide.explanation }}</p>
+                                        {% endif %}
+                                        <p class="weui-media-box__desc">文件大小：{{ slide.size }}</p>
+                                    </div>
+                                </a>
                                 {% endfor %}
                             </div>
                             <div class="weui-panel__ft">
@@ -81,7 +91,7 @@
                                     <div class="weui-cell__bd">查看更多</div>
                                     <span class="weui-cell__ft"></span>
                                 </a>
-                            </div>s
+                            </div>
                         </div>
                         {% endif %}
                         {% if clickTab == 4 %}
@@ -91,10 +101,10 @@
                         {% endif %}
                     </div>
                 </div>
-                <div>{{ clickTab }}</div>
+
                 <div class="weui-tabbar">
                     {% if clickTab == 1 %}
-                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
+                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on" id="notice_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/notice_green.png" alt="" class="weui-tabbar__icon">
                                 <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
@@ -102,7 +112,7 @@
                             <p class="weui-tabbar__label">公告</p>
                         </a>
                     {% else %}
-                        <a href="javascript:;" class="weui-tabbar__item">
+                        <a href="javascript:;" class="weui-tabbar__item" id="notice_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/notice_white.png" alt="" class="weui-tabbar__icon">
                                 <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
@@ -112,7 +122,7 @@
                     {% endif %}
 
                     {% if clickTab == 2 %}
-                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
+                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on" id="assignment_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/assignment_green.png" alt="" class="weui-tabbar__icon">
                                 <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
@@ -120,7 +130,7 @@
                             <p class="weui-tabbar__label">作业</p>
                         </a>
                     {% else %}
-                        <a href="javascript:;" class="weui-tabbar__item">
+                        <a href="javascript:;" class="weui-tabbar__item" id="assignment_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/assignment_white.png" alt="" class="weui-tabbar__icon">
                                 <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
@@ -130,7 +140,7 @@
                     {% endif %}
 
                     {% if clickTab == 3 %}
-                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
+                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on" id="slide_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/slide_green.png" alt="" class="weui-tabbar__icon">
                                 <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
@@ -138,7 +148,7 @@
                             <p class="weui-tabbar__label">课件</p>
                         </a>
                     {% else %}
-                        <a href="javascript:;" class="weui-tabbar__item">
+                        <a href="javascript:;" class="weui-tabbar__item" id="slide_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/slide_white.png" alt="" class="weui-tabbar__icon">
                                 <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
@@ -149,7 +159,7 @@
 
 
                     {% if clickTab == 4 %}
-                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on">
+                        <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on" id="me_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/me_green.png" alt="" class="weui-tabbar__icon">
                                 <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
@@ -157,7 +167,7 @@
                             <p class="weui-tabbar__label">我</p>
                         </a>
                     {% else %}
-                        <a href="javascript:;" class="weui-tabbar__item">
+                        <a href="javascript:;" class="weui-tabbar__item" id="me_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/me_white.png" alt="" class="weui-tabbar__icon">
                                 <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
@@ -167,6 +177,120 @@
                     {% endif %}
 
                 </div>
+            </div>
+        </script>
+
+        <script type="text/template" id="tpl-notice_detail">
+            <div class="page__hd">
+                <h1 class="page__title">{{ info.title  }}</h1>
+                <p class="page__desc">{{ info.coursename }}</p>
+            </div>
+            <div class="weui-panel">
+
+                <div class="weui-media-box weui-media-box_text">
+                    <h4 class="weui-media-box__title">公告内容</h4>
+                </div>
+
+                <div class="weui-media-box weui-media-box_text">
+                    <div id="notice_content"></div>
+                </div>
+                <div class="weui-media-box weui-media-box_text">
+                    <div class="weui-form-preview__item">
+                        <label class="weui-form-preview__label">发布者：</label>
+                        <span class="weui-form-preview__value">{{ info.publisher }}</span>
+                    </div>
+                    <div class="weui-form-preview__item">
+                        <label class="weui-form-preview__label">发布时间：</label>
+                        <span class="weui-form-preview__value">{{ info.publishtime }}</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="weui-btn-area">
+                <a class="weui-btn weui-btn_default" id="backBtn">返回</a>
+            </div>
+
+        </script>
+
+        <script type="text/template" id="tpl-assignment_detail">
+            <div class="page__hd">
+                <h1 class="page__title">{{ info.title  }}</h1>
+                <p class="page__desc" id="course_id">{{ info.coursename }}</p>
+            </div>
+            <div class="weui-panel">
+                <div class="weui-media-box weui-media-box_text">
+                    <h4 class="weui-media-box__title">截止时间：{{ info.duedate }}</h4>
+                </div>
+            </div>
+
+            <div class="weui-panel">
+
+                <div class="weui-media-box weui-media-box_text">
+                    <h4 class="weui-media-box__title">作业详情</h4>
+                </div>
+
+                <div class="weui-media-box weui-media-box_text">
+                    <div id="assignment_content"></div>
+                </div>
+
+                 <div class="weui-media-box weui-media-box_text">
+                     <div>附件：{{ info.filename }}</div>
+                     {% if info.filename != '无相关附件' %}
+                        <div>(请前往网络学堂下载)</div>
+                     {% endif %}
+                </div>
+
+            </div>
+            <div class="weui-panel">
+                <div class="weui-media-box weui-media-box_text">
+                    <h4 class="weui-media-box__title">提交状况</h4>
+                </div>
+
+                <div class="weui-media-box weui-media-box_text">
+                    {% if info.state == "已经提交" %}
+                        {{ info.state }}({{ info.size }})
+                    {% else %}
+                        {{ info.state }}
+                    {% endif %}
+
+                </div>
+            </div>
+            <div class="weui-panel">
+                <div class="weui-media-box weui-media-box_text">
+                    <h4 class="weui-media-box__title">批阅状况</h4>
+                </div>
+
+                <div class="weui-media-box weui-media-box_text">
+                    {% if info.scored %}
+                    <div class="weui-form-preview__item" id="assignment_comment">
+                        <label class="weui-form-preview__label">评价：</label>
+                        <span class="weui-form-preview__value">{{ info.comment }}</span>
+                    </div>
+                    <div class="weui-form-preview__item" >
+                        <label class="weui-form-preview__label">批阅人：</label>
+                        <span class="weui-form-preview__value">{{ info.evaluatingteacher }}</span>
+                    </div>
+                    <div class="weui-form-preview__item">
+                        <label class="weui-form-preview__label">批阅日期：</label>
+                        <span class="weui-form-preview__value">{{ info.evaluatingdate }}</span>
+                    </div>
+                    <div class="weui-form-preview__item">
+                        {% if info.grade == -1 %}
+                            <label class="weui-form-preview__label">尚无分数</label>
+                        {% else %}
+                            <label class="weui-form-preview__label">分数：</label>
+                            <span class="weui-form-preview__value">{{ info.grade }}</span>
+                        {% endif %}
+                    </div>
+                     {% else %}
+                        尚未批阅
+                     {% endif %}
+                </div>
+
+             </div>
+            <div class="weui-btn-area">
+                <a class="weui-btn weui-btn_default" id="backBtn">返回</a>
             </div>
         </script>
 
@@ -203,13 +327,15 @@
 
         <script type="text/javascript">
             var locals = {};
+            var openid;
+
             var route = {
                 init: function(ctx, next) {
                     next();
                 },
                 main: function(ctx, next) {
                     $.get('/api/welcome/check_bind/', {
-                        open_id: locals.open_id
+                        open_id: openid
                     }, function (data) {
                         locals.student_id = data.data.student_id;
                         console.log(data.data);
@@ -217,60 +343,238 @@
                         if (!isBind) {
                             page.redirect('#!unbind');
                         } else {
-                            $.get('/api/learn/notice_panel/get_course_id', {
-                                open_id: locals.open_id
-                            }, function (data) {
-                                console.log(data.data)
-                                locals.course_id = data.data
-                            });
                             locals.clickTab = 1;
                             locals.page_num = 1;
-                            page('notice', locals);
+                            locals.detail = 0;
+                            page.redirect('#!notice');
                          }
                      });
                 },
                 notice: function(ctx, next) {
-                    $.get('/api/learn/notice_panel/notice', {}, function(data) {
-                        ctx.data = data.data;
-                        console.log(ctx.data);
-                        render('main', locals);
-                    });
+                    if(locals.detail == 0) {
+                        $.get('/api/learn/notice_panel/notice', {
+                            open_id: openid,
+                            page: locals.page_num
+                        }, function (data) {
+                            locals.notices = data.data.notices;
+                            locals.total = data.data.total;
+
+                            var noticeNum = (locals.total - locals.page_num * 10);
+                            if (noticeNum >= 10) {
+                                noticeNum = 10;
+                            }
+
+                            render('main', locals);
+
+                            for (var i = 1; i <= noticeNum; i++) {
+                                var id_str = '#notice_';
+                                id_str += i;
+                                $(id_str).click(function (i) {
+                                    return function () {
+                                        locals.detail = i;
+                                        locals.info = locals.notices[i - 1];
+                                        console.log(locals.info.content);
+                                        page.redirect('#!notice');
+                                    }
+                                }(i));
+                            }
+
+                            $("#assignment_bar").click(function () {
+                                locals.page_num = 1;
+                                locals.clickTab = 2;
+                                locals.detail = 0;
+                                page.redirect('#!assignment');
+                            });
+
+                            $('#slide_bar').click(function () {
+                                locals.page_num = 1;
+                                locals.clickTab = 3;
+                                locals.detail = 0;
+                                page.redirect('#!slide');
+                            });
+
+                            $('#me_bar').click(function () {
+                                locals.page_num = 1;
+                                locals.clickTab = 4;
+                                locals.detail = 0;
+                                page.redirect('#!me');
+                            });
+                        });
+                    }
+                    else{
+                        render('notice_detail', locals);
+
+                        $('#notice_content')[0].innerHTML = locals.info.content;
+
+                        $('#backBtn').click(function () {
+                            locals.detail = 0;
+                            page('#!notice')
+                        })
+                    }
                 },
                 assignment: function (ctx, next) {
-                    alert('23')
-                    $.get('/api/learn/notice_panel/assignment', {}, function(data) {
-                        ctx.data = data.data;
-                        console.log(ctx.data);
-                        render('main', locals);
-                    });
+                    if(locals.detail == 0) {
+                        $.get('/api/learn/notice_panel/assignment', {
+                            open_id: openid,
+                            page: locals.page_num
+                        }, function (data) {
+                            locals.assignments = data.data.assignments;
+                            locals.total = data.data.total;
+
+                            var assignmentNum = (locals.total - locals.page_num * 10);
+                            if (assignmentNum >= 10) {
+                                assignmentNum = 10;
+                            }
+
+                            render('main', locals);
+
+                            for (var i = 1; i <= assignmentNum; i++) {
+                                var id_str = '#assignment_';
+                                id_str += i;
+                                $(id_str).click(function (i) {
+                                    return function () {
+                                        locals.detail = i;
+                                        locals.info = locals.assignments[i - 1];
+                                        page.redirect('#!assignment');
+                                    }
+                                }(i))
+                            }
+
+                            $("#notice_bar").click(function () {
+                                locals.page_num = 1;
+                                locals.clickTab = 1;
+                                locals.detail = 0;
+                                page.redirect('#!notice');
+                            });
+
+                            $('#slide_bar').click(function () {
+                                locals.page_num = 1;
+                                locals.clickTab = 3;
+                                locals.detail = 0;
+                                page.redirect('#!slide');
+                            });
+
+                            $('#me_bar').click(function () {
+                                locals.page_num = 1;
+                                locals.clickTab = 4;
+                                locals.detail = 0;
+                                page.redirect('#!me');
+                            });
+                        });
+                    }
+                    else{
+                        render('assignment_detail', locals);
+
+                        $('#assignment_content')[0].innerHTML = locals.info.detail;
+
+                        console.log()
+
+                        $('#backBtn').click(function () {
+                            locals.detail = 0;
+                            page('#!assignment')
+                        })
+                    }
+
                 },
                 slide: function (ctx, next) {
-                    alert('24')
-                    $.get('/api/learn/notice_panel/slide', {}, function(data) {
-                        ctx.data = data.data;
-                        console.log(ctx.data);
-                        render('main', locals);
-                    });
+                    if(locals.detail == 0) {
+                        $.get('/api/learn/notice_panel/slide', {
+                            open_id: openid,
+                            page: locals.page_num
+                        }, function (data) {
+                            locals.slides = data.data.slides;
+                            locals.total = data.data.total;
+
+                            var slideNum = (locals.total - locals.page_num * 10);
+                            if (slideNum >= 10) {
+                                slideNum = 10;
+                            }
+
+                            render('main', locals);
+
+                            for (var i = 1; i <= slideNum; i++) {
+                                var id_str = '#slide_';
+                                id_str += i;
+                                $(id_str).click(function (i) {
+                                    return function () {
+                                        locals.detail = i;
+                                        locals.info = locals.slides[i - 1]
+                                        page.redirect('#!slide');
+                                    }
+                                }(i))
+                            }
+
+                            $("#notice_bar").click(function () {
+                                locals.page_num = 1;
+                                locals.clickTab = 1;
+                                locals.detail = 0;
+                                page.redirect('#!notice');
+                            });
+
+                            $("#assignment_bar").click(function () {
+                                locals.page_num = 1;
+                                locals.clickTab = 2;
+                                locals.detail = 0;
+                                page.redirect('#!assignment');
+                            });
+
+                            $('#me_bar').click(function () {
+                                locals.page_num = 1;
+                                locals.clickTab = 4;
+                                locals.detail = 0;
+                                page.redirect('#!me');
+                            });
+                        });
+                    }
+                    else{
+                        render('slide_detail', locals);
+
+                        $('#backBtn').click(function () {
+                            locals.detail = 0;
+                            page('#!slide')
+                        })
+                    }
                 },
                 me: function (ctx, next) {
-                    alert('25')
-                    $.get('/api/learn/notice_panel/me', {}, function(data) {
+                    $.get('/api/learn/notice_panel/me', {
+                        open_id: openid
+                    }, function(data) {
                         ctx.data = data.data;
                         console.log(ctx.data);
                         render('main', locals);
+
+                        $("#notice_bar").click(function (){
+                            locals.page_num = 1;
+                            locals.clickTab = 1;
+                            locals.detail = 0;
+                            page.redirect('#!notice');
+                        });
+
+                        $("#assignment_bar").click(function (){
+                            locals.page_num = 1;
+                            locals.clickTab = 2;
+                            locals.detail = 0;
+                            page.redirect('#!assignment');
+                        });
+
+                        $('#slide_bar').click(function (){
+                            locals.page_num = 1;
+                            locals.clickTab = 3;
+                            locals.detail = 0;
+                            page.redirect('#!slide');
+                        });
                     });
                 },
                 not_bind: function (ctx, next) {
-                    alert('fcuk')
                     render('unbind', locals);
-                },
-            }
-
+                }
+            };
 
             getOpenId(function(get_open_id) {
-                locals.open_id = get_open_id;
+                openid = get_open_id;
                 page.base('/learn/notice_panel');
                 page('/', route.main);
+                page('notice', route.notice);
                 page('assignment', route.assignment);
                 page('slide', route.slide);
                 page('me', route.me);
