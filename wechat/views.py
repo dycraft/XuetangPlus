@@ -12,7 +12,7 @@ class CustomWeChatView(WeChatView):
         HelpOrSubscribeHandler, UnbindOrUnsubscribeHandler, AccountBindHandler,
         ViewPersonalInformationHandler, CourseSearchHandler, CourseListHandler,
         CommunicateHandler, NoticePanelHandler, LibraryRemainsHandler,
-        MyCalendarHandler, SchoolCalendarHandler, NavigationHandler
+        MyCalendarHandler, SchoolCalendarHandler, NavigationHandler, RemindHandler
     ]
 
     error_message_handler = ErrorHandler

@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 #
 from wechat.wrapper import WeChatHandler
+from wechat.models import User, WechatConfirmation
+from wechat.message_models import *
+from codex.baseerror import *
+from util.time import *
 import requests
 import json
 import time
@@ -22,9 +26,8 @@ class DefaultHandler(WeChatHandler):
     def check(self):
         return True
 
-    def handle(self):
-        return self.reply_text('对不起，没有找到您需要的信息:(')
-
+    def handle(self, inputStr):
+        return self.reply_text('对不起，没有找到您需要的信息:( 您查找的内容为' + inputStr)
 
 class HelpOrSubscribeHandler(WeChatHandler):
 
@@ -226,3 +229,41 @@ class NavigationHandler(WeChatHandler):
             'Description': '方便查看地图',
             'Url': self.url_navigation(),
         })
+
+class RemindHandler(WeChatHandler):
+
+    def check(self):
+        return self.is_text('提醒')
+
+    def handle(self):
+        confirm = WechatConfirmation.objects.get(id=1)
+        user = User.objects.get(username=self.user.username)
+
+        hw_num = 0
+        info_num = 0
+
+        url = 'http://se.zhuangty.com:8000/curriculum/'
+        params = {
+            user.student_id
+        }
+
+        response = requests.post('http://se.zhuangty.com:8000/learnhelper/' + user.student_id + '/courses')
+
+        if response.status_code == 200:
+            res = json.loads(response.content.decode())
+            for course in res['courses']:
+                info_num += course['unreadnotice']
+                hw_num += course['unsubmittedoperations']
+        else:
+            raise LogicError('Response Error')
+
+        message_model = MessageModel()
+
+        timenow = stamp_to_localstr_minute(current_stamp())
+        model = message_model.create_remind_model(self.user.open_id, hw_num, info_num, timenow)
+
+        model_url = 'https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=';
+        model_url += confirm.get_access_token()
+        res = requests.post(model_url, data=json.dumps(model))
+
+        return self.reply_text('欢迎使用提醒功能')
