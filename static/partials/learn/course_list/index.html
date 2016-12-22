@@ -14,7 +14,7 @@
         <script type="text/template" id="tpl-main">
             <div class="page__hd">
                 <h1 class="page__title">个人课程</h1>
-                <p class="page__desc" id="student_id"></p>
+                <p class="page__desc">{{ student_id }}</p>
             </div>
             <div class="page__bd">
                 <div class="weui-panel weui-panel_access">
@@ -22,7 +22,7 @@
                     <div class="weui-panel__hd">{{ day }}</div>
                     <div class="weui-panel__bd">
                         {% for cls in classes[loop.index - one] %}
-                        <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
+                        <a href="/learn/course_info?open_id={{ open_id }}&course_id={{ cls.courseid }}" class="weui-media-box weui-media-box_appmsg">
                             <div class="weui-media-box__bd">
                                 <h4 class="weui-media-box__title">{{ cls.coursename }}</h4>
                                 <p class="weui-media-box__desc">{{ cls.start }} | {{ cls.classroom }}</p>
@@ -71,7 +71,6 @@
                                 $.get('/api/learn/course_list', {
                                     open_id: openid
                                 }, function(data) {
-                                    console.log(data);
                                     locals.classes = data.data.classes;
                                     render('main', locals);
                                 });
@@ -86,6 +85,7 @@
 
                 getOpenId(function (get_open_id) {
                     openid = get_open_id;
+                    locals.open_id = openid;
                     page.base('/learn/course_list');
                     page('/', route.main);
                     page('*', route.init);

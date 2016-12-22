@@ -285,6 +285,8 @@ class CourseInfo(APIView):
                         res = json.loads(response.content.decode())
                         for course in res['courses']:
                             if course['courseid'] == self.input['course_id']:
+                                result['teacher_email'] = course['email'];
+                                result['teacher_phone'] = course['phone'];
                                 result['course_new_file'] = course['newfile']
                                 result['course_unread_notice'] = course['unreadnotice']
                                 result['course_unsubmitted_operations'] = course['unsubmittedoperations']
@@ -323,7 +325,7 @@ class CourseInfo(APIView):
 class CourseComment(APIView):
     def get(self):
         params = self.input
-        course_id = params['id']
+        course_id = params['course_id']
         comments = Comment.objects.filter(courseid=course_id)
 
         answer = []
@@ -334,20 +336,20 @@ class CourseComment(APIView):
 
     def post(self):
         params = self.input
-        mark = params['mark']
-        comment = params['comment']
-        isanonymouse = params['isanonymouse']
+        mark = params['score']
+        comment = params['content']
+        isanonymouse = params['anonymous']
         userid = -1
 
         timestamp = time.mktime(datetime.datetime.now().timetuple())
-        course_id = params['id']
+        course_id = params['course_id']
 
-        if isanonymouse == False:
+        if isanonymouse == 'false':
             userid = self.user.id
 
         Comment.objects.create(courseid=course_id, commenttime=timestamp, commenter=userid, content=comment, score=int(mark))
 
-        return 1
+        return
 
 
 class ChatMenu(APIView):
