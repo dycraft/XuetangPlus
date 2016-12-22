@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^communicate/menu?$', ChatMenu.as_view()),
     url(r'^communicate/area?$', ChatArea.as_view()),
     url(r'^event/list?$', EventList.as_view()),
+    url(r'^event/create?$', EventCreate.as_view()),
     url(r'^event/detail?$', EventDetail.as_view()),
     url(r'^jssdk/?$', GetJSSDK.as_view())
 ]

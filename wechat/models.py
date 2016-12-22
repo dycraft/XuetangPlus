@@ -26,6 +26,10 @@ class User(models.Model):
         self.save()
         return len(events)
 
+    def search_event(self, id):
+        events = json.loads(self.event_list)
+        return events.index(id)
+
     def del_event(self, id):
         events = json.loads(self.event_list)
         if id in events:

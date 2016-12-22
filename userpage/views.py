@@ -105,27 +105,29 @@ class UnBind(APIView):
         self.check_input('open_id')
         try:
             user = User.get_by_openid(self.input['open_id'])
-            if user.student_id == '':
-                raise LogicError('has not bind')
-
-            else:
-                user.username = ''
-                user.student_id = ''
-                user.department = ''
-                user.position = ''
-                user.email = ''
-                user.realname = ''
-                user.save()
-
         except:
-            raise LogicError('no such openid')
+            raise LogicError('no such open_id')
+        if user.student_id == '':
+            raise LogicError('has not bind')
+
+        else:
+            user.username = ''
+            user.student_id = ''
+            user.department = ''
+            user.position = ''
+            user.email = ''
+            user.realname = ''
+            user.save()
 
 
 class CourseList(APIView):
 
     def get(self):
         self.check_input('open_id')
-        user = User.get_by_openid(self.input['open_id'])
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError('no such open_id')
 
         if user.student_id == '':
             raise LogicError('has not bind')
@@ -150,7 +152,29 @@ class CourseList(APIView):
             }
 
         else:
-            raise LogicError('Response Error')
+            raise LogicError('Response error')
+
+
+class GetCourseId(APIView):
+
+    def get(self):
+        self.check_input('open_id')
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError('no such open_id')
+
+        if user.student_id == '':
+            raise LogicError('has not bind')
+
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
+        response = requests.post(url)
+        course_ids = []
+        if response.status_code == 200:
+            result = json.loads(response.content.decode())
+            course_ids = list(set([c['courseid'] for c in result['classes']]))
+
+        return course_ids
 
 
 class NoticeList(APIView):
@@ -167,7 +191,7 @@ class NoticeList(APIView):
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         response = requests.post(url)
-
+        course_ids = []
         if response.status_code == 200:
             response_course = json.loads(response.content.decode())
             course_ids = list(set([c['courseid'] for c in response_course['classes']]))
@@ -338,15 +362,17 @@ class CourseInfo(APIView):
 
     def get(self):
         self.check_input('open_id', 'course_id')
-        user = User.get_by_openid(self.input['open_id'])
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError("no such open_id")
 
         url = 'http://se.zhuangty.com:8000/curriculum/'
         params = {
             user.student_id
         }
 
-        response = requests.post('http://se.zhuangty.com:8000/curriculum/' + user.student_id)
-        result = {}
+        response = requests.post(url, params)
         if response.status_code == 200:
             result_course = json.loads(response.content.decode())
 
@@ -360,11 +386,11 @@ class CourseInfo(APIView):
                     response = requests.post('http://se.zhuangty.com:8000/learnhelper/' + user.student_id + '/courses')
                     if response.status_code == 200:
                         res = json.loads(response.content.decode())
-                        for course in res['courses']:
-                            if course['courseid'] == self.input['course_id']:
-                                result['course_new_file'] = course['newfile']
-                                result['course_unread_notice'] = course['unreadnotice']
-                                result['course_unsubmitted_operations'] = course['unsubmittedoperations']
+                        for c in res['courses']:
+                            if c['courseid'] == self.input['course_id']:
+                                result['course_new_file'] = c['newfile']
+                                result['course_unread_notice'] = c['unreadnotice']
+                                result['course_unsubmitted_operations'] = c['unsubmittedoperations']
                                 return result
 
                         raise LogicError('No course new file')
@@ -376,8 +402,8 @@ class CourseInfo(APIView):
         else:
             raise LogicError('Response Error')
 
-
-    def map_week(self, week_list):
+    @classmethod
+    def map_week(cls, week_list):
         start = 0
         current = 0
         result = ''
@@ -535,7 +561,10 @@ class EventDetail(APIView):
 
     def get(self):
         self.check_input('open_id', 'id')
-        user = User.get_by_openid(self.input['open_id'])
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError('no such open_id')
         event_id_list = json.loads(user.event_list)
         event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
         id = self.input['id']
@@ -544,12 +573,7 @@ class EventDetail(APIView):
         raise InputError('The given id is out of range')
 
     def post(self):
-        self.check_input('open_id', 'name', 'date', 'content')
-        event = Event.objects.create(name = self.input['name'], date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d'), content = self.input['content'])
-        id = User.get_by_openid(self.input['open_id']).add_event(event.id)
-        return {
-            'id': id
-        }
+        return
 
 
 class EventList(APIView):
@@ -568,14 +592,14 @@ class EventList(APIView):
         record = []
         count = 0
         for e in event_list:
-            if time.mktime(e.date.timetuple()) > time.mktime(date.timetuple()):
+            if time.mktime(e.date.timetuple()) > time.mktime((date - datetime.timedelta(days=1)).timetuple()):
                 count += 1
                 e_date = str(e.date).split(' ')[0]
                 if e_date in record:
-                    result[len(result) - 1].append({'name':e.name, 'date': e_date, 'content': e.content})
+                    result[len(result) - 1].append({'id': user.search_event(e.id), 'name':e.name, 'date': e_date, 'content': e.content})
                 elif count < 10:
                     record.append(e_date)
-                    result.append([{'name':e.name, 'date': e_date, 'content': e.content}])
+                    result.append([{'id': user.search_event(e.id), 'name':e.name, 'date': e_date, 'content': e.content}])
                 else:
                     break
             else:
@@ -584,3 +608,17 @@ class EventList(APIView):
 
     def post(self):
         return
+
+
+class EventCreate(APIView):
+
+    def get(self):
+        return
+
+    def post(self):
+        self.check_input('open_id', 'name', 'date', 'content')
+        event = Event.objects.create(name = self.input['name'], date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d'), content = self.input['content'])
+        id = User.get_by_openid(self.input['open_id']).add_event(event.id)
+        return {
+            'id': id
+        }
