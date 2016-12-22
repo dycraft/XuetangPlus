@@ -461,7 +461,7 @@ class EventDetail(APIView):
         user = User.get_by_openid(self.input['open_id'])
         event_id_list = json.loads(user.event_list)
         event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
-        id = self.input['id']
+        id = int(self.input['id'])
         if len(event_list) > id:
             return {'name':event_list[id - 1].name, 'date': str(event_list[id - 1].date).split(' ')[0], 'content': event_list[id - 1].content}
         raise InputError('The given id is out of range')
@@ -491,16 +491,19 @@ class EventList(APIView):
         record = []
         count = 0
         for e in event_list:
-            if time.mktime(e.date.timetuple()) > time.mktime(date.timetuple()):
+            if time.mktime(e.date.timetuple()) > time.mktime((date - datetime.timedelta(days=1)).timetuple()):
                 count += 1
                 e_date = str(e.date).split(' ')[0]
                 if e_date in record:
-                    result[len(result) - 1].append({'name':e.name, 'date': e_date, 'content': e.content})
+                    result[len(result) - 1].append({'id': user.search_event(e.id), 'name':e.name, 'date': e_date, 'content': e.content})
                 elif count < 10:
                     record.append(e_date)
-                    result.append([{'name':e.name, 'date': e_date, 'content': e.content}])
+                    result.append([{'id': user.search_event(e.id), 'name':e.name, 'date': e_date, 'content': e.content}])
                 else:
                     break
             else:
-                user.del_event(e.id)
-        return result
+                pass
+                # user.del_event(e.id)
+        return {
+            'events': result
+        }
