@@ -50,6 +50,8 @@ class AccountBind(APIView):
 
         url = 'http://se.zhuangty.com:8000/users/register'
         params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
             'username': student_id,
             'password': password
         }
@@ -83,7 +85,7 @@ class CheckBind(APIView):
         self.check_input('open_id')
         try:
             user = User.get_by_openid(self.input['open_id'])
-
+            #print(user.student_id)
             if user.student_id == '':
                 return {
                     'bind': False,
@@ -131,7 +133,11 @@ class CourseList(APIView):
             raise LogicError('has not bind')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-        response = requests.post(url)
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
 
         if response.status_code == 200:
             result = json.loads(response.content.decode())
@@ -159,6 +165,7 @@ class NoticeList(APIView):
         self.check_input('open_id', 'page')
 
         pagenum = int(self.input['page'])
+        print(pagenum)
 
         user = User.get_by_openid(self.input['open_id'])
 
@@ -166,7 +173,11 @@ class NoticeList(APIView):
             raise LogicError('user has not bind')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-        response = requests.post(url)
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
 
         if response.status_code == 200:
             response_course = json.loads(response.content.decode())
@@ -223,7 +234,11 @@ class AssignmentList(APIView):
             raise LogicError('user has not bind')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-        response = requests.post(url)
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
 
         if response.status_code == 200:
             response_course = json.loads(response.content.decode())
@@ -265,7 +280,7 @@ class AssignmentList(APIView):
             r['duedate'] = stamp_to_localstr_date(r['duedate'])
             r['detail'] = r['detail'].replace('\r\n', '</br>')
             r['comment'] = r['comment'].replace('\r\n', '</br>')
-            print(r['filename'])
+            #print(r['filename'])
 
         return {
             'total': length,
@@ -286,7 +301,11 @@ class SlideList(APIView):
             raise LogicError('user has not bind')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-        response = requests.post(url)
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
 
         if response.status_code == 200:
             response_course = json.loads(response.content.decode())
@@ -320,7 +339,7 @@ class SlideList(APIView):
             r['index'] = index + 1
             r['updatingtime'] = stamp_to_localstr_date(r['updatingtime'])
 
-        print(result)
+        #print(result)
 
         return {
             'total': length,
@@ -340,12 +359,13 @@ class CourseInfo(APIView):
         self.check_input('open_id', 'course_id')
         user = User.get_by_openid(self.input['open_id'])
 
-        url = 'http://se.zhuangty.com:8000/curriculum/'
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         params = {
-            user.student_id
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
         }
+        response = requests.post(url, json=params)
 
-        response = requests.post('http://se.zhuangty.com:8000/curriculum/' + user.student_id)
         result = {}
         if response.status_code == 200:
             result_course = json.loads(response.content.decode())
