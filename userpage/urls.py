@@ -11,7 +11,6 @@ urlpatterns = [
     url(r'^welcome/check_bind/?$', CheckBind.as_view()),
     url(r'^welcome/unbind/?$', UnBind.as_view()),
     url(r'^learn/course_list/?$', CourseList.as_view()),
-    url(r'^learn/notice_panel/get_course_id/?$', GetCourseId.as_view()),
     url(r'^learn/notice_panel/notice/?$', NoticeList.as_view()),
     url(r'^learn/notice_panel/assignment/?$', AssignmentList.as_view()),
     url(r'^learn/notice_panel/slide/?$', SlideList.as_view()),

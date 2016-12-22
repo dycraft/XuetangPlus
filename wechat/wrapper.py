@@ -111,7 +111,7 @@ class WeChatHandler(object):
         return settings.get_url('life/search_location')
 
     def url_account_bind(self):
-        return settings.get_url('welcome/account_bind', {'openid': self.user.open_id})
+        return settings.get_redirect_url('welcome/account_bind')
 
     def url_pic(self, url):
         return settings.get_url(url)
@@ -233,17 +233,29 @@ class WeChatView(BaseView):
 
     def handle_wechat_msg(self):
         msg = self.parse_msg_xml(ET.fromstring(self.request.body))
+        print(msg)
+        isMedia = False
         if 'FromUserName' not in msg:
             return self.error_message_handler(self, msg, None).handle()
         user, created = User.objects.get_or_create(open_id=msg['FromUserName'])
         if created:
             self.logger.info('New user: %s', user.open_id)
         try:
+            if 'Recognition' in msg:
+                isMedia = True
+                if msg['Recognition'] == None:
+                    msg['Content'] = ' '
+                else:
+                    msg['Content'] = msg['Recognition']
+                msg['MsgType'] = "text"
             for handler in self.handlers:
                 inst = handler(self, msg, user)
                 if inst.check():
                     return inst.handle()
-            return self.default_handler(self, msg, user).handle()
+            if 'Content' in msg:
+                return self.default_handler(self, msg, user).handle(msg['Content'])
+            else:
+                return self.default_handler(self, msg, user).handle('#')
         except:
             self.logger.exception('Error occurred when handling WeChat message %s', msg)
             return self.error_message_handler(self, msg, user).handle()

@@ -6,6 +6,7 @@ import time
 from XuetangPlus.settings import CONFIGS
 import requests
 import datetime
+from django.utils import timezone
 
 
 class User(models.Model):
@@ -122,7 +123,7 @@ class Chatting(models.Model):
     open_id1 = models.IntegerField(default=0)
     open_id2 = models.IntegerField(default=0)
     content = models.IntegerField(default=-1)
-    update_time = models.DateTimeField(default=datetime.datetime.now())
+    update_time = models.DateTimeField(default=timezone.now)
     is_updated = models.IntegerField(default=0)
 
     @classmethod
@@ -146,7 +147,7 @@ class Message(models.Model):
     sender_id = models.CharField(max_length=128, default='')
     receiver_id = models.CharField(max_length=128, default='')
     content = models.CharField(max_length=1024, default='')
-    create_time = models.DateTimeField(default=datetime.datetime.now())
+    create_time = models.DateTimeField(default=timezone.now)
 
 
     @classmethod
