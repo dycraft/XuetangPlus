@@ -2,7 +2,7 @@
 #
 from wechat.wrapper import WeChatHandler
 from wechat.models import User, WechatConfirmation
-# from wechat.message_models import *
+from wechat.message_models import *
 from codex.baseerror import *
 from util.time import *
 import requests
