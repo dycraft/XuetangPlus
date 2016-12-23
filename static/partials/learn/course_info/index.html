@@ -177,6 +177,7 @@
                     comment: function(ctx, next) {
                         render('comment', locals);
                         $('#confirmBtn').click(function () {
+                            var loading = weui.loading('提交中...');
                             $.post('/api/course/comment/', {
                                 open_id: openid,
                                 course_id: courseid,
@@ -184,6 +185,7 @@
                                 anonymous: $('#inputAnonymous').prop('checked'),
                                 content: $('#inputContent').val()
                             }, function (data) {
+                                loading.hide();
                                 page('');
                             });
                         });

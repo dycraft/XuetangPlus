@@ -266,11 +266,13 @@
                         });
                     },
                     detail: function (ctx, next) {
+                        var curid = getQueryParams(ctx.querystring).id;
                         $.get('/api/event/detail', {
                             open_id: openid,
-                            id: getQueryParams(ctx.querystring).id
+                            id: curid
                         }, function (data) {
                             locals.detail = data.data;
+                            locals.detail.id = curid;
                             render('detail', locals);
                             $('#modifyBtn').click(function(){
                                 page('#!change');

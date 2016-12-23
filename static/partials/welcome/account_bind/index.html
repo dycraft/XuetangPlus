@@ -17,13 +17,13 @@
             </div>
             <div class="page__bd">
                 <div class="weui-cells__title">绑定账号</div>
-                <div class="weui-cells weui-cells_form">
+                <div class="weui-cells weui-cells_form" id="form">
                     <div class="weui-cell">
                         <div class="weui-cell_hd">
                             <label class="weui-label">学号/工号</label>
                         </div>
                         <div class="weui-cell_bd weui-cell_primary">
-                            <input class="weui-input" type="number" pattern="[0-9]*" placeholder="请输入学号/工号" id="inputStudentID" required/>
+                            <input class="weui-input" type="number" pattern="[0-9]*" placeholder="请输入学号/工号" emptyTips="请输入学号" id="inputStudentID" required/>
                         </div>
                     </div>
                     <div class="weui-cell">
@@ -31,7 +31,7 @@
                             <label class="weui-label">密码</label>
                         </div>
                         <div class="weui-cell_bd weui-cell_primary">
-                            <input type="password" class="weui-input" placeholder="请输入密码" id="inputPassword" required/>
+                            <input type="password" class="weui-input" placeholder="请输入密码" id="inputPassword" emptyTips="请输入密码" required/>
                         </div>
                     </div>
                 </div>
@@ -104,34 +104,36 @@
                                 $('#submitBtn').click(function () {
                                     var student_id = $('#inputStudentID').val();
                                     var password = $('#inputPassword').val();
-                                    if (student_id.length && password.length) {
-                                        $.post('/api/welcome/account_bind', {
-                                            open_id: openid,
-                                            student_id: student_id,
-                                            password: password
-                                        }, function (data) {
-                                            switch(data.code) {
-                                            case 0:
-                                                locals.student_id = student_id;
-                                                page('#!success');
-                                                break;
-                                            case 1:
-                                                weui.topTips('学号密码不能为空');
-                                                break;
-                                            case 2:
-                                                weui.topTips('该学号已经绑定');
-                                                break;
-                                            case 3:
-                                                weui.topTips('学号密码验证错误');
-                                                break;
-                                            default:
-                                                weui.topTips('未知错误');
-                                                break;
-                                            };
-                                        })
-                                    } else {
-                                        weui.topTips('学号密码不能为空');
-                                    }
+                                    weui.form.validate('#form', function (error) {
+                                        if (!error) {
+                                            var loading = weui.loading('提交中...');
+                                            $.post('/api/welcome/account_bind', {
+                                                open_id: openid,
+                                                student_id: student_id,
+                                                password: password
+                                            }, function (data) {
+                                                loading.hide();
+                                                switch(data.code) {
+                                                case 0:
+                                                    locals.student_id = student_id;
+                                                    page('#!success');
+                                                    break;
+                                                case 1:
+                                                    weui.topTips('学号密码不能为空');
+                                                    break;
+                                                case 2:
+                                                    weui.topTips('该学号已经绑定');
+                                                    break;
+                                                case 3:
+                                                    weui.topTips('学号密码验证错误');
+                                                    break;
+                                                default:
+                                                    weui.topTips('未知错误');
+                                                    break;
+                                                };
+                                            })
+                                        }
+                                    });
                                 });
                             }
                         });

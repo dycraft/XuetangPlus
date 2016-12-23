@@ -73,6 +73,9 @@
                                 }, function(data) {
                                     locals.classes = data.data.classes;
                                     render('main', locals);
+                                    $('.weui-media-box_appmsg').click(function () {
+                                        weui.loading('跳转中...');
+                                    });
                                 });
                             } else {
                                 weui.alert('请绑定学号', function(){
