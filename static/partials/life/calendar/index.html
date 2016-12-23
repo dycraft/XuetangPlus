@@ -48,7 +48,7 @@
 
         <script type="text/template" id='tpl-add'>
             <div class="page__hd">
-                <h1 class="page__title">添加事件</h1>
+                <h1 class="page__title">{{ title }}</h1>
                 <p class="page__desc">{{ now }}</p>
             </div>
             <div class="page__bd">
@@ -224,25 +224,22 @@
                         });
                     },
                     add: function (ctx, next) {
+                        locals.title = "添加事件";
                         render('add', locals);
                         $('#inputDate').val(locals.now);
                         $('#confirmBtn').click(function () {
                             weui.form.validate('#form', function (error) {
                                 if (!error) {
                                     var loading = weui.loading('提交中...');
-                                    $.post('/api/event/detail', {
+                                    $.post('/api/event/create', {
                                         open_id: openid,
                                         name: $('#inputName').val(),
                                         date: $('#inputDate').val(),
                                         content: $('#inputContent').val()
                                     }, function (data) {
+                                        console.log(data.data.id);
                                         loading.hide();
-                                        weui.toast('提交成功', {
-                                            duration: 1500,
-                                            callback: function () {
-                                                page('');
-                                            }
-                                        });
+                                        page('');
                                     });
                                 }
                             });
@@ -251,10 +248,12 @@
                     list: function (ctx, next) {
                         var loading = weui.loading('数据加载中...');
                         $.get('/api/event/list', {
-                            open_id: openid
+                            open_id: openid,
+                            mode: 'day'
                         }, function (data) {
                             loading.hide();
                             locals.events = data.data.events;
+                            console.log(data.data.events);
                             render('list', locals);
                             var showMore = function() {
                                 // to be implemented
@@ -280,11 +279,28 @@
                         });
                     },
                     change: function (ctx, next) {
+                        locals.title = "修改事件";
                         render('add', locals);
                         $('#inputName').val(locals.detail.name);
                         $('#inputDate').val(locals.detail.date);
                         $('#inputContent').val(locals.detail.content);
-                        // to be implemented
+                        $('#confirmBtn').click(function () {
+                            weui.form.validate('#form', function (error) {
+                                if (!error) {
+                                    var loading = weui.loading('提交中...');
+                                    $.post('/api/event/detail', {
+                                        open_id: openid,
+                                        id: locals.detail.id,
+                                        name: $('#inputName').val(),
+                                        date: $('#inputDate').val(),
+                                        content: $('#inputContent').val()
+                                    }, function (data) {
+                                        loading.hide();
+                                        page('');
+                                    });
+                                }
+                            });
+                        });
                     }
                 };
 

@@ -28,7 +28,7 @@ class User(models.Model):
 
     def search_event(self, id):
         events = json.loads(self.event_list)
-        return events.index(id)
+        return events.index(id) + 1
 
     def del_event(self, id):
         events = json.loads(self.event_list)
