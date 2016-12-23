@@ -18,6 +18,16 @@ class User(models.Model):
     email = models.CharField(max_length=32, default='')
     realname = models.CharField(max_length=32, default='')
     event_list = models.CharField(max_length=256, default='[]')
+    notice_list = models.CharField(max_length=8192, default='[]')
+
+    def add_notice(self, name):
+        notices = json.loads(self.notice_list)
+        notices.append(name)
+        self.notice_list = json.dumps(notices)
+        self.save()
+
+    def get_read_notice_list(self):
+        return json.loads(self.notice_list)
 
     def add_event(self, id):
         events = json.loads(self.event_list)

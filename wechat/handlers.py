@@ -29,6 +29,7 @@ class DefaultHandler(WeChatHandler):
     def handle(self, inputStr):
         return self.reply_text('对不起，没有找到您需要的信息:( 您查找的内容为' + inputStr)
 
+
 class HelpOrSubscribeHandler(WeChatHandler):
 
     def check(self):
