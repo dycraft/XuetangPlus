@@ -3,7 +3,7 @@
  */
 
 (function() {
-    var getQueryParams = function(qs) {
+    window.getQueryParams = function(qs) {
         qs = qs.split('+').join(' ');
         var params = {},
             tokens,

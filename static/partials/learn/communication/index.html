@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+        <title>课程互动</title>
+        <link rel="stylesheet" href="/lib/weui/weui.css"/>
+        <link rel="stylesheet" href="/lib/weui/example.css">
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body ontouchstart>
+        <div id="content"></div>
+
+        <script type="text/template" id="tpl-main">
+            <div class="page__hd">
+                <h1 class="page__title">课程互动</h1>
+                <p class="page__desc"><这里应该是课程名字></p>
+            </div>
+            <div class="page__bd">
+                <div class="weui-cells__title">消息操作</div>
+                <div class="weui-cells">
+                    <div class="weui-cell weui-cell_access">
+                        <div class="weui-cell__bd">刷新消息</div>
+                        <div class="weui-cell__ft" style="font-size: 0">
+                            <span class="weui-badge weui-badge_dot" style="margin-left: 5px;margin-right: 5px;"></span>
+                        </div>
+                    </div>
+                    <div class="weui-cell weui-cell_access">
+                        <div class="weui-cell__bd">发送消息</div>
+                        <div class="weui-cell__ft" style="font-size: 0"></div>
+                    </div>
+                </div>
+                <div class="weui-cells__title">最新消息</div>
+                <div class="weui-cells">
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd" style="position: relative;margin-right: 10px;">
+                            <img src="images/pic_160.png" style="width: 50px;display: block"/>
+                        </div>
+                        <div class="weui-cell__bd">
+                            <p class="weui-media-box__title communication-name">名字</p>
+                            <p class="weui-media-box__desc communication-message">这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script type="text/javascript" src="/lib/zepto.min.js"></script>
+        <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
+        <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/lib/weui/weui.min.js"></script>
+        <script type="text/javascript" src="/js/openid.js"></script>
+        <script type="text/javascript" src="/js/render.js"></script>
+
+        <!--调用JSSDK-->
+        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
+        <script type="text/javascript">
+            var jssdk_function_list = ['closeWindow'];
+            callJSSDK(jssdk_function_list);
+        </script>
+
+        <script type="text/javascript">
+            var locals = {};
+            var openid;
+
+            var route = {
+                init: function (ctx, next) {
+                    next();
+                },
+                main: function (ctx, next) {
+                    render('main', locals);
+                }
+            };
+
+            getOpenId(function (get_open_id) {
+                openid = get_open_id;
+                page.base('/learn/communication');
+                page('/', route.main);
+                page('*', route.init);
+                page({hashbang: true});
+                page();
+            });
+        </script>
+    </body>
+</html>

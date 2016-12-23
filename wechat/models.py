@@ -35,6 +35,10 @@ class User(models.Model):
         self.save()
         return len(events)
 
+    def search_event(self, id):
+        events = json.loads(self.event_list)
+        return events.index(id)
+
     @classmethod
     def get_by_openid(cls, openid):
         try:
