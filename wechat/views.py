@@ -4,6 +4,23 @@ from wechat.models import *
 from XuetangPlus.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
 from XuetangPlus.settings import get_url, get_redirect_url
 
+event_keys = {
+    'library_remains': 'LIFE_LIBRARY',
+    'school_calendar': 'LIFE_SCHOOL_CALENDAR',
+    'navigation': 'LIFE_NAVIGATION'
+}
+
+# define url
+event_urls = {
+    'help': 'welcome/help',
+    'account_bind': 'welcome/account_bind',
+    'search_course': 'learn/search_course',
+    'course_list': 'learn/course_list',
+    'communication': 'learn/communication',
+    'notice_panel': 'learn/notice_panel',
+    'calendar': 'life/calendar'
+}
+
 class CustomWeChatView(WeChatView):
 
     lib = WeChatLib(WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET)
@@ -17,23 +34,6 @@ class CustomWeChatView(WeChatView):
 
     error_message_handler = ErrorHandler
     default_handler = DefaultHandler
-
-    event_keys = {
-        'library_remains': 'LIFE_LIBRARY',
-        'school_calendar': 'LIFE_SCHOOL_CALENDAR',
-        'navigation': 'LIFE_NAVIGATION'
-    }
-
-    # define url
-    event_urls = {
-        'help': 'welcome/help',
-        'account_bind': 'welcome/account_bind',
-        'search_course': 'learn/search_course',
-        'course_list': 'learn/course_list',
-        'communication': 'learn/communication',
-        'notice_panel': 'learn/notice_panel',
-        'calendar': 'life/calendar'
-    }
 
     menu = {
         'button': [

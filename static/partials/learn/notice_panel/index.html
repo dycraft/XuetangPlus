@@ -22,7 +22,7 @@
                         {% elif clickTab == 3 %}
                             <h1 class="page__title">课件面板</h1>
                         {% else%}
-                            <h1 class="page__title">个人信息</h1>
+                            <h1 class="page__title">个人中心</h1>
                         {% endif %}
                     </div>
                     <div class="page__bd">
@@ -42,8 +42,8 @@
                                 <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg"
                                    id = "notice_{{ notice.index }}">
                                     <div class="weui-media-box__bd">
+                                        <h3 style="word-break: normal; font-weight: normal">{{ notice.title }}</h3>
                                         <h5 class="weui-media-box__title">{{ notice.coursename }}</h5>
-                                        <h4 class="weui-media-box__title">{{ notice.title }}</h4>
                                         <p class="weui-media-box__desc">发布者：{{ notice.publisher }}</p>
                                         <p class="weui-media-box__desc">发布时间：{{ notice.publishtime }}</p>
                                     </div>
@@ -80,8 +80,8 @@
                                 {% for assignment in assignments %}
                                 <a class="weui-media-box weui-media-box_appmsg" id = "assignment_{{ assignment.index }}">
                                     <div class="weui-media-box__bd">
+                                        <h3 style="word-break: normal; font-weight: normal">{{ assignment.title }}</h3>
                                         <h5 class="weui-media-box__title">{{ assignment.coursename }}</h5>
-                                        <h4 class="weui-media-box__title">{{ assignment.title }}</h4>
                                         <p class="weui-media-box__desc">起始日期：{{ assignment.startdate }}</p>
                                         <p class="weui-media-box__desc">截止日期：{{ assignment.duedate }}</p>
                                     </div>
@@ -118,8 +118,8 @@
                                 {% for slide in slides %}
                                 <a class="weui-media-box weui-media-box_appmsg" id = "slide_{{ slide.index }}">
                                     <div class="weui-media-box__bd">
+                                        <h3 style="word-break: normal; font-weight: normal">{{ slide.title }}</h3>
                                         <h5 class="weui-media-box__title">{{ slide.coursename }}</h5>
-                                        <h4 class="weui-media-box__title">{{ slide.title }}</h4>
                                         <p class="weui-media-box__desc">发布日期：{{ slide.updatingtime }}</p>
                                         {% if slide.explanation == '' %}
                                             <p class="weui-media-box__desc">尚无简述</p>
@@ -149,7 +149,59 @@
                         {% endif %}
                         {% if clickTab == 4 %}
                         <div class="weui-panel weui-panel_access">
-                            <div class="weui-panel__hd">个人信息</div>
+                            <div class="weui-form-preview__hd">
+                                <div class="weui-form-preview__item">
+                                    <label class="weui-form-preview__label">学籍信息</label>
+                                </div>
+                            </div>
+                            <div class="weui-form-preview__bd">
+                                <div class="weui-form-preview__item">
+                                    <label class="weui-form-preview__label">学号</label>
+                                    <span class="weui-form-preview__value">{{ info.student_id }}</span>
+                                </div>
+                                <div class="weui-form-preview__item">
+                                    <label class="weui-form-preview__label">姓名</label>
+                                    <span class="weui-form-preview__value">{{ info.name }}</span>
+                                </div>
+                                <div class="weui-form-preview__item">
+                                    <label class="weui-form-preview__label">身份</label>
+                                    <span class="weui-form-preview__value">{{ info.status }}</span>
+                                </div>
+                                <div class="weui-form-preview__item">
+                                    <label class="weui-form-preview__label">院系</label>
+                                    <span class="weui-form-preview__value">{{ info.school }}</span>
+                                </div>
+                                <div class="weui-form-preview__item">
+                                    <label class="weui-form-preview__label">电子邮箱</label>
+                                    <span class="weui-form-preview__value">{{ info.email }}</span>
+                                </div>
+                            </div>
+                            <div class="weui-form-preview__hd">
+                                <div class="weui-form-preview__item">
+                                    <label class="weui-form-preview__label">课程信息</label>
+                                </div>
+                            </div>
+                            <div class="weui-form-preview__bd">
+                                <div class="weui-form-preview__item">
+                                    <label class="weui-form-preview__label">本学期选课门数</label>
+                                    <span class="weui-form-preview__value">{{ info.course_num }}</span>
+                                </div>
+                                <div class="weui-form-preview__item">
+                                    <label class="weui-form-preview__label">本学期选课学分</label>
+                                    <span class="weui-form-preview__value">{{ info.teacher_phone }}</span>
+                                </div>
+                            </div>
+
+                            <div class="page__category js_categoryInner" style>
+                                <div class="weui-cells page__category-content">
+                                    <a class="weui-cell weui-cell_access js_item" id="courseListBtn">
+                                        <div class="weui-cell__bd">
+                                            <p>课程表</p>
+                                        </div>
+                                        <div class="weui-cell__ft"></div>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                         {% endif %}
                     </div>
@@ -384,6 +436,27 @@
             var openid;
             var loading;
 
+            function pushHistory(url) {
+                var state = {
+                    title: "title",
+                    url: url
+                };
+                window.history.pushState(state, state.title, state.url);
+            }
+
+            $(function(){
+                pushHistory("#");
+                window.addEventListener("popstate", function(e) {
+                    if(e.state == undefined){
+                        wx.closeWindow();
+                    }
+                    loading = weui.loading('加载中');
+                    if(locals.detail != 0){
+                        locals.detail = 0;
+                    }
+                }, false);
+            });
+
             var route = {
                 init: function(ctx, next) {
                     next();
@@ -440,6 +513,7 @@
                                 id_str += i;
                                 $(id_str).click(function (i) {
                                     return function () {
+                                        pushHistory("#!notice");
                                         locals.detail = i;
                                         locals.info = locals.notices[i - 1];
                                         page.redirect('#!notice');
@@ -449,10 +523,12 @@
 
                             $("#previousBtn").click(function () {
                                 locals.pageNum--;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!notice');
                             });
                             $("#nextBtn").click(function () {
                                 locals.pageNum++;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!notice');
                             });
 
@@ -483,6 +559,7 @@
 
                             loading.hide();
                         });
+
 
                     }
                     else{
@@ -534,6 +611,7 @@
                                 id_str += i;
                                 $(id_str).click(function (i) {
                                     return function () {
+                                        pushHistory("#!assignment");
                                         locals.detail = i;
                                         locals.info = locals.assignments[i - 1];
                                         page.redirect('#!assignment');
@@ -543,10 +621,12 @@
 
                             $("#previousBtn").click(function () {
                                 locals.pageNum--;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!assignment');
                             });
                             $("#nextBtn").click(function () {
                                 locals.pageNum++;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!assignment');
                             });
 
@@ -621,24 +701,14 @@
 
                             render('main', locals);
 
-                            for (var i = 1; i <= slideNum; i++) {
-                                var id_str = '#slide_';
-                                id_str += i;
-                                $(id_str).click(function (i) {
-                                    return function () {
-                                        locals.detail = i;
-                                        locals.info = locals.slides[i - 1];
-                                        page.redirect('#!slide');
-                                    }
-                                }(i))
-                            }
-
                             $("#previousBtn").click(function () {
                                 locals.pageNum--;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!slide');
                             });
                             $("#nextBtn").click(function () {
                                 locals.pageNum++;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!slide');
                             });
 
@@ -685,9 +755,14 @@
                     $.get('/api/learn/notice_panel/me', {
                         open_id: openid
                     }, function(data) {
-                        ctx.data = data.data;
-                        console.log(ctx.data);
+                        locals.info = data.data;
+                        console.log(data.data)
+                        console.log(locals.info)
+
                         render('main', locals);
+
+                        console.log($("#courseListBtn")[0])
+                        $("#courseListBtn")[0].href = data.data.course_list_url;
 
                         $("#notice_bar").click(function (){
                             locals.page_num = 1;

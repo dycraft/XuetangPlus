@@ -3,7 +3,8 @@ from codex.baseview import APIView
 from wechat.models import *
 from XuetangPlus.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
 from wechat.wrapper import WeChatLib
-from XuetangPlus.settings import CONFIGS
+from wechat.views import event_urls
+from XuetangPlus.settings import CONFIGS, get_redirect_url
 from util.time import *
 from util.randomStr import *
 import hashlib
@@ -198,6 +199,7 @@ class CourseList(APIView):
             for i in range(7):
                 classes[i] = sorted(classes[i], key=lambda d: d['start'])
 
+            print(classes)
             return {
                 'classes': classes
             }
@@ -269,7 +271,7 @@ class NoticeList(APIView):
 
                 for notice in result_notice['notices']:
                     notice['coursename'] = course_name
-                    notice['read'] = ReadNoticeRecord.notice_name(1, notice['title'], course_id) in read_notices
+                    #notice['read'] = ReadNoticeRecord.notice_name(int(1), notice['title'], course_id) in read_notices
 
                 result += result_notice['notices']
 
@@ -280,6 +282,7 @@ class NoticeList(APIView):
         result = sorted(result, key=lambda n: n['publishtime'], reverse=True)[10 * (pagenum - 1): 10 * pagenum]
         for index, r in enumerate(result):
             r['index'] = index + 1
+            r['title'] = r['title'].replace('&nbsp;', '')
             r['publishtime'] = stamp_to_localstr_date(r['publishtime'])
             r['content'] = r['content'].replace('\r\n', '</br>')
 
@@ -418,7 +421,38 @@ class SlideList(APIView):
 class MeInfo(APIView):
 
     def get(self):
-        self.check_input('')
+        self.check_input('open_id')
+
+        user = User.get_by_openid(self.input['open_id'])
+
+        print(user)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+
+        if response.status_code == 200:
+            response_course = json.loads(response.content.decode())
+            course_ids = list(set([c['courseid'] for c in response_course['classes']]))
+
+        dic = {
+            'undergraduate': '本科就读',
+            'master': '硕士',
+            'doctor': '博士',
+            'teacher': '教师'
+        }
+
+        return {
+            'course_num': len(course_ids),
+            'name': user.realname,
+            'student_id': user.student_id,
+            'status': dic[user.position],
+            'school': user.department,
+            'email': user.email,
+            'course_list_url': get_redirect_url(event_urls['course_list'])
+        }
 
 
 class CourseInfo(APIView):
@@ -458,9 +492,8 @@ class CourseInfo(APIView):
                                 result['course_new_file'] = course['newfile']
                                 result['course_unread_notice'] = course['unreadnotice']
                                 result['course_unsubmitted_operations'] = course['unsubmittedoperations']
-                                return result
 
-                        raise LogicError('No course new file')
+                    result['cour']
 
                     raise LogicError('Response Error')
 
@@ -750,7 +783,7 @@ class ReadNoticeRecord(APIView):
 
     @classmethod
     def notice_name(cls, type, name, course_id):
-        name = type + '&'
+        name = str(type) + '&'
         name += name + '&'
         name += course_id
         return name

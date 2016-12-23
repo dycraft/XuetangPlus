@@ -2,7 +2,7 @@
 #
 from wechat.wrapper import WeChatHandler
 from wechat.models import User, WechatConfirmation
-from wechat.message_models import *
+#from wechat.message_models import *
 from codex.baseerror import *
 from util.time import *
 import requests
@@ -85,7 +85,7 @@ class ViewPersonalInformationHandler(WeChatHandler):
 
     def handle(self):
         if self.user.username == '':
-            return  self.reply_text("请先进行绑定")
+            return self.reply_text("请先进行绑定")
         dic = { 'undergraduate': '本科就读',
                 'master': '硕士',
                 'doctor': '博士',
