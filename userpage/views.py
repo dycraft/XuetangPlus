@@ -50,6 +50,8 @@ class AccountBind(APIView):
 
         url = 'http://se.zhuangty.com:8000/users/register'
         params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
             'username': student_id,
             'password': password
         }
@@ -133,7 +135,11 @@ class CourseList(APIView):
             raise LogicError('has not bind')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-        response = requests.post(url)
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
 
         if response.status_code == 200:
             result = json.loads(response.content.decode())
@@ -190,7 +196,11 @@ class NoticeList(APIView):
             raise LogicError('user has not bind')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-        response = requests.post(url)
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
         course_ids = []
         if response.status_code == 200:
             response_course = json.loads(response.content.decode())
@@ -247,7 +257,11 @@ class AssignmentList(APIView):
             raise LogicError('user has not bind')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-        response = requests.post(url)
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
 
         if response.status_code == 200:
             response_course = json.loads(response.content.decode())
@@ -289,7 +303,6 @@ class AssignmentList(APIView):
             r['duedate'] = stamp_to_localstr_date(r['duedate'])
             r['detail'] = r['detail'].replace('\r\n', '</br>')
             r['comment'] = r['comment'].replace('\r\n', '</br>')
-            print(r['filename'])
 
         return {
             'total': length,
@@ -310,7 +323,11 @@ class SlideList(APIView):
             raise LogicError('user has not bind')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-        response = requests.post(url)
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
 
         if response.status_code == 200:
             response_course = json.loads(response.content.decode())
@@ -344,7 +361,6 @@ class SlideList(APIView):
             r['index'] = index + 1
             r['updatingtime'] = stamp_to_localstr_date(r['updatingtime'])
 
-        print(result)
 
         return {
             'total': length,
@@ -367,12 +383,14 @@ class CourseInfo(APIView):
         except:
             raise LogicError("no such open_id")
 
-        url = 'http://se.zhuangty.com:8000/curriculum/'
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         params = {
-            user.student_id
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
         }
+        response = requests.post(url, json=params)
 
-        response = requests.post(url, params)
+        result = {}
         if response.status_code == 200:
             result_course = json.loads(response.content.decode())
 
@@ -386,11 +404,13 @@ class CourseInfo(APIView):
                     response = requests.post('http://se.zhuangty.com:8000/learnhelper/' + user.student_id + '/courses')
                     if response.status_code == 200:
                         res = json.loads(response.content.decode())
-                        for c in res['courses']:
-                            if c['courseid'] == self.input['course_id']:
-                                result['course_new_file'] = c['newfile']
-                                result['course_unread_notice'] = c['unreadnotice']
-                                result['course_unsubmitted_operations'] = c['unsubmittedoperations']
+                        for course in res['courses']:
+                            if course['courseid'] == self.input['course_id']:
+                                result['teacher_email'] = course['email'];
+                                result['teacher_phone'] = course['phone'];
+                                result['course_new_file'] = course['newfile']
+                                result['course_unread_notice'] = course['unreadnotice']
+                                result['course_unsubmitted_operations'] = course['unsubmittedoperations']
                                 return result
 
                         raise LogicError('No course new file')
@@ -426,7 +446,7 @@ class CourseInfo(APIView):
 class CourseComment(APIView):
     def get(self):
         params = self.input
-        course_id = params['id']
+        course_id = params['course_id']
         comments = Comment.objects.filter(courseid=course_id)
 
         answer = []
@@ -437,20 +457,20 @@ class CourseComment(APIView):
 
     def post(self):
         params = self.input
-        mark = params['mark']
-        comment = params['comment']
-        isanonymouse = params['isanonymouse']
+        mark = params['score']
+        comment = params['content']
+        isanonymouse = params['anonymous']
         userid = -1
 
         timestamp = time.mktime(datetime.datetime.now().timetuple())
-        course_id = params['id']
+        course_id = params['course_id']
 
-        if isanonymouse == False:
+        if isanonymouse == 'false':
             userid = self.user.id
 
         Comment.objects.create(courseid=course_id, commenttime=timestamp, commenter=userid, content=comment, score=int(mark))
 
-        return 1
+        return
 
 
 class ChatMenu(APIView):
@@ -567,7 +587,7 @@ class EventDetail(APIView):
             raise LogicError('no such open_id')
         event_id_list = json.loads(user.event_list)
         event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
-        id = self.input['id']
+        id = int(self.input['id'])
         if len(event_list) > id:
             return {'name':event_list[id - 1].name, 'date': str(event_list[id - 1].date).split(' ')[0], 'content': event_list[id - 1].content}
         raise InputError('The given id is out of range')
@@ -603,8 +623,11 @@ class EventList(APIView):
                 else:
                     break
             else:
-                user.del_event(e.id)
-        return result
+                pass
+                # user.del_event(e.id)
+            return {
+                'events': result
+            }
 
     def post(self):
         return

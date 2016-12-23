@@ -14,74 +14,74 @@
         <script type="text/template" id="tpl-main">
             <div class="page__hd">
                 <h1 class="page__title">课程信息</h1>
-                <p class="page__desc" id="course_id">34100325</p>
+                <p class="page__desc">{{ info.courseid }}</p>
             </div>
             <div class="page__bd">
                 <div class="weui-form-preview">
                     <div class="weui-form-preview__hd">
                         <div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">课程名称</label>
-                            <span class="weui-form-preview__value" id="course_name"></span>
+                            <span class="weui-form-preview__value">{{ info.coursename }}</span>
                         </div>
                     </div>
                     <div class="weui-form-preview__bd">
                         <div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">课程时间</label>
-                            <span class="weui-form-preview__value" id="course_time"></span>
+                            <span class="weui-form-preview__value">{{ info.course_time }}</span>
                         </div>
                         <div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">周数</label>
-                            <span class="weui-form-preview__value" id="course_week"></span>
-                        </div>
-                        <div class="weui-form-preview__item"  id="course_new_file_holder">
-                            <label class="weui-form-preview__label">新文件</label>
-                            <span class="weui-form-preview__value" id="course_new_file"></span>
-                        </div>
-                        <div class="weui-form-preview__item"  id="course_unread_notice_holder">
-                            <label class="weui-form-preview__label">未读公告</label>
-                            <span class="weui-form-preview__value" id="course_unread_notice"></span>
-                        </div>
-                        <div class="weui-form-preview__item" id="course_unsubmitted_operations_holder">
-                            <label class="weui-form-preview__label">未交作业</label>
-                            <span class="weui-form-preview__value" id="course_unsubmitted_operations"></span>
+                            <span class="weui-form-preview__value">{{ info.course_week }}</span>
                         </div>
                         <div class="weui-form-preview__item">
                             <label class="weui-form-preview__label">教室位置</label>
-                            <span class="weui-form-preview__value" id="course_classroom"></span>
+                            <span class="weui-form-preview__value">{{ info.classroom }}</span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">未读公告</label>
+                            <span class="weui-form-preview__value">{{ info.course_unread_notice }}</span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">新文件</label>
+                            <span class="weui-form-preview__value">{{ info.course_new_file }}</span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">未交作业</label>
+                            <span class="weui-form-preview__value">{{ info.course_unsubmitted_operations }}</span>
                         </div>
                     </div>
                 <div class="weui-form-preview__hd">
                     <div class="weui-form-preview__item">
                         <label class="weui-form-preview__label">教师名称</label>
-                        <span class="weui-form-preview__value" id="course_teacher"></span>
+                        <span class="weui-form-preview__value">{{ info.teacher }}</span>
                     </div>
                 </div>
                 <div class="weui-form-preview__bd">
                     <div class="weui-form-preview__item">
                         <label class="weui-form-preview__label">电子邮件</label>
-                        <span class="weui-form-preview__value">无</span>
+                        <span class="weui-form-preview__value">{{ info.teacher_email }}</span>
                     </div>
                     <div class="weui-form-preview__item">
                         <label class="weui-form-preview__label">电话</label>
-                        <span class="weui-form-preview__value">无</span>
+                        <span class="weui-form-preview__value">{{ info.teacher_phone }}</span>
                     </div>
                 </div>
 
                 <div class="page__category js_categoryInner" style>
                     <div class="weui-cells page__category-content">
-                        <a class="weui-cell weui-cell_access js_item" data-id="communication" href="javascript:;">
+                        <a class="weui-cell weui-cell_access js_item" data-id="communication">
                             <div class="weui-cell__bd">
                                 <p>师生交流</p>
                             </div>
                             <div class="weui-cell__ft"></div>
                         </a>
-                        <a class="weui-cell weui-cell_access js_item" data-id="comment" href="#!comment">
+                        <a class="weui-cell weui-cell_access js_item" id="comment">
                             <div class="weui-cell__bd">
                                 <p>课程评价</p>
                             </div>
                             <div class="weui-cell__ft"></div>
                         </a>
-                        <a class="weui-cell weui-cell_access js_item" data-id="comment" href="javascript:;">
+                        <a class="weui-cell weui-cell_access js_item" data-id="location">
                             <div class="weui-cell__bd">
                                 <p>教室位置信息</p>
                             </div>
@@ -102,7 +102,7 @@
                 <div class="weui-cells">
                     <div class="weui-cell weui-cell_select">
                         <div class="weui-cell__bd">
-                            <select class="weui-select" name="select1">
+                            <select class="weui-select" name="select1" id="inputScore">
                                 <option selected="" value="5">5</option>
                                 <option value="4">4</option>
                                 <option value="3">3</option>
@@ -117,19 +117,19 @@
                     <div class="weui-cell weui-cell_switch">
                         <div class="weui-cell__bd">匿名评论</div>
                         <div class="weui-cell__ft">
-                            <input class="weui-switch" type="checkbox" checked="checked"/>
+                            <input class="weui-switch" id="inputAnonymous" type="checkbox" checked="checked"/>
                         </div>
                     </div>
                     <div class="weui-cell">
                         <div class="weui-cell__bd">
-                            <textarea class="weui-textarea" placeholder="请输入文本" rows="3"></textarea>
+                            <textarea class="weui-textarea" id="inputContent" placeholder="请输入文本" rows="3"></textarea>
                             <div class="weui-textarea-counter"><span>0</span>/200</div>
                         </div>
                     </div>
                 </div>
                 <div class="weui-btn-area">
-                    <a class="weui-btn weui-btn_primary" href="javascript:" id="ok">确定</a>
-                    <a class="weui-btn weui-btn_warn" href="javascript:" id="delete">删除</a>
+                    <a class="weui-btn weui-btn_primary" id="confirmBtn">确定</a>
+                    <!--a class="weui-btn weui-btn_warn" id="delete">删除</a-->
                 </div>
             </div>
         </script>
@@ -137,21 +137,56 @@
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/lib/weui/weui.min.js"></script>
+        <script type="text/javascript" src="/js/openid.js"></script>
         <script type="text/javascript" src="/js/render.js"></script>
+
+        <!--调用JSSDK-->
+        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
+        <script type="text/javascript">
+            var jssdk_function_list = ['closeWindow'];
+            callJSSDK(jssdk_function_list);
+        </script>
 
         <script type="text/javascript">
             $(function() {
+                var locals = {};
+                var openid;
+                var courseid;
+
                 var route = {
                     init: function(ctx, next) {
                         next();
                     },
                     main: function(ctx, next) {
-                        ctx.data = {};
-                        render('main', ctx.data);
+                        var params = getQueryParams(ctx.querystring);
+                        if (!openid) openid = params.open_id;
+                        if (!courseid) courseid = params.course_id;
+                        $.get('/api/course/information/', {
+                            open_id: openid,
+                            course_id: courseid
+                        }, function (data) {
+                            locals.info = data.data;
+                            render('main', locals);
+                            $('#comment').click(function () {
+                                page('#!comment');
+                            });
+                        });
                     },
                     comment: function(ctx, next) {
-                        ctx.data = {};
-                        render('comment', ctx.data);
+                        render('comment', locals);
+                        $('#confirmBtn').click(function () {
+                            $.post('/api/course/comment/', {
+                                open_id: openid,
+                                course_id: courseid,
+                                score: $('#inputScore').val(),
+                                anonymous: $('#inputAnonymous').prop('checked'),
+                                content: $('#inputContent').val()
+                            }, function (data) {
+                                page('');
+                            });
+                        });
                     }
                 };
 

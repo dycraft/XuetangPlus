@@ -15,14 +15,29 @@
             <div class="weui-tab">
                 <div class="weui-tab__panel">
                     <div class="page__hd">
-                        <h1 class="page__title">通知面板</h1>
-                        <p class="page__desc">{{ student_number }}</p>
+                        {% if clickTab == 1 %}
+                            <h1 class="page__title">公告面板</h1>
+                        {% elif clickTab == 2 %}
+                            <h1 class="page__title">作业面板</h1>
+                        {% elif clickTab == 3 %}
+                            <h1 class="page__title">课件面板</h1>
+                        {% else%}
+                            <h1 class="page__title">个人信息</h1>
+                        {% endif %}
                     </div>
                     <div class="page__bd">
                         {% if clickTab == 1 %}
                         <div class="weui-panel weui-panel_access">
-                            <div class="weui-panel__hd">公告(共{{ total }}条)</div>
+                            <div class="weui-panel__hd">共{{ total }}条公告</br>现在是第{{ pageNum }}页({{ totalPageNum }}页)
+                                {% if pageNum != 1 %}
+                                    <div class="weui-btn-area">
+                                        <a class="weui-btn weui-btn_default" id="previousBtn">上一页</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+
                             <div class="weui-panel__bd">
+
                                 {% for notice in notices %}
                                 <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg"
                                    id = "notice_{{ notice.index }}">
@@ -34,18 +49,33 @@
                                     </div>
                                 </a>
                                 {% endfor %}
+                                <a class="weui-media-box weui-media-box_appmsg" style="padding: 0px"></a>
                             </div>
-                            <div class="weui-panel__ft">
-                                <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
-                                    <div class="weui-cell__bd">查看更多</div>
-                                    <span class="weui-cell__ft"></span>
-                                </a>
-                            </div>
+                            {% if endPage %}
+                                <div class="weui-loadmore weui-loadmore_line">
+                                    <span class="weui-loadmore__tips">暂无更多数据</span>
+                                </div>
+                            {% else %}
+
+                                <div class="weui-panel__hd">现在是第{{ pageNum }}页({{ totalPageNum }}页)
+                                    <div class="weui-btn-area">
+                                        <a class="weui-btn weui-btn_default" id="nextBtn">下一页</a>
+                                    </div>
+                                </div>
+
+                            {% endif %}
                         </div>
                         {% endif %}
                         {% if clickTab == 2 %}
                         <div class="weui-panel weui-panel_access">
-                            <div class="weui-panel__hd">作业(共{{ total }}条)</div>
+                            <div class="weui-panel__hd">共{{ total }}条作业</br>现在是第{{ pageNum }}页({{ totalPageNum }}页)
+                                {% if pageNum != 1 %}
+                                    <div class="weui-btn-area">
+                                        <a class="weui-btn weui-btn_default" id="previousBtn">上一页</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+
                             <div class="weui-panel__bd">
                                 {% for assignment in assignments %}
                                 <a class="weui-media-box weui-media-box_appmsg" id = "assignment_{{ assignment.index }}">
@@ -57,18 +87,33 @@
                                     </div>
                                 </a>
                                 {% endfor %}
+                                <a class="weui-media-box weui-media-box_appmsg" style="padding: 0px"></a>
                             </div>
-                            <div class="weui-panel__ft">
-                                <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
-                                    <div class="weui-cell__bd">查看更多</div>
-                                    <span class="weui-cell__ft"></span>
-                                </a>
-                            </div>
+                            {% if endPage %}
+                                <div class="weui-loadmore weui-loadmore_line">
+                                    <span class="weui-loadmore__tips">暂无更多数据</span>
+                                </div>
+                            {% else %}
+
+                                <div class="weui-panel__hd">现在是第{{ pageNum }}页({{ totalPageNum }}页)
+                                    <div class="weui-btn-area">
+                                        <a class="weui-btn weui-btn_default" id="nextBtn">下一页</a>
+                                    </div>
+                                </div>
+
+                            {% endif %}
                         </div>
                         {% endif %}
                         {% if clickTab == 3 %}
                         <div class="weui-panel weui-panel_access">
-                            <div class="weui-panel__hd">课件(共{{ total }}条)</div>
+                            <div class="weui-panel__hd">共{{ total }}条课件</br>现在是第{{ pageNum }}页({{ totalPageNum }}页)
+                                {% if pageNum != 1 %}
+                                    <div class="weui-btn-area">
+                                        <a class="weui-btn weui-btn_default" id="previousBtn">上一页</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+
                             <div class="weui-panel__bd">
                                 {% for slide in slides %}
                                 <a class="weui-media-box weui-media-box_appmsg" id = "slide_{{ slide.index }}">
@@ -85,13 +130,21 @@
                                     </div>
                                 </a>
                                 {% endfor %}
+                                <a class="weui-media-box weui-media-box_appmsg" style="padding: 0px"></a>
                             </div>
-                            <div class="weui-panel__ft">
-                                <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
-                                    <div class="weui-cell__bd">查看更多</div>
-                                    <span class="weui-cell__ft"></span>
-                                </a>
-                            </div>
+                            {% if endPage %}
+                                <div class="weui-loadmore weui-loadmore_line">
+                                    <span class="weui-loadmore__tips">暂无更多数据</span>
+                                </div>
+                            {% else %}
+
+                                <div class="weui-panel__hd">现在是第{{ pageNum }}页({{ totalPageNum }}页)
+                                    <div class="weui-btn-area">
+                                        <a class="weui-btn weui-btn_default" id="nextBtn">下一页</a>
+                                    </div>
+                                </div>
+
+                            {% endif %}
                         </div>
                         {% endif %}
                         {% if clickTab == 4 %}
@@ -236,7 +289,7 @@
 
                  <div class="weui-media-box weui-media-box_text">
                      <div>附件：{{ info.filename }}</div>
-                     {% if info.filename != '无相关附件' %}
+                     {% if info.filename != "无相关文件" %}
                         <div>(请前往网络学堂下载)</div>
                      {% endif %}
                 </div>
@@ -314,6 +367,7 @@
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/lib/weui/weui.min.js"></script>
         <script type="text/javascript" src="/js/openid.js"></script>
         <script type="text/javascript" src="/js/render.js"></script>
 
@@ -328,23 +382,26 @@
         <script type="text/javascript">
             var locals = {};
             var openid;
+            var loading;
 
             var route = {
                 init: function(ctx, next) {
                     next();
                 },
                 main: function(ctx, next) {
+                    loading = weui.loading('加载中');
                     $.get('/api/welcome/check_bind/', {
                         open_id: openid
                     }, function (data) {
-                        locals.student_id = data.data.student_id;
+                        locals.studentId = data.data.studentId;
                         console.log(data.data);
                         var isBind = data.data.bind;
                         if (!isBind) {
                             page.redirect('#!unbind');
                         } else {
+                            locals.endPage = false;
                             locals.clickTab = 1;
-                            locals.page_num = 1;
+                            locals.pageNum = 1;
                             locals.detail = 0;
                             page.redirect('#!notice');
                          }
@@ -352,19 +409,31 @@
                 },
                 notice: function(ctx, next) {
                     if(locals.detail == 0) {
+
                         $.get('/api/learn/notice_panel/notice', {
                             open_id: openid,
-                            page: locals.page_num
+                            page: locals.pageNum
                         }, function (data) {
                             locals.notices = data.data.notices;
                             locals.total = data.data.total;
+                            locals.totalPageNum = parseInt(locals.total / 10);
+                            if(locals.total % 10 != 0){
+                                locals.totalPageNum += 1;
+                            }
 
-                            var noticeNum = (locals.total - locals.page_num * 10);
-                            if (noticeNum >= 10) {
-                                noticeNum = 10;
+                            if (locals.pageNum == locals.totalPageNum ) {
+                                locals.endPage = true;
+                            }
+                            else {
+                                locals.endPage = false;
                             }
 
                             render('main', locals);
+
+                            var noticeNum = locals.total - locals.pageNum * 10;
+                            if(noticeNum > 10){
+                                noticeNum = 10;
+                            }
 
                             for (var i = 1; i <= noticeNum; i++) {
                                 var id_str = '#notice_';
@@ -373,16 +442,26 @@
                                     return function () {
                                         locals.detail = i;
                                         locals.info = locals.notices[i - 1];
-                                        console.log(locals.info.content);
                                         page.redirect('#!notice');
                                     }
                                 }(i));
                             }
 
+                            $("#previousBtn").click(function () {
+                                locals.pageNum--;
+                                page.redirect('#!notice');
+                            });
+                            $("#nextBtn").click(function () {
+                                locals.pageNum++;
+                                page.redirect('#!notice');
+                            });
+
                             $("#assignment_bar").click(function () {
+                                locals.needLoad = true
                                 locals.page_num = 1;
                                 locals.clickTab = 2;
                                 locals.detail = 0;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!assignment');
                             });
 
@@ -390,6 +469,7 @@
                                 locals.page_num = 1;
                                 locals.clickTab = 3;
                                 locals.detail = 0;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!slide');
                             });
 
@@ -397,9 +477,13 @@
                                 locals.page_num = 1;
                                 locals.clickTab = 4;
                                 locals.detail = 0;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!me');
                             });
+
+                            loading.hide();
                         });
+
                     }
                     else{
                         render('notice_detail', locals);
@@ -408,21 +492,38 @@
 
                         $('#backBtn').click(function () {
                             locals.detail = 0;
+                            loading = weui.loading('加载中');
+                            locals.needLoad = true;
                             page('#!notice')
-                        })
+                        });
+
+                        loading.hide();
                     }
                 },
                 assignment: function (ctx, next) {
                     if(locals.detail == 0) {
                         $.get('/api/learn/notice_panel/assignment', {
                             open_id: openid,
-                            page: locals.page_num
+                            page: locals.pageNum
                         }, function (data) {
                             locals.assignments = data.data.assignments;
                             locals.total = data.data.total;
+                            locals.totalPageNum = parseInt(locals.total / 10);
+                            if(locals.total % 10 != 0){
+                                locals.totalPageNum += 1;
+                            }
 
-                            var assignmentNum = (locals.total - locals.page_num * 10);
-                            if (assignmentNum >= 10) {
+                            if (locals.pageNum == locals.totalPageNum ) {
+                                locals.endPage = true;
+                            }
+                            else {
+                                locals.endPage = false;
+                            }
+
+                            render('main', locals);
+
+                            var assignmentNum = locals.total - locals.pageNum * 10;
+                            if(assignmentNum > 10){
                                 assignmentNum = 10;
                             }
 
@@ -440,26 +541,40 @@
                                 }(i))
                             }
 
+                            $("#previousBtn").click(function () {
+                                locals.pageNum--;
+                                page.redirect('#!assignment');
+                            });
+                            $("#nextBtn").click(function () {
+                                locals.pageNum++;
+                                page.redirect('#!assignment');
+                            });
+
                             $("#notice_bar").click(function () {
-                                locals.page_num = 1;
+                                locals.pageNum = 1;
                                 locals.clickTab = 1;
                                 locals.detail = 0;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!notice');
                             });
 
                             $('#slide_bar').click(function () {
-                                locals.page_num = 1;
+                                locals.pageNum = 1;
                                 locals.clickTab = 3;
                                 locals.detail = 0;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!slide');
                             });
 
                             $('#me_bar').click(function () {
-                                locals.page_num = 1;
+                                locals.pageNum = 1;
                                 locals.clickTab = 4;
                                 locals.detail = 0;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!me');
                             });
+
+                            loading.hide();
                         });
                     }
                     else{
@@ -467,12 +582,13 @@
 
                         $('#assignment_content')[0].innerHTML = locals.info.detail;
 
-                        console.log()
-
                         $('#backBtn').click(function () {
                             locals.detail = 0;
+                            loading = weui.loading('加载中');
                             page('#!assignment')
-                        })
+                        });
+
+                        loading.hide();
                     }
 
                 },
@@ -484,9 +600,22 @@
                         }, function (data) {
                             locals.slides = data.data.slides;
                             locals.total = data.data.total;
+                            locals.totalPageNum = parseInt(locals.total / 10);
+                            if(locals.total % 10 != 0){
+                                locals.totalPageNum += 1;
+                            }
 
-                            var slideNum = (locals.total - locals.page_num * 10);
-                            if (slideNum >= 10) {
+                            if (locals.pageNum == locals.totalPageNum ) {
+                                locals.endPage = true;
+                            }
+                            else {
+                                locals.endPage = false;
+                            }
+
+                            render('main', locals);
+
+                            var slideNum = locals.total - locals.pageNum * 10;
+                            if(slideNum > 10){
                                 slideNum = 10;
                             }
 
@@ -498,32 +627,46 @@
                                 $(id_str).click(function (i) {
                                     return function () {
                                         locals.detail = i;
-                                        locals.info = locals.slides[i - 1]
+                                        locals.info = locals.slides[i - 1];
                                         page.redirect('#!slide');
                                     }
                                 }(i))
                             }
 
+                            $("#previousBtn").click(function () {
+                                locals.pageNum--;
+                                page.redirect('#!slide');
+                            });
+                            $("#nextBtn").click(function () {
+                                locals.pageNum++;
+                                page.redirect('#!slide');
+                            });
+
                             $("#notice_bar").click(function () {
-                                locals.page_num = 1;
+                                locals.pageNum = 1;
                                 locals.clickTab = 1;
                                 locals.detail = 0;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!notice');
                             });
 
                             $("#assignment_bar").click(function () {
-                                locals.page_num = 1;
+                                locals.pageNum = 1;
                                 locals.clickTab = 2;
                                 locals.detail = 0;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!assignment');
                             });
 
                             $('#me_bar').click(function () {
-                                locals.page_num = 1;
+                                locals.pageNum = 1;
                                 locals.clickTab = 4;
                                 locals.detail = 0;
+                                loading = weui.loading('加载中');
                                 page.redirect('#!me');
                             });
+
+                            loading.hide();
                         });
                     }
                     else{
@@ -531,8 +674,11 @@
 
                         $('#backBtn').click(function () {
                             locals.detail = 0;
+                            loading = weui.loading('加载中');
                             page('#!slide')
-                        })
+                        });
+
+                        loading.hide();
                     }
                 },
                 me: function (ctx, next) {
@@ -547,6 +693,7 @@
                             locals.page_num = 1;
                             locals.clickTab = 1;
                             locals.detail = 0;
+                            loading = weui.loading('加载中');
                             page.redirect('#!notice');
                         });
 
@@ -554,6 +701,7 @@
                             locals.page_num = 1;
                             locals.clickTab = 2;
                             locals.detail = 0;
+                            loading = weui.loading('加载中');
                             page.redirect('#!assignment');
                         });
 
@@ -561,12 +709,16 @@
                             locals.page_num = 1;
                             locals.clickTab = 3;
                             locals.detail = 0;
+                            loading = weui.loading('加载中');
                             page.redirect('#!slide');
                         });
+
+                        loading.hide();
                     });
                 },
                 not_bind: function (ctx, next) {
                     render('unbind', locals);
+                    loading.hide();
                 }
             };
 

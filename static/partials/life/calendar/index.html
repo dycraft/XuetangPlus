@@ -95,7 +95,7 @@
                     <div class="weui-panel__hd">{{ day[0].date }}</div>
                     <div class="weui-panel__bd">
                         {% for event in day %}
-                        <a class="weui-media-box weui-media-box_appmsg">
+                        <a class="weui-media-box weui-media-box_appmsg" onclick="page('detail?id={{ event.id }}');">
                             <div class="weui-media-box__bd">
                                 <h4 class="weui-media-box__title">{{ event.name }}</h4>
                                 <p class="weui-media-box__desc">{{ event.content }}</p>
@@ -107,10 +107,40 @@
                 {% endfor %}
                 <div class="weui-panel weui-panel_access">
                     <div class="weui-panel__ft">
-                        <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link">
+                        <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link" id="more">
                             <div class="weui-cell__bd">查看更多</div>
                             <span class="weui-cell__ft"></span>
                         </a>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script type="text/template" id="tpl-detail">
+            <div class="page__hd">
+                <h1 class="page__title">事件详情</h1>
+                <p class="page__desc"></p>
+            </div>
+            <div class="page__bd">
+                <div class="weui-form-preview">
+                    <div class="weui-form-preview__hd">
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">事件名称</label>
+                            <em class="weui-form-preview__value">{{ detail.name }}</em>
+                        </div>
+                    </div>
+                    <div class="weui-form-preview__bd">
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">事件日期</label>
+                            <span class="weui-form-preview__value">{{ detail.date }}</span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">事件详情</label>
+                            <span class="weui-form-preview__value">{{ detail.content }}</span>
+                        </div>
+                    </div>
+                    <div class="weui-form-preview__ft">
+                        <a class="weui-form-preview__btn weui-form-preview__btn_primary" id="modifyBtn">修改</a>
                     </div>
                 </div>
             </div>
@@ -226,7 +256,33 @@
                             loading.hide();
                             locals.events = data.data.events;
                             render('list', locals);
+                            var showMore = function() {
+                                // to be implemented
+                                locals.events = locals.events.concat(data.data.events);
+                                render('list', locals);
+                                $('#more').click(showMore);
+                            }
+                            $('#more').click(showMore);
                         });
+                    },
+                    detail: function (ctx, next) {
+                        $.get('/api/event/detail', {
+                            open_id: openid,
+                            id: getQueryParams(ctx.querystring).id
+                        }, function (data) {
+                            locals.detail = data.data;
+                            render('detail', locals);
+                            $('#modifyBtn').click(function(){
+                                page('#!change');
+                            });
+                        });
+                    },
+                    change: function (ctx, next) {
+                        render('add', locals);
+                        $('#inputName').val(locals.detail.name);
+                        $('#inputDate').val(locals.detail.date);
+                        $('#inputContent').val(locals.detail.content);
+                        // to be implemented
                     }
                 };
 
@@ -236,6 +292,8 @@
                     page('/', route.main);
                     page('add', route.add);
                     page('list', route.list);
+                    page('detail', route.detail);
+                    page('change', route.change);
                     page('*', route.init);
                     page({hashbang: true});
                     page();
