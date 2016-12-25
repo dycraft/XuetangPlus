@@ -63,7 +63,6 @@ class AccountBind(APIView):
         if response.status_code == 200:
 
             try:
-
                 user = User.get_by_openid(open_id)
                 user.username = result['username']
                 user.student_id = result['information']['studentnumber']
@@ -271,7 +270,7 @@ class NoticeList(APIView):
 
                 for notice in result_notice['notices']:
                     notice['coursename'] = course_name
-                    #notice['read'] = ReadNoticeRecord.notice_name(int(1), notice['title'], course_id) in read_notices
+                    notice['read'] = ReadNoticeRecord.notice_name(int(1), notice['title'], course_id) in read_notices
 
                 result += result_notice['notices']
 
@@ -285,9 +284,6 @@ class NoticeList(APIView):
             r['title'] = r['title'].replace('&nbsp;', '')
             r['publishtime'] = stamp_to_localstr_date(r['publishtime'])
             r['content'] = r['content'].replace('\r\n', '</br>')
-
-
-        #print(result[0])
 
         return {
             'total': length,
@@ -768,6 +764,20 @@ class EventCreate(APIView):
         return {
             'id': id
         }
+
+
+class EventDelete(APIView):
+
+    def post(self):
+        self.check_input('open_id', 'id')
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError('no such open_id')
+        try:
+            user.del_event(int(self.input['id']))
+        except:
+            raise InputError('The given id is out of range')
 
 
 class ReadNoticeRecord(APIView):

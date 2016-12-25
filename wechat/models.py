@@ -41,13 +41,12 @@ class User(models.Model):
         return events.index(id) + 1
 
     def del_event(self, id):
+        if id > len(self.event_list):
+            raise LogicError('The given id is out of range')
         events = json.loads(self.event_list)
-        if id in events:
-            events.remove(id)
-            Event.get_by_id(id).delete()
+        Event.get_by_id(events[id - 1]).delete()
+        del(events[id - 1])
         self.event_list = json.dumps(events)
-        self.save()
-        return len(events)
 
     def search_event(self, id):
         events = json.loads(self.event_list)
