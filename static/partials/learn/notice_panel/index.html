@@ -431,11 +431,7 @@
             callJSSDK(jssdk_function_list);
         </script>
 
-        <script type="text/javascript">
-            var locals = {};
-            var openid;
-            var loading;
-
+        <script>
             function pushHistory(url) {
                 var state = {
                     title: "title",
@@ -456,6 +452,12 @@
                     }
                 }, false);
             });
+        </script>
+
+        <script type="text/javascript">
+            var locals = {};
+            var openid;
+            var loading;
 
             var route = {
                 init: function(ctx, next) {
