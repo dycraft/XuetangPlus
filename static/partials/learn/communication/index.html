@@ -104,6 +104,21 @@
                         $('#sendBtn').click(function () {
                             page('#!add');
                         });
+                        function getRtmMsg() {
+                            $.ajax({
+                                type: "POST",
+                                url: "/api/communicate/eventsource/",
+                                data: "update",
+                                success: function(msg){
+                                    if(msg != null) {
+                                        //获取新消息后处理
+
+                                        getRtmMsg();
+                                    }
+                                }
+                            });
+                        }
+                        getRtmMsg();
                     });
                 },
                 add: function (ctx, next) {
