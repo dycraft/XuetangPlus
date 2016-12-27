@@ -51,6 +51,12 @@ todo: 与`EventList`几乎一样，只不过参数是月份
 ### Comment
 todo: 急需修改一下代码
 
+### CommentList
+#### GET
+返回10条最新的消息，可以查看更多
+params: openid, curid(最后一条的id，用于下一次请求)
+return: [{name("匿名"or"realname"), content}]
+
 ### MessageList
 #### GET
 返回10条最新的消息

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+        <title>课程评价</title>
+        <link rel="stylesheet" href="/lib/weui/weui.css"/>
+        <link rel="stylesheet" href="/lib/weui/example.css">
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body ontouchstart>
+        <div id="content"></div>
+
+        <script type="text/template" id="tpl-main">
+            <div class="page__hd">
+                <h1 class="page__title">课程评价</h1>
+                <p class="page__desc">{{ student_id }}</p>
+            </div>
+            <div class="page__bd">
+                <div class="weui-form-preview">
+                    <div class="weui-form-preview__hd">
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程</label>
+                            <em class="weui-form-preview__value">软件工程(3)</em>
+                        </div>
+                    </div>
+                    <div class="weui-form-preview__bd">
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">姓名</label>
+                            <span class="weui-form-preview__value">里答应</span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">评价</label>
+                            <span class="weui-form-preview__value">很长很长的名字很长很长的名字很长很长的名字很长很长的名字很长很长的名字</span>
+                        </div>
+                    </div>
+                    <div class="weui-form-preview__ft">
+                        <a class="weui-form-preview__btn weui-form-preview__btn_primary" href="javascript:">查看更多</a>
+                    </div>
+                </div>
+                <br>
+
+            </div>
+        </script>
+
+        <script type="text/javascript" src="/lib/zepto.min.js"></script>
+        <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
+        <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/lib/weui/weui.min.js"></script>
+        <script type="text/javascript" src="/js/openid.js"></script>
+        <script type="text/javascript" src="/js/render.js"></script>
+
+        <!--调用JSSDK-->
+        <!-- <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
+        <script type="text/javascript">
+            var jssdk_function_list = ['closeWindow'];
+            callJSSDK(jssdk_function_list);
+        </script> -->
+
+        <script type="text/javascript">
+            $(function() {
+                var locals = {};
+                var openid;
+
+                var route = {
+                    init: function(ctx, next) {
+                        next();
+                    },
+                    main: function(ctx, next) {
+                        render('main', locals)
+                    }
+                }
+
+                //getOpenId(function (get_open_id) {
+                    //openid = get_open_id;
+                    locals.open_id = openid;
+                    page.base('/learn/course_comment');
+                    page('/', route.main);
+                    page('*', route.init);
+                    page({hashbang: true});
+                    page();
+                //});
+            });
+        </script>
+    </body>
+</html>
