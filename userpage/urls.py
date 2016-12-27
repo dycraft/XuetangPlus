@@ -17,12 +17,11 @@ urlpatterns = [
     url(r'^learn/notice_panel/me/?$', MeInfo.as_view()),
     url(r'^course/information/?$', CourseInfo.as_view()),
     url(r'^course/comment/?$', CourseComment.as_view()),
-    url(r'^communicate/menu?$', ChatMenu.as_view()),
-    url(r'^communicate/area?$', ChatArea.as_view()),
     url(r'^read/notice/record?$', ReadNoticeRecord.as_view()),
     url(r'^event/list?$', EventList.as_view()),
     url(r'^event/create?$', EventCreate.as_view()),
     url(r'^event/delete?$', EventDelete.as_view()),
     url(r'^event/detail?$', EventDetail.as_view()),
-    url(r'^jssdk/?$', GetJSSDK.as_view())
+    url(r'^jssdk/?$', GetJSSDK.as_view()),
+    url(r'^communicate/eventsource/', Communicate.as_view())
 ]
