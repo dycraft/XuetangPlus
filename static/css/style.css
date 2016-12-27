@@ -11,3 +11,7 @@
     font-size: 14px;
     color: #000000;
 }
+
+.weui-form-preview__btn_warn {
+  color: #E64340;
+}

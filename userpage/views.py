@@ -598,7 +598,7 @@ class GetOpenId(APIView):
 
     def get(self):
         self.check_input('code')
-        #print('getopenid')
+        # print('getopenid')
         url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='
         url += CONFIGS['WECHAT_APPID']
         url += '&secret='
