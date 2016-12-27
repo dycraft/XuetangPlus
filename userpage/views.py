@@ -120,7 +120,7 @@ class AccountBind(APIView):
             except:
                 raise LogicError('no such open_id')
         else:
-
+            print(response.content.decode())
             raise ValidateError('Wrong username or password.')
 
 

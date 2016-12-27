@@ -81,6 +81,14 @@
             callJSSDK(jssdk_function_list);
         </script>
 
+        <script>
+            $(function(){
+                window.addEventListener("popstate", function(e) {
+                    wx.closeWindow();
+                }, false);
+            });
+        </script>
+
         <script type="text/javascript">
             $(function() {
                 var locals = {};
