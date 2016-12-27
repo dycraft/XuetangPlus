@@ -19,13 +19,13 @@
             <div class="page__bd">
                 <div class="weui-cells__title">消息操作</div>
                 <div class="weui-cells">
-                    <div class="weui-cell weui-cell_access">
+                    <div class="weui-cell weui-cell_access" id="freshBtn">
                         <div class="weui-cell__bd">刷新消息</div>
                         <div class="weui-cell__ft" style="font-size: 0">
                             <span class="weui-badge weui-badge_dot" style="margin-left: 5px;margin-right: 5px;"></span>
                         </div>
                     </div>
-                    <div class="weui-cell weui-cell_access">
+                    <div class="weui-cell weui-cell_access" id="sendBtn">
                         <div class="weui-cell__bd">发送消息</div>
                         <div class="weui-cell__ft" style="font-size: 0"></div>
                     </div>
@@ -45,6 +45,28 @@
             </div>
         </script>
 
+        <script type="text/template" id="tpl-add">
+            <div class="page__hd">
+                <h1 class="page__title">发送消息</h1>
+                <p class="page__desc"><这里应该是什么？></p>
+            </div>
+            <div class="page__bd">
+                <div id="form">
+                    <div class="weui-cells__title">请提交新的消息</div>
+                    <div class="weui-cells weui-cells_form">
+                        <div class="weui-cell">
+                            <div class="weui-cell__bd">
+                                <textarea class="weui-textarea" id="inputContent" required placeholder="消息将显示真实名称，对同课程内用户可见" emptyTips="新消息不能为空" rows="4" maxlength="100"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="weui-btn-area">
+                        <a class="weui-btn weui-btn_primary" id="confirmBtn">提交</a>
+                    </div>
+                </div>
+            </div>
+        </script>
+
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/page.js"></script>
@@ -53,34 +75,65 @@
         <script type="text/javascript" src="/js/render.js"></script>
 
         <!--调用JSSDK-->
-        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <!--script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
         <script type="text/javascript" src="/js/JSSDK.js"></script>
         <script type="text/javascript">
             var jssdk_function_list = ['closeWindow'];
             callJSSDK(jssdk_function_list);
-        </script>
+        </script-->
 
         <script type="text/javascript">
             var locals = {};
             var openid;
+            var courseid;
 
             var route = {
                 init: function (ctx, next) {
                     next();
                 },
                 main: function (ctx, next) {
-                    render('main', locals);
+                    var params = getQueryParams(ctx.querystring);
+                    if (!openid) openid = params.open_id;
+                    if (!courseid) courseid = params.course_id;
+                    $.get('/api/course/information/', {
+                        open_id: openid,
+                        course_id: courseid
+                    }, function (data) {
+                        locals.msgs = data.data;
+                        render('main', locals);
+                        $('#sendBtn').click(function () {
+                            page('#!add');
+                        });
+                    });
+                },
+                add: function (ctx, next) {
+                    render('add', locals);
+                    $('#confirmBtn').click(function () {
+                        weui.form.validate('#form', function (error) {
+                            if (!error) {
+                                var loading = weui.loading('提交中...');
+                                $.post('/api/message/create', {
+                                    open_id: openid,
+                                    course_id: courseid,
+                                    content: $('#inputContent').val()
+                                }, function (data) {
+                                    loading.hide();
+                                    page('');
+                                });
+                            } else {
+                                loading.hide();
+                            }
+                        });
+                    });
                 }
             };
 
-            getOpenId(function (get_open_id) {
-                openid = get_open_id;
-                page.base('/learn/communication');
-                page('/', route.main);
-                page('*', route.init);
-                page({hashbang: true});
-                page();
-            });
+            page.base('/learn/communication');
+            page('/', route.main);
+            page('*', route.init);
+            page('add', route.add);
+            page({hashbang: true});
+            page();
         </script>
     </body>
 </html>

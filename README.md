@@ -51,7 +51,13 @@ todo: 与`EventList`几乎一样，只不过参数是月份
 ### Comment
 todo: 急需修改一下代码
 
-### communication
-现在设想的就是每个课程开一个空间允许同学们互相交流，菜单里的[师生交流]放弃。  
-可以参考现在前端页面的样式，具体要做的就是把每个人说的话存入数据库，前端需求的话get就行了，机制和日历的事件差不多。  
-还有新消息通知这应该是个技术活。
+### MessageList
+#### GET
+返回10条最新的消息
+params: openid, courseid
+return: [{name, content, picUrl}]
+
+### MessageCreate
+#### POST
+params: openid, courseid, content
+return: null

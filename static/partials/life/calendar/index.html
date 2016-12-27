@@ -141,6 +141,7 @@
                     </div>
                     <div class="weui-form-preview__ft">
                         <a class="weui-form-preview__btn weui-form-preview__btn_primary" id="modifyBtn">修改</a>
+                        <a class="weui-form-preview__btn weui-form-preview__btn_warn" id="deleteBtn">删除</a>
                     </div>
                 </div>
             </div>
@@ -237,7 +238,6 @@
                                         date: $('#inputDate').val(),
                                         content: $('#inputContent').val()
                                     }, function (data) {
-                                        console.log(data.data.id);
                                         loading.hide();
                                         page('');
                                     });
@@ -273,8 +273,29 @@
                             locals.detail = data.data;
                             locals.detail.id = curid;
                             render('detail', locals);
-                            $('#modifyBtn').click(function(){
+                            $('#modifyBtn').click(function() {
                                 page('#!change');
+                            });
+                            $('#deleteBtn').click(function() {
+                                weui.dialog({
+                                    title: '删除事件',
+                                    content: '请确认是否删除？',
+                                    buttons: [{
+                                        label: '取消',
+                                        type: 'default'
+                                    }, {
+                                        label: '确定',
+                                        type: 'primary',
+                                        onClick: function () {
+                                            $.post('/api/event/delete', {
+                                                open_id: openid,
+                                                id: curid
+                                            }, function (data) {
+                                                page('#!list');
+                                            });
+                                        }
+                                    }]
+                                });
                             });
                         });
                     },

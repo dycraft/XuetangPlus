@@ -69,9 +69,9 @@
 
                 <div class="page__category js_categoryInner" style>
                     <div class="weui-cells page__category-content">
-                        <a class="weui-cell weui-cell_access js_item" data-id="communication">
+                        <a class="weui-cell weui-cell_access js_item" id="discuss">
                             <div class="weui-cell__bd">
-                                <p>师生交流</p>
+                                <p>课程讨论</p>
                             </div>
                             <div class="weui-cell__ft"></div>
                         </a>
@@ -171,6 +171,9 @@
                             render('main', locals);
                             $('#comment').click(function () {
                                 page('#!comment');
+                            });
+                            $('#discuss').click(function () {
+                                page('/learn/communication?open_id=' + openid + '&course_id=' + courseid);
                             });
                         });
                     },
