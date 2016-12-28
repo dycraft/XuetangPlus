@@ -270,7 +270,7 @@ class NoticeList(APIView):
 
                 for notice in result_notice['notices']:
                     notice['coursename'] = course_name
-                    notice['read'] = ReadNoticeRecord.notice_name(int(1), notice['title'], course_id) in read_notices
+                    notice['read'] = ReadNoticeRecord.notice_name(1, notice['title'], course_id) in read_notices
 
                 result += result_notice['notices']
 
@@ -279,15 +279,20 @@ class NoticeList(APIView):
 
         length = len(result)
         result = sorted(result, key=lambda n: n['publishtime'], reverse=True)[10 * (pagenum - 1): 10 * pagenum]
+        unread = 0
         for index, r in enumerate(result):
             r['index'] = index + 1
             r['title'] = r['title'].replace('&nbsp;', '')
             r['publishtime'] = stamp_to_localstr_date(r['publishtime'])
             r['content'] = r['content'].replace('\r\n', '</br>')
+            if not r['read']:
+                unread += 1
+
 
         return {
             'total': length,
-            'notices': result
+            'notices': result,
+            'unread': unread
         }
 
 
@@ -343,15 +348,19 @@ class AssignmentList(APIView):
 
         length = len(result)
         result = sorted(result, key=lambda a: a['duedate'], reverse=True)[10 * (pagenum - 1): 10 * pagenum]
+        unread = 0
         for index, r in enumerate(result):
             r['index'] = index + 1
             r['duedate'] = stamp_to_localstr_date(r['duedate'])
             r['detail'] = r['detail'].replace('\r\n', '</br>')
             r['comment'] = r['comment'].replace('\r\n', '</br>')
+            if not r['read']:
+                unread += 1
 
         return {
             'total': length,
-            'assignments': result
+            'assignments': result,
+            'unread': unread
         }
 
 
@@ -404,13 +413,17 @@ class SlideList(APIView):
 
         length = len(result)
         result = sorted(result, key=lambda a: a['updatingtime'], reverse=True)[10 * (pagenum - 1): 10 * pagenum]
+        unread = 0
         for index, r in enumerate(result):
             r['index'] = index + 1
             r['updatingtime'] = stamp_to_localstr_date(r['updatingtime'])
+            if not r['read']:
+                unread += 1
 
         return {
             'total': length,
-            'slides': result
+            'slides': result,
+            'unread': unread
         }
 
 

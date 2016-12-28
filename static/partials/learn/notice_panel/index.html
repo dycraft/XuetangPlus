@@ -42,7 +42,13 @@
                                 <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg"
                                    id = "notice_{{ notice.index }}">
                                     <div class="weui-media-box__bd">
-                                        <h3 style="word-break: normal; font-weight: normal">{{ notice.title }}</h3>
+                                        <h3 style="word-break: normal; font-weight: normal">
+                                            {% if notice.read == False %}
+                                                <i class="weui-icon-warn">
+                                                </i>
+                                            {% endif %}
+                                            {{ notice.title }}
+                                        </h3>
                                         <h5 class="weui-media-box__title">{{ notice.coursename }}</h5>
                                         <p class="weui-media-box__desc">发布者：{{ notice.publisher }}</p>
                                         <p class="weui-media-box__desc">发布时间：{{ notice.publishtime }}</p>
@@ -80,7 +86,13 @@
                                 {% for assignment in assignments %}
                                 <a class="weui-media-box weui-media-box_appmsg" id = "assignment_{{ assignment.index }}">
                                     <div class="weui-media-box__bd">
-                                        <h3 style="word-break: normal; font-weight: normal">{{ assignment.title }}</h3>
+                                        <h3 style="word-break: normal; font-weight: normal">
+                                            {% if notice.read == False %}
+                                                <i class="weui-icon-warn">
+                                                </i>
+                                            {% endif %}
+                                            {{ assignment.title }}
+                                        </h3>
                                         <h5 class="weui-media-box__title">{{ assignment.coursename }}</h5>
                                         <p class="weui-media-box__desc">起始日期：{{ assignment.startdate }}</p>
                                         <p class="weui-media-box__desc">截止日期：{{ assignment.duedate }}</p>
@@ -118,7 +130,13 @@
                                 {% for slide in slides %}
                                 <a class="weui-media-box weui-media-box_appmsg" id = "slide_{{ slide.index }}">
                                     <div class="weui-media-box__bd">
-                                        <h3 style="word-break: normal; font-weight: normal">{{ slide.title }}</h3>
+                                        <h3 style="word-break: normal; font-weight: normal">
+                                            {% if notice.read == False %}
+                                                <i class="weui-icon-warn">
+                                                </i>
+                                            {% endif %}
+                                            {{ slide.title }}
+                                        </h3>
                                         <h5 class="weui-media-box__title">{{ slide.coursename }}</h5>
                                         <p class="weui-media-box__desc">发布日期：{{ slide.updatingtime }}</p>
                                         {% if slide.explanation == '' %}
@@ -212,7 +230,11 @@
                         <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on" id="notice_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/notice_green.png" alt="" class="weui-tabbar__icon">
-                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                                {% if unread != 0 %}
+                                    <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">
+                                        {{ unread }}
+                                    </span>
+                                {% endif %}
                             </span>
                             <p class="weui-tabbar__label">公告</p>
                         </a>
@@ -220,7 +242,11 @@
                         <a href="javascript:;" class="weui-tabbar__item" id="notice_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/notice_white.png" alt="" class="weui-tabbar__icon">
-                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                                {% if unread != 0 %}
+                                    <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">
+                                        {{ unread }}
+                                    </span>
+                                {% endif %}
                             </span>
                             <p class="weui-tabbar__label">公告</p>
                         </a>
@@ -230,7 +256,11 @@
                         <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on" id="assignment_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/assignment_green.png" alt="" class="weui-tabbar__icon">
-                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                                {% if unread != 0 %}
+                                    <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">
+                                        {{ unread }}
+                                    </span>
+                                {% endif %}
                             </span>
                             <p class="weui-tabbar__label">作业</p>
                         </a>
@@ -238,7 +268,11 @@
                         <a href="javascript:;" class="weui-tabbar__item" id="assignment_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/assignment_white.png" alt="" class="weui-tabbar__icon">
-                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                                {% if unread != 0 %}
+                                    <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">
+                                        {{ unread }}
+                                    </span>
+                                {% endif %}
                             </span>
                             <p class="weui-tabbar__label">作业</p>
                         </a>
@@ -248,7 +282,11 @@
                         <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on" id="slide_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/slide_green.png" alt="" class="weui-tabbar__icon">
-                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                                {% if unread != 0 %}
+                                    <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">
+                                        {{ unread }}
+                                    </span>
+                                {% endif %}
                             </span>
                             <p class="weui-tabbar__label">课件</p>
                         </a>
@@ -256,7 +294,11 @@
                         <a href="javascript:;" class="weui-tabbar__item" id="slide_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/slide_white.png" alt="" class="weui-tabbar__icon">
-                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
+                                {% if unread != 0 %}
+                                    <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">
+                                        {{ unread }}
+                                    </span>
+                                {% endif %}
                             </span>
                             <p class="weui-tabbar__label">课件</p>
                         </a>
@@ -267,7 +309,6 @@
                         <a href="javascript:;" class="weui-tabbar__item weui-bar__item_on" id="me_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/me_green.png" alt="" class="weui-tabbar__icon">
-                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
                             </span>
                             <p class="weui-tabbar__label">我</p>
                         </a>
@@ -275,7 +316,6 @@
                         <a href="javascript:;" class="weui-tabbar__item" id="me_bar">
                             <span style="display: inline-block;position: relative;">
                                 <img src="../../img/icon/me_white.png" alt="" class="weui-tabbar__icon">
-                                <span class="weui-badge" style="position: absolute;top: -2px;right: -13px;">8</span>
                             </span>
                             <p class="weui-tabbar__label">我</p>
                         </a>
@@ -492,6 +532,7 @@
                             locals.notices = data.data.notices;
                             locals.total = data.data.total;
                             locals.totalPageNum = parseInt(locals.total / 10);
+                            locals.unread = data.data.unread;
                             if(locals.total % 10 != 0){
                                 locals.totalPageNum += 1;
                             }
@@ -535,7 +576,7 @@
                             });
 
                             $("#assignment_bar").click(function () {
-                                locals.page_num = 1;
+                                locals.pageNum = 1;
                                 locals.clickTab = 2;
                                 locals.detail = 0;
                                 loading = weui.loading('加载中');
@@ -543,7 +584,7 @@
                             });
 
                             $('#slide_bar').click(function () {
-                                locals.page_num = 1;
+                                locals.pageNum = 1;
                                 locals.clickTab = 3;
                                 locals.detail = 0;
                                 loading = weui.loading('加载中');
@@ -551,7 +592,7 @@
                             });
 
                             $('#me_bar').click(function () {
-                                locals.page_num = 1;
+                                locals.pageNum = 1;
                                 locals.clickTab = 4;
                                 locals.detail = 0;
                                 loading = weui.loading('加载中');
@@ -586,6 +627,7 @@
                             locals.assignments = data.data.assignments;
                             locals.total = data.data.total;
                             locals.totalPageNum = parseInt(locals.total / 10);
+                            locals.unread = data.data.unread;
                             if(locals.total % 10 != 0){
                                 locals.totalPageNum += 1;
                             }
@@ -676,11 +718,12 @@
                     if(locals.detail == 0) {
                         $.get('/api/learn/notice_panel/slide', {
                             open_id: openid,
-                            page: locals.page_num
+                            page: locals.pageNum
                         }, function (data) {
                             locals.slides = data.data.slides;
                             locals.total = data.data.total;
                             locals.totalPageNum = parseInt(locals.total / 10);
+                            locals.unread = data.data.unread;
                             if(locals.total % 10 != 0){
                                 locals.totalPageNum += 1;
                             }
@@ -765,7 +808,7 @@
                         $("#courseListBtn")[0].href = data.data.course_list_url;
 
                         $("#notice_bar").click(function (){
-                            locals.page_num = 1;
+                            locals.pageNum = 1;
                             locals.clickTab = 1;
                             locals.detail = 0;
                             loading = weui.loading('加载中');
@@ -773,7 +816,7 @@
                         });
 
                         $("#assignment_bar").click(function (){
-                            locals.page_num = 1;
+                            locals.pageNum = 1;
                             locals.clickTab = 2;
                             locals.detail = 0;
                             loading = weui.loading('加载中');
@@ -781,7 +824,7 @@
                         });
 
                         $('#slide_bar').click(function (){
-                            locals.page_num = 1;
+                            locals.pageNum = 1;
                             locals.clickTab = 3;
                             locals.detail = 0;
                             loading = weui.loading('加载中');
