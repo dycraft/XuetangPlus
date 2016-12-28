@@ -67,6 +67,29 @@
             </div>
         </script>
 
+        <script type="text/template" id="tpl-list">
+            <div class="page__hd">
+                <h1 class="page__title">课程讨论列表</h1>
+                <p class="page__desc">{{ student_id }}</p>
+            </div>
+            <div class="page__bd">
+                <div class="weui-panel weui-panel_access">
+                    {% for day in week %}
+                    <div class="weui-panel__hd">{{ day }}</div>
+                    <div class="weui-panel__bd">
+                        {% for cls in classes[loop.index - one] %}
+                        <a class="weui-media-box weui-media-box_appmsg">
+                            <div class="weui-media-box__bd">
+                                <h4 class="weui-media-box__title">{{ cls.coursename }}</h4>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </script>
+
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/page.js"></script>
@@ -105,14 +128,19 @@
                             page('#!add');
                         });
                         function getRtmMsg() {
+                            // $.post("/api/communicate/eventsource/", {
+                            //     "update": a,
+                            // }, function(msg) {
+                            //     if(msg !== null) {
+                            //         getRtmMsg();
+                            //     }
+                            // });
                             $.ajax({
                                 type: "POST",
                                 url: "/api/communicate/eventsource/",
                                 data: "update",
                                 success: function(msg){
-                                    if(msg != null) {
-                                        //获取新消息后处理
-
+                                    if(msg !== null) {
                                         getRtmMsg();
                                     }
                                 }
@@ -125,8 +153,8 @@
                     render('add', locals);
                     $('#confirmBtn').click(function () {
                         weui.form.validate('#form', function (error) {
+                            var loading = weui.loading('提交中...');
                             if (!error) {
-                                var loading = weui.loading('提交中...');
                                 $.post('/api/message/create', {
                                     open_id: openid,
                                     course_id: courseid,
