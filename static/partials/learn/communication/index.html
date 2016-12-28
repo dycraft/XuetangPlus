@@ -14,7 +14,7 @@
         <script type="text/template" id="tpl-main">
             <div class="page__hd">
                 <h1 class="page__title">课程互动</h1>
-                <p class="page__desc"><这里应该是课程名字></p>
+                <p class="page__desc">{{ courseid }}</p>
             </div>
             <div class="page__bd">
                 <div class="weui-cells__title">消息操作</div>
@@ -22,7 +22,7 @@
                     <div class="weui-cell weui-cell_access" id="freshBtn">
                         <div class="weui-cell__bd">刷新消息</div>
                         <div class="weui-cell__ft" style="font-size: 0">
-                            <span class="weui-badge weui-badge_dot" style="margin-left: 5px;margin-right: 5px;"></span>
+                            <span class="weui-badge weui-badge_dot" style="margin-left: 5px;margin-right: 5px;" id="new"></span>
                         </div>
                     </div>
                     <div class="weui-cell weui-cell_access" id="sendBtn">
@@ -50,7 +50,7 @@
         <script type="text/template" id="tpl-add">
             <div class="page__hd">
                 <h1 class="page__title">发送消息</h1>
-                <p class="page__desc"><这里应该是什么？></p>
+                <p class="page__desc">{{ courseid }}</p>
             </div>
             <div class="page__bd">
                 <div id="form">
@@ -89,6 +89,7 @@
                     var params = getQueryParams(ctx.querystring);
                     if (!openid) openid = params.open_id;
                     if (!courseid) courseid = params.course_id;
+                    locals.courseid = courseid;
                     (function fresh() {
                         $.get('/api/communicate/eventsource/', {
                             open_id: openid,
@@ -96,24 +97,25 @@
                         }, function (data) {
                             locals.msgs = data.data;
                             render('main', locals);
+                            $('#new').hide();
                             $('#freshBtn').click(fresh);
                             $('#sendBtn').click(function () {
                                 page('#!add');
                             });
                         });
                     })();
-                    // (function getRtmMsg() {
-                    //     $.post("/api/communicate/eventsource/", {
-                    //         open_id: openid,
-                    //         course_id: courseid,
-                    //         update: ""
-                    //     }, function(data) {
-                    //         if(data.code === 0) {
-                    //             console.log(data);
-                    //             getRtmMsg();
-                    //         }
-                    //     });
-                    // })();
+                    (function getRtmMsg() {
+                        $.post("/api/communicate/eventsource/", {
+                            open_id: openid,
+                            course_id: courseid,
+                            update: ""
+                        }, function(data) {
+                            if(data.code === 0) {
+                                $('#new').show();
+                                setTimeOut("getRtmMsg();", 5000);
+                            }
+                        });
+                    })();
                 },
                 add: function (ctx, next) {
                     render('add', locals);
