@@ -18,3 +18,14 @@ def stamp_to_localstr_date(stamp):
 
 def current_stamp():
     return time.time()
+
+def date_today():
+    now_stamp = time.time()
+    today_stamp = utcstr_date_to_stamp(stamp_to_utcstr_date(now_stamp))
+    return datetime.datetime.fromtimestamp(today_stamp)
+
+def stamp_to_utcstr_date(stamp):
+    return datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d')
+
+def utcstr_date_to_stamp(utcstr):
+    return datetime.datetime.strptime(utcstr, '%Y-%m-%d').timestamp()

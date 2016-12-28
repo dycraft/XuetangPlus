@@ -40,15 +40,16 @@ class User(models.Model):
 
     def search_event(self, id):
         events = json.loads(self.event_list)
-        return events.index(id) + 1
+        return events.index(id)
 
     def del_event(self, id):
-        if id > len(self.event_list):
+        if id >= len(self.event_list):
             raise LogicError('The given id is out of range')
         events = json.loads(self.event_list)
-        Event.get_by_id(events[id - 1]).delete()
-        del(events[id - 1])
+        Event.get_by_id(events[id]).delete()
+        del events[id]
         self.event_list = json.dumps(events)
+        self.save()
 
     def search_event(self, id):
         events = json.loads(self.event_list)
@@ -72,7 +73,9 @@ class Course(models.Model):
 
     def add_msg(self, open_id, content):
         msg = Message.objects.create(sender_id=open_id, course_id = self.course_id, content=content, create_time=current_stamp())
-        self.newchatmsg = json.dumps(json.loads(self.newchatmsg).append(msg.id))
+        temp = json.loads(self.newchatmsg)
+        temp.append(msg.id)
+        self.newchatmsg = json.dumps(temp)
         self.ismsgupdated = 1
         self.save()
 
@@ -220,7 +223,7 @@ class Message(models.Model):
 
 class Event(models.Model):
     name = models.CharField(max_length=128, default='')
-    date = models.DateTimeField()
+    date = models.CharField(max_length=128, default='')
     content = models.CharField(max_length=512, default='')
 
     @classmethod

@@ -8,8 +8,6 @@ from XuetangPlus.settings import CONFIGS, get_redirect_url
 from util.time import *
 from util.randomStr import *
 import hashlib
-
-
 import requests
 import json
 import time
@@ -799,11 +797,11 @@ class EventDetail(APIView):
             id = int(self.input['id'])
         except:
             raise InputError('The given id should be int')
-        if 0 < id <= len(event_list):
+        if 0 <= id < len(event_list):
             return {
-                'name':event_list[id - 1].name,
-                'date': stamp_to_utcstr_date(float(event_list[id - 1].date)),
-                'content': event_list[id - 1].content
+                'name':event_list[id].name,
+                'date': stamp_to_utcstr_date(float(event_list[id].date)),
+                'content': event_list[id].content
             }
         raise InputError('The given id is out of range')
 
@@ -818,8 +816,8 @@ class EventDetail(APIView):
             id = int(self.input['id'])
         except:
             raise InputError('The given id should be int')
-        if 0 < id <= len(event_id_list):
-            event = Event.get_by_id(event_id_list[int(self.input['id']) - 1])
+        if 0 <= id < len(event_id_list):
+            event = Event.get_by_id(event_id_list[int(self.input['id'])])
             event.name = self.input['name']
             try:
                 event.date = utcstr_date_to_stamp(self.input['date'])
@@ -843,7 +841,7 @@ class EventList(APIView):
                 date = date_today()
             else:
                 try:
-                    date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d')
+                    date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d') + datetime.timedelta(days = 1)
                 except:
                     raise  InputError('incorrect given date')
             try:
@@ -851,8 +849,8 @@ class EventList(APIView):
             except:
                 raise LogicError('no such open_id')
             event_id_list = json.loads(user.event_list)
+            print(event_id_list)
             event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
-
             result = []
             record = []
             count = 0
@@ -976,6 +974,7 @@ class ReadNoticeRecord(APIView):
 
 
 class Communicate(APIView):
+
     def get(self):
         self.check_input('open_id', 'course_id')
         msgs = Course.objects.get(course_id=self.input['course_id']).get_old_msg()
@@ -989,22 +988,19 @@ class Communicate(APIView):
                 'avatar_url': user.avatar_url,
                 'content': msg.content
             }
-
-            answer.append((i, json.dumps(c)))
+            answer.append(c)
             i = i + 1
-        return json.dumps(dict(answer))
+        return answer
 
     def post(self):
         if 'update' in self.input:
             openid = self.input['open_id']
             courseid = self.input['course_id']
-
             while True:
                 mycourse = Course.objects.get(course_id=courseid)
                 if mycourse.ismsgupdated == 1:
                     return mycourse.get_new_msg()
                 time.sleep(5)
-
         else:
             openid = self.input['open_id']
             courseid = self.input['course_id']

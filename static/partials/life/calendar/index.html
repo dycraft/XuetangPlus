@@ -105,6 +105,7 @@
                     </div>
                 </div>
                 {% endfor %}
+                {% if rest == 1 %}
                 <div class="weui-panel weui-panel_access">
                     <div class="weui-panel__ft">
                         <a href="javascript:void(0);" class="weui-cell weui-cell_access weui-cell_link" id="more">
@@ -113,6 +114,7 @@
                         </a>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </script>
 
@@ -167,9 +169,10 @@
         <script type="text/javascript">
             $(function() {
                 var locals = {
-                    now: moment().format('YYYY-MM-DD')
+                    now: moment().format('YYYY-MM-DD'),
+                    rest: 1
                 };
-                var openid;
+                var openid, curdate;
 
                 var route = {
                     init: function (ctx, next) {
@@ -185,13 +188,18 @@
                 			},
                             navLinks: false,
                 			editable: true,
-                			eventLimit: false,
-                            events: [
-                                {
-                					title: 'DDL',
-                					start: '2016-12-01'
-                				}
-                            ]
+                			eventLimit: false
+                        });
+                        var month = $('#calendar').fullCalendar('getDate')._d.getMonth() + 1;
+                        $.get('/api/event/list', {
+                            open_id: openid,
+                            mode: 'month',
+                            date: locals.now()
+                        }, function (data) {
+                            $('#calendar').fullCalendar('addEvent', {
+                                title: "",
+                                start: ""
+                            });
                         });
                         $('#showSelectFormat').click(function () {
                             weui.actionSheet([
@@ -252,15 +260,25 @@
                             mode: 'day'
                         }, function (data) {
                             loading.hide();
+                            if (data.data.events.length === 0) locals.rest = 0;
                             locals.events = data.data.events;
+                            curdate = locals.events[locals.events.length-1][0].date;
                             render('list', locals);
-                            var showMore = function() {
-                                // to be implemented
-                                locals.events = locals.events.concat(data.data.events);
-                                render('list', locals);
-                                $('#more').click(showMore);
-                            };
-                            $('#more').click(showMore);
+                            $('#more').click(function() {
+                                (function showMore() {
+                                    $.get('/api/event/list', {
+                                        open_id: openid,
+                                        mode: 'day',
+                                        date: curdate
+                                    }, function(data) {
+                                        if (data.data.events.length === 0) locals.rest = 0;
+                                        locals.events = locals.events.concat(data.data.events);
+                                        curdate = locals.events[locals.events.length-1][0].date;
+                                        render('list', locals);
+                                        $('#more').click(showMore);
+                                    });
+                                })();
+                            });
                         });
                     },
                     detail: function (ctx, next) {
