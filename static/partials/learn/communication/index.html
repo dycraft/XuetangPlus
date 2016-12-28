@@ -89,29 +89,31 @@
                     var params = getQueryParams(ctx.querystring);
                     if (!openid) openid = params.open_id;
                     if (!courseid) courseid = params.course_id;
-                    $.get('/api/communicate/eventsource/', {
-                        open_id: openid,
-                        course_id: courseid
-                    }, function (data) {
-                        locals.msgs = data.data;
-                        console.log(data);
-                        render('main', locals);
-                        $('#sendBtn').click(function () {
-                            page('#!add');
-                        });
-                        (function getRtmMsg() {
-                            $.post("/api/communicate/eventsource/", {
-                                open_id: openid,
-                                course_id: courseid,
-                                update: ""
-                            }, function(data) {
-                                if(data.code === 0) {
-                                    console.log(data);
-                                    getRtmMsg();
-                                }
+                    (function fresh() {
+                        $.get('/api/communicate/eventsource/', {
+                            open_id: openid,
+                            course_id: courseid
+                        }, function (data) {
+                            locals.msgs = data.data;
+                            render('main', locals);
+                            $('#freshBtn').click(fresh);
+                            $('#sendBtn').click(function () {
+                                page('#!add');
                             });
-                        })();
-                    });
+                        });
+                    })();
+                    // (function getRtmMsg() {
+                    //     $.post("/api/communicate/eventsource/", {
+                    //         open_id: openid,
+                    //         course_id: courseid,
+                    //         update: ""
+                    //     }, function(data) {
+                    //         if(data.code === 0) {
+                    //             console.log(data);
+                    //             getRtmMsg();
+                    //         }
+                    //     });
+                    // })();
                 },
                 add: function (ctx, next) {
                     render('add', locals);

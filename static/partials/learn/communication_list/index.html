@@ -18,18 +18,16 @@
             </div>
             <div class="page__bd">
                 <div class="weui-panel weui-panel_access">
-                    {% for day in week %}
-                    <div class="weui-panel__hd">{{ day }}</div>
+                    <div class="weui-panel__hd">课程列表</div>
                     <div class="weui-panel__bd">
-                        {% for cls in classes[loop.index - one] %}
-                        <a class="weui-media-box weui-media-box_appmsg js-info">
+                        {% for cls in courses %}
+                        <a class="weui-media-box weui-media-box_appmsg js-course" href="/learn/communication?open_id={{ openid }}&course_id={{ cls.courseid }}">
                             <div class="weui-media-box__bd">
                                 <h4 class="weui-media-box__title">{{ cls.coursename }}</h4>
                             </div>
                         </a>
                         {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
         </script>
@@ -65,16 +63,12 @@
                         locals.student_id = data.data.student_id;
                         var isBind = data.data.bind;
                         if (isBind) {
-                            $.get('/api/learn/course_list', {
+                            $.get('/api/communicate/list/', {
                                 open_id: openid
                             }, function(data) {
-                                locals.classes = data.data.classes;
+                                console.log(data);
+                                locals.courses = data.data;
                                 render('main', locals);
-                                $('.js-info').click(function() {
-                                    courseid = $(this).attr('data');
-                                    locals.courseid = courseid;
-                                    page('#!info');
-                                });
                             });
                         } else {
                             weui.alert('请绑定学号', {
@@ -96,10 +90,9 @@
 
             getOpenId(function (get_open_id) {
                 openid = get_open_id;
-                page.base('/learn/course_list');
+                locals.openid = openid;
+                page.base('/learn/communication_list');
                 page('/', route.main);
-                page('comment', route.comment);
-                page('info', route.info);
                 page('*', route.init);
                 page({hashbang: true});
                 page();

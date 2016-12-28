@@ -974,13 +974,12 @@ class ReadNoticeRecord(APIView):
 
 
 class Communicate(APIView):
+    update = False
 
     def get(self):
         self.check_input('open_id', 'course_id')
-        msgs = Course.objects.get(course_id=self.input['course_id']).get_old_msg()
-        i = 0
+        msgs = Course.objects.get(course_id=self.input['course_id']).get_msg()
         answer = []
-
         for msg in msgs:
             user = User.objects.get(open_id=msg.sender_id)
             c = {
@@ -989,7 +988,6 @@ class Communicate(APIView):
                 'content': msg.content
             }
             answer.append(c)
-            i = i + 1
         return answer
 
     def post(self):
@@ -997,13 +995,38 @@ class Communicate(APIView):
             openid = self.input['open_id']
             courseid = self.input['course_id']
             while True:
-                mycourse = Course.objects.get(course_id=courseid)
-                if mycourse.ismsgupdated == 1:
-                    return mycourse.get_new_msg()
+                if update == True:
+                    return
                 time.sleep(5)
+                update = False
         else:
             openid = self.input['open_id']
             courseid = self.input['course_id']
             content = self.input['content']
             Course.objects.get(course_id=courseid).add_msg(openid, content)
+            update = True
             return
+
+
+class CommunicateList(APIView):
+
+    def get(self):
+        self.check_input('open_id')
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError("no such open_id")
+
+        url = 'http://se.zhuangty.com:8000/learnhelper/' + user.student_id + '/courses'
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest'
+        }
+
+        result = {}
+        response = requests.post(url, json=params)
+        if response.status_code == 200:
+            result_course = json.loads(response.content.decode())
+            return result_course['courses']
+        else:
+            raise LogicError('Response Error')

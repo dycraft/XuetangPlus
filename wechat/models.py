@@ -68,41 +68,21 @@ class Course(models.Model):
     course_id = models.CharField(max_length=128, default='')
     comments = models.CharField(max_length=1024, default='[]')
     chatmsg = models.CharField(max_length=1024, default='[]')
-    newchatmsg = models.CharField(max_length=1024, default='[]')
-    ismsgupdated = models.IntegerField(default=0)
 
     def add_msg(self, open_id, content):
-        msg = Message.objects.create(sender_id=open_id, course_id = self.course_id, content=content, create_time=current_stamp())
-        temp = json.loads(self.newchatmsg)
+        msg = Message.objects.create(sender_id=open_id, course_id=self.course_id, content=content, create_time=current_stamp())
+        temp = json.loads(self.chatmsg)
         temp.append(msg.id)
-        self.newchatmsg = json.dumps(temp)
-        self.ismsgupdated = 1
+        self.chatmsg = json.dumps(temp)
         self.save()
 
-    def update_msg(self):
-        self.ismsgupdated = 1
-        self.save()
-
-    def get_new_msg(self):
-        answer = []
-        i = 0
-        for msgid in json.loads(self.newchatmsg):
-            answer.append((i, Message.objects.get(id=msgid).to_json()))
-            i = i + 1
-
-        self.ismsgupdated = 0
-        self.newchatmsg = '[]'
-        self.save()
-
-        return json.dumps(dict(answer))
-
-    def get_old_msg(self):
+    def get_msg(self):
         temp = json.loads(self.chatmsg)
         length = len(temp)
         if length < 10:
-            return [Message.objects.get(id = x) for x in temp]
+            return [Message.objects.get(id = x) for x in temp[::-1]]
         else:
-            return [Message.objects.get(id = x) for x in temp[(length - 10):length]]
+            return [Message.objects.get(id = x) for x in temp[(length - 10):length][::-1]]
 
 class CourseForSearch(models.Model):
     course_seq = models.CharField(max_length=128)
