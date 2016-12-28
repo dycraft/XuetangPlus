@@ -135,8 +135,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
