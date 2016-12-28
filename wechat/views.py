@@ -31,7 +31,7 @@ class CustomWeChatView(WeChatView):
                     },
                     {
                         'type': 'view',
-                        'name': '绑定账号',
+                        'name': '绑定学号',
                         'url': get_redirect_url(event_urls['account_bind'])
                     }
                 ]
@@ -51,7 +51,7 @@ class CustomWeChatView(WeChatView):
                     },
                     {
                         'type': 'view',
-                        'name': '师生交流',
+                        'name': '课程讨论',
                         'url': get_redirect_url(event_urls['communication'])
                     },
                     {
@@ -61,7 +61,7 @@ class CustomWeChatView(WeChatView):
                     },
                     {
                         'type': 'view',
-                        'name': '公告及作业',
+                        'name': '通知面板',
                         'url': get_redirect_url(event_urls['notice_panel'])
                     }
                 ]
