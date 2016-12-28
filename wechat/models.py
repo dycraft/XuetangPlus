@@ -7,6 +7,7 @@ from XuetangPlus.settings import CONFIGS
 import requests
 import datetime
 from django.utils import timezone
+from util.time import *
 
 
 class User(models.Model):
@@ -61,15 +62,15 @@ class User(models.Model):
 
 
 class Course(models.Model):
-    name = models.CharField(max_length=128)
-    courseid = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, default='')
+    course_id = models.CharField(max_length=128, default='')
     comments = models.CharField(max_length=1024, default='[]')
     chatmsg = models.CharField(max_length=1024, default='[]')
     newchatmsg = models.CharField(max_length=1024, default='[]')
     ismsgupdated = models.IntegerField(default=0)
 
     def add_msg(self, open_id, content):
-        msg = Message.objects.create(sender_id=open_id, course_id = self.courseid, content=content, create_time=0)
+        msg = Message.objects.create(sender_id=open_id, course_id = self.course_id, content=content, create_time=current_stamp())
         self.newchatmsg = json.dumps(json.loads(self.newchatmsg).append(msg.id))
         self.ismsgupdated = 1
         self.save()
@@ -95,9 +96,9 @@ class Course(models.Model):
         temp = json.loads(self.chatmsg)
         length = len(temp)
         if length < 10:
-            return [Message.objects.get(id = x) for x in temp[0, length]]
+            return [Message.objects.get(id = x) for x in temp]
         else:
-            return [Message.objects.get(id = x) for x in temp[length - 10, length]]
+            return [Message.objects.get(id = x) for x in temp[(length - 10):length]]
 
 class Comment(models.Model):
     course_id = models.CharField(max_length=128, default='')
@@ -162,7 +163,7 @@ class Message(models.Model):
     sender_id = models.CharField(max_length=128, default='')
     course_id = models.CharField(max_length=128, default='')
     content = models.CharField(max_length=1024, default='')
-    create_time = models.DateTimeField(default=timezone.now)
+    create_time = models.CharField(max_length=128, default='')
 
     def to_json(self):
         answer = []

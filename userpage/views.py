@@ -196,6 +196,13 @@ class CourseList(APIView):
 
             for i in range(7):
                 classes[i] = sorted(classes[i], key=lambda d: d['start'])
+                for x in classes[i]:
+                    cs = Course.objects.filter(course_id=x['courseid'])
+                    if len(cs) == 0:
+                        Course.objects.create(name = x['coursename'], course_id = x['courseid'])
+                    elif cs[0].name != x['coursename']:
+                        cs[0].name = x['coursename']
+                        cs[0].save()
 
             return {
                 'classes': classes
@@ -832,8 +839,7 @@ class ReadNoticeRecord(APIView):
 class Communicate(APIView):
     def get(self):
         self.check_input('open_id', 'course_id')
-
-        msgs = Course.objects.get(courseid=self.input['course_id']).get_oldchatmsg()
+        msgs = Course.objects.get(course_id=self.input['course_id']).get_old_msg()
         i = 0
         answer = []
 
@@ -854,8 +860,7 @@ class Communicate(APIView):
             courseid = self.input['course_id']
 
             while True:
-                print(self.input['course_id'])
-                mycourse = Course.objects.get(courseid=courseid)
+                mycourse = Course.objects.get(course_id=courseid)
                 if mycourse.ismsgupdated == 1:
                     return mycourse.get_new_msg()
                 time.sleep(5)
@@ -864,5 +869,5 @@ class Communicate(APIView):
             openid = self.input['open_id']
             courseid = self.input['course_id']
             content = self.input['content']
-            Course.objects.get(courseid=courseid).addmsg(openid, content)
+            Course.objects.get(course_id=courseid).add_msg(openid, content)
             return
