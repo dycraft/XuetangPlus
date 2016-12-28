@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+        <title>错误</title>
+        <link rel="stylesheet" href="/lib/weui/weui.css"/>
+        <link rel="stylesheet" href="/lib/weui/example.css">
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body ontouchstart>
+        <div class="weui-msg">
+            <div class="weui-msg__icon-area"><i class="weui-icon-warn weui-icon_msg"></i></div>
+            <div class="weui-msg__text-area">
+                <h2 class="weui-msg__title">未绑定学号</h2>
+                <p class="weui-msg__desc">学堂服务需要绑定学号才能使用</p>
+            </div>
+            <div class="weui-msg__opr-area">
+                <p class="weui-btn-area">
+                    <a href="/welcome/account_bind" class="weui-btn weui-btn_primary">绑定</a>
+                    <a onClick="wx.closeWindow();" class="weui-btn weui-btn_default">取消</a>
+                </p>
+            </div>
+        </div>
+
+        <script type="text/javascript" src="/lib/zepto.min.js"></script>
+        <!--调用JSSDK-->
+        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
+        <script type="text/javascript">
+            var jssdk_function_list = ['closeWindow'];
+            callJSSDK(jssdk_function_list);
+        </script>
+    </body>
+</html>

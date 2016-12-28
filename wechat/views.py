@@ -19,7 +19,8 @@ event_urls = {
     'communication': 'learn/communication',
     'notice_panel': 'learn/notice_panel',
     'calendar': 'life/calendar',
-    'navigation': 'life/navigation'
+    'navigation': 'life/navigation',
+    'comment_list': 'learn/course_comment'
 }
 
 class CustomWeChatView(WeChatView):
@@ -63,13 +64,18 @@ class CustomWeChatView(WeChatView):
                     },
                     {
                         'type': 'view',
-                        'name': '本人课程',
+                        'name': '个人课程',
                         'url': get_redirect_url(event_urls['course_list'])
                     },
                     {
                         'type': 'view',
                         'name': '师生交流',
                         'url': get_redirect_url(event_urls['communication'])
+                    },
+                    {
+                        'type': 'view',
+                        'name': '课程评价',
+                        'url': get_redirect_url(event_urls['comment_list'])
                     },
                     {
                         'type': 'view',

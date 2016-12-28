@@ -69,43 +69,12 @@
             </div>
         </script>
 
-        <script type="text/template" id="tpl-list">
-            <div class="page__hd">
-                <h1 class="page__title">课程讨论列表</h1>
-                <p class="page__desc">{{ student_id }}</p>
-            </div>
-            <div class="page__bd">
-                <div class="weui-panel weui-panel_access">
-                    {% for day in week %}
-                    <div class="weui-panel__hd">{{ day }}</div>
-                    <div class="weui-panel__bd">
-                        {% for cls in classes[loop.index - one] %}
-                        <a class="weui-media-box weui-media-box_appmsg">
-                            <div class="weui-media-box__bd">
-                                <h4 class="weui-media-box__title">{{ cls.coursename }}</h4>
-                            </div>
-                        </a>
-                        {% endfor %}
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </script>
-
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
         <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
         <script type="text/javascript" src="/lib/page.js"></script>
         <script type="text/javascript" src="/lib/weui/weui.min.js"></script>
         <script type="text/javascript" src="/js/openid.js"></script>
         <script type="text/javascript" src="/js/render.js"></script>
-
-        <!--调用JSSDK-->
-        <!--script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
-        <script type="text/javascript" src="/js/JSSDK.js"></script>
-        <script type="text/javascript">
-            var jssdk_function_list = ['closeWindow'];
-            callJSSDK(jssdk_function_list);
-        </script-->
 
         <script type="text/javascript">
             var locals = {};
@@ -118,9 +87,10 @@
                 },
                 main: function (ctx, next) {
                     var params = getQueryParams(ctx.querystring);
+                    console.log(params);
                     if (!openid) openid = params.open_id;
                     if (!courseid) courseid = params.course_id;
-                    $.get('/api/course/information/', {
+                    $.get('/api/communicate/eventsource/', {
                         open_id: openid,
                         course_id: courseid
                     }, function (data) {
@@ -135,8 +105,7 @@
                                 course_id: courseid,
                                 update: ""
                             }, function(data) {
-                                console.log(data);
-                                if(data !== null) {
+                                if(data.code === 0) {
                                     getRtmMsg();
                                 }
                             });
@@ -149,7 +118,7 @@
                         weui.form.validate('#form', function (error) {
                             var loading = weui.loading('提交中...');
                             if (!error) {
-                                $.post('/api/message/create', {
+                                $.post('/api/communicate/eventsource/', {
                                     open_id: openid,
                                     course_id: courseid,
                                     content: $('#inputContent').val()

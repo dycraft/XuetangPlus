@@ -94,29 +94,25 @@ class Course(models.Model):
     def get_old_msg(self):
         temp = json.loads(self.chatmsg)
         length = len(temp)
-        return [Message.objects.get(id = x) for x in temp[length - 10, length]]
+        if length < 10:
+            return [Message.objects.get(id = x) for x in temp[0, length]]
+        else:
+            return [Message.objects.get(id = x) for x in temp[length - 10, length]]
 
 class Comment(models.Model):
-    courseid = models.IntegerField(default=0)
-    commenttime = models.IntegerField(default=0)
-    commenter = models.IntegerField(default=0)
+    course_id = models.CharField(max_length=128, default='')
+    course_name = models.CharField(max_length=128, default='')
+    comment_time = models.CharField(max_length=128, default='')
+    commenter_id = models.IntegerField(default=0)
     content = models.CharField(max_length=512, default='')
-    score = models.IntegerField()
+    score = models.IntegerField(default=0)
+    isanonymous = models.IntegerField(default=0)
 
     def get_commenter_name(self):
-        if self.commenter == -1:
-            return 'anonymous'
+        if self.isanonymous == 0:
+            return '匿名'
         else:
-            return User.objects.get(id=self.commenter)
-
-    def to_json(self):
-        answer = []
-        answer.append(('courseid', self.courseid))
-        answer.append(('commenttime', self.commenttime))
-        answer.append(('commenter', self.commenter))
-        answer.append(('content', self.content))
-        answer.append(('score', self.score))
-        return json.dumps(dict(answer))
+            return User.objects.get(id=self.commenter_id).realname
 
 class WechatConfirmation(models.Model):
     access_token = models.CharField(max_length=1024, default='')

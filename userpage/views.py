@@ -29,7 +29,6 @@ class AccountBind(APIView):
 
     def get(self):
         self.check_input('open_id')
-
         try:
             user = User.get_by_openid(self.input['open_id'])
             return {
@@ -120,7 +119,7 @@ class AccountBind(APIView):
             except:
                 raise LogicError('no such open_id')
         else:
-            print(response.content.decode())
+            # print(response.content.decode())
             raise ValidateError('Wrong username or password.')
 
 
@@ -198,7 +197,6 @@ class CourseList(APIView):
             for i in range(7):
                 classes[i] = sorted(classes[i], key=lambda d: d['start'])
 
-            print(classes)
             return {
                 'classes': classes
             }
@@ -421,7 +419,7 @@ class MeInfo(APIView):
 
         user = User.get_by_openid(self.input['open_id'])
 
-        print(user)
+        # print(user)
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         params = {
             'apikey': 'camustest',
@@ -470,6 +468,7 @@ class CourseInfo(APIView):
         response = requests.post(url, json=params)
         if response.status_code == 200:
             result_course = json.loads(response.content.decode())
+
             for course in result_course['classes']:
                 if course['courseid'] == self.input['course_id']:
                     result = course
@@ -480,16 +479,26 @@ class CourseInfo(APIView):
                     response = requests.post('http://se.zhuangty.com:8000/learnhelper/' + user.student_id + '/courses')
                     if response.status_code == 200:
                         res = json.loads(response.content.decode())
+                        result['teacher_email'] = ''
+                        result['teacher_phone'] = ''
+                        result['course_new_file'] = 0
+                        result['course_unread_notice'] = 0
+                        result['course_unsubmitted_operations'] = 0
                         for course in res['courses']:
                             if course['courseid'] == self.input['course_id']:
-                                result['teacher_email'] = course['email'];
-                                result['teacher_phone'] = course['phone'];
+                                result['teacher_email'] = course['email']
+                                result['teacher_phone'] = course['phone']
                                 result['course_new_file'] = course['newfile']
                                 result['course_unread_notice'] = course['unreadnotice']
                                 result['course_unsubmitted_operations'] = course['unsubmittedoperations']
-                    else:
-                        raise LogicError('Response Error')
-                raise LogicError('No course')
+                                return result
+
+                        return result
+
+                    raise LogicError('Response Error')
+
+            raise LogicError('No course')
+
         else:
             raise LogicError('Response Error')
 
@@ -514,34 +523,105 @@ class CourseInfo(APIView):
         return result
 
 
-class CourseComment(APIView):
-    def get(self):
-        params = self.input
-        course_id = params['course_id']
-        comments = Comment.objects.filter(courseid=course_id)
-
-        answer = []
-        for index in range(0, len(comments)):
-            answer.append((str(index), comments[index].toJson()))
-
-        return json.dumps({'comments': answer})
+class CommentCreate(APIView):
 
     def post(self):
+        self.check_input('content', 'score', 'course_id', 'course_name', 'open_id', 'isanonymous')
+
         params = self.input
-        mark = params['score']
-        comment = params['content']
-        isanonymous = params['anonymous']
-        userid = -1
+        try:
+            user = User.get_by_openid(params['open_id'])
+        except:
+            raise LogicError('no such open_id')
+        if user.student_id == '':
+            raise LogicError('user not bind')
+        commenter_id = user.id
+        try:
+            score = int(params['score'])
+        except:
+            raise InputError('The given score should be int')
+        if not 0 < score < 6:
+            raise InputError('The given score is out of range')
+        content = params['content']
+        course_id = params['course_id']
+        if params['isanonymous'] == 'true':
+            isanonymous = 0
+        else:
+            isanonymous = 1
+        create_time = current_stamp()
+        course_name = params['course_name']
+        Comment.objects.create(isanonymous = isanonymous, course_id=course_id, course_name=course_name, comment_time=create_time, commenter_id=commenter_id, content=content, score=score)
 
-        timestamp = time.mktime(datetime.datetime.now().timetuple())
-        course_id = params['coure_id']
 
-        if isanonymous == 'false':
-            userid = self.user.id
+class CommentList(APIView):
 
-        Comment.objects.create(courseid=course_id, commenttime=timestamp, commenter=userid, content=comment, score=int(mark))
-
-        return
+    def get(self):
+        self.check_input('open_id')
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError('no such open_id')
+        if user.student_id == '':
+            raise LogicError('user not bind')
+        all_comments = [{
+                            'time': float(x.comment_time),
+                            'content': x.content,
+                            'id': x.id,
+                            'real_name': x.get_commenter_name(),
+                            'course_name': x.course_name,
+                        }
+                        for x in Comment.objects.all()]
+        if 'course_id' in self.input:
+            if 'end_id' in self.input:
+                try:
+                    id = int(self.input['end_id'])
+                except:
+                    raise InputError('The given id should be int')
+                try:
+                    end_time = float(Comment.objects.get(id=id).comment_time)
+                except:
+                    raise LogicError('no such id')
+                comments = []
+                for cmt in all_comments:
+                    if cmt['time'] < end_time and cmt['course_id'] == self.input['course_id']:
+                        comments.append(cmt)
+                result = sorted(comments, key=lambda d: d['time'], reverse=True)
+                length = len(result)
+                if length > 10:
+                    result = result[0:10]
+            else:
+                comments = []
+                for cmt in all_comments:
+                    if cmt['course_id'] == self.input['course_id']:
+                        comments.append(cmt)
+                result = sorted(comments, key=lambda d: d['time'], reverse=True)
+                length = len(result)
+                if length > 10:
+                    result = result[0:10]
+        else:
+            if 'end_id' in self.input:
+                try:
+                    id = int(self.input['end_id'])
+                except:
+                    raise InputError('The given id should be int')
+                try:
+                    end_time = float(Comment.objects.get(id=id).comment_time)
+                except:
+                    raise LogicError('no such id')
+                comments = []
+                for cmt in all_comments:
+                    if cmt['time'] < end_time:
+                        comments.append(cmt)
+                result = sorted(comments, key=lambda d: d['time'], reverse=True)
+                length = len(result)
+                if length > 10:
+                    result = result[0:10]
+            else:
+                result = sorted(all_comments, key=lambda d: d['time'], reverse=True)
+                length = len(result)
+                if length > 10:
+                    result = result[0:10]
+        return result
 
 
 class GetOpenId(APIView):
@@ -774,6 +854,7 @@ class Communicate(APIView):
             courseid = self.input['course_id']
 
             while True:
+                print(self.input['course_id'])
                 mycourse = Course.objects.get(courseid=courseid)
                 if mycourse.ismsgupdated == 1:
                     return mycourse.get_new_msg()

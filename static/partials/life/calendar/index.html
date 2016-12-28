@@ -253,14 +253,13 @@
                         }, function (data) {
                             loading.hide();
                             locals.events = data.data.events;
-                            console.log(data.data.events);
                             render('list', locals);
                             var showMore = function() {
                                 // to be implemented
                                 locals.events = locals.events.concat(data.data.events);
                                 render('list', locals);
                                 $('#more').click(showMore);
-                            }
+                            };
                             $('#more').click(showMore);
                         });
                     },
