@@ -32,15 +32,17 @@
                 </div>
                 <div class="weui-cells__title">最新消息</div>
                 <div class="weui-cells">
+                    {% for msg in msgs %}
                     <div class="weui-cell">
                         <div class="weui-cell__hd" style="position: relative;margin-right: 10px;">
-                            <img src="images/pic_160.png" style="width: 50px;display: block"/>
+                            <img src="/img/avatar/example.png" style="width: 50px;display: block"/>
                         </div>
                         <div class="weui-cell__bd">
-                            <p class="weui-media-box__title communication-name">名字</p>
-                            <p class="weui-media-box__desc communication-message">这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，</p>
+                            <p class="weui-media-box__title communication-name">{{ msg.realname }}</p>
+                            <p class="weui-media-box__desc communication-message">{{ msg.content }}</p>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
             </div>
         </script>
@@ -63,6 +65,29 @@
                     <div class="weui-btn-area">
                         <a class="weui-btn weui-btn_primary" id="confirmBtn">提交</a>
                     </div>
+                </div>
+            </div>
+        </script>
+
+        <script type="text/template" id="tpl-list">
+            <div class="page__hd">
+                <h1 class="page__title">课程讨论列表</h1>
+                <p class="page__desc">{{ student_id }}</p>
+            </div>
+            <div class="page__bd">
+                <div class="weui-panel weui-panel_access">
+                    {% for day in week %}
+                    <div class="weui-panel__hd">{{ day }}</div>
+                    <div class="weui-panel__bd">
+                        {% for cls in classes[loop.index - one] %}
+                        <a class="weui-media-box weui-media-box_appmsg">
+                            <div class="weui-media-box__bd">
+                                <h4 class="weui-media-box__title">{{ cls.coursename }}</h4>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </script>
@@ -104,29 +129,26 @@
                         $('#sendBtn').click(function () {
                             page('#!add');
                         });
-                        function getRtmMsg() {
-                            $.ajax({
-                                type: "POST",
-                                url: "/api/communicate/eventsource/",
-                                data: "update",
-                                success: function(msg){
-                                    if(msg != null) {
-                                        //获取新消息后处理
-
-                                        getRtmMsg();
-                                    }
+                        (function getRtmMsg() {
+                            $.post("/api/communicate/eventsource/", {
+                                open_id: openid,
+                                course_id: courseid,
+                                update: ""
+                            }, function(data) {
+                                console.log(data);
+                                if(data !== null) {
+                                    getRtmMsg();
                                 }
                             });
-                        }
-                        getRtmMsg();
+                        })();
                     });
                 },
                 add: function (ctx, next) {
                     render('add', locals);
                     $('#confirmBtn').click(function () {
                         weui.form.validate('#form', function (error) {
+                            var loading = weui.loading('提交中...');
                             if (!error) {
-                                var loading = weui.loading('提交中...');
                                 $.post('/api/message/create', {
                                     open_id: openid,
                                     course_id: courseid,
