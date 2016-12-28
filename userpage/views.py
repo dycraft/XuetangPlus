@@ -986,6 +986,7 @@ class Communicate(APIView):
             user = User.objects.get(open_id=msg.sender_id)
             c = {
                 'realname': user.realname,
+                'avatar_url': user.avatar_url,
                 'content': msg.content
             }
 
@@ -1010,4 +1011,3 @@ class Communicate(APIView):
             content = self.input['content']
             Course.objects.get(course_id=courseid).add_msg(openid, content)
             return
-

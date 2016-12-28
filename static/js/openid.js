@@ -16,8 +16,7 @@
 
     window.getOpenId = function(next) {
         var openIdUrl = '/api/welcome/openid/';
-        if(isAccountBind)
-        {
+        if (window.hasOwnProperty('isAccountBind') && isAccountBind) {
             openIdUrl = '/api/welcome/userinfo/';
         }
         $.get(openIdUrl, {
