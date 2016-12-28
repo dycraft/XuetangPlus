@@ -110,7 +110,6 @@
                                 page.redirect('#!success');
                             } else {
                                 render('main', locals);
-
                                 $('#submitBtn').click(function () {
                                     var student_id = $('#inputStudentID').val();
                                     var password = $('#inputPassword').val();
@@ -140,8 +139,8 @@
                                                 default:
                                                     weui.topTips('未知错误');
                                                     break;
-                                                };
-                                            })
+                                                }
+                                            });
                                         }
                                     });
                                 });
@@ -165,7 +164,7 @@
                                         $.post('/api/welcome/unbind', {
                                             open_id: openid
                                         }, function (data) {
-                                            if (data.code == 0) {
+                                            if (data.code === 0) {
                                                 locals.student_id = undefined;
                                                 page('');
                                             } else if (data.code < 0) {

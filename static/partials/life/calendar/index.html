@@ -179,57 +179,67 @@
                         next();
                     },
                     main: function (ctx, next) {
-                        render('main', locals);
-                        $('#calendar').fullCalendar({
-                            header: {
-                                left: 'prev',
-                				center: 'title',
-                                right: 'next',
-                			},
-                            navLinks: false,
-                			editable: true,
-                			eventLimit: false
-                        });
-                        var month = $('#calendar').fullCalendar('getDate')._d.getMonth() + 1;
-                        $.get('/api/event/list', {
-                            open_id: openid,
-                            mode: 'month',
-                            date: locals.now()
+                        $.get('/api/welcome/check_bind/', {
+                            open_id: openid
                         }, function (data) {
-                            $('#calendar').fullCalendar('addEvent', {
-                                title: "",
-                                start: ""
-                            });
-                        });
-                        $('#showSelectFormat').click(function () {
-                            weui.actionSheet([
-                                {
-                                    label: '月',
-                                    onClick: function () {
-                                        $('#calendar').fullCalendar('changeView', 'month');
-                                    }
-                                }, {
-                                    label: '周',
-                                    onClick: function () {
-                                        $('#calendar').fullCalendar('changeView', 'listWeek');
-                                    }
-                                }, {
-                                    label: '日',
-                                    onClick: function () {
-                                        $('#calendar').fullCalendar('changeView', 'listDay');
-                                    }
-                                }
-                            ], [
-                                {
-                                    label: '取消'
-                                }
-                            ]);
-                        });
-                        $('#eventListBtn').click(function () {
-                            page('#!list');
-                        });
-                        $('#eventAddBtn').click(function () {
-                            page('#!add');
+                            locals.student_id = data.data.student_id;
+                            var isBind = data.data.bind;
+                            if (isBind) {
+                                render('main', locals);
+                                $('#calendar').fullCalendar({
+                                    header: {
+                                        left: 'prev',
+                        				center: 'title',
+                                        right: 'next',
+                        			},
+                                    navLinks: false,
+                        			editable: true,
+                        			eventLimit: false
+                                });
+                                var month = $('#calendar').fullCalendar('getDate')._d.getMonth() + 1;
+                                $.get('/api/event/list', {
+                                    open_id: openid,
+                                    mode: 'month',
+                                    date: locals.now
+                                }, function (data) {
+                                    $('#calendar').fullCalendar('addEvent', {
+                                        title: "",
+                                        start: ""
+                                    });
+                                });
+                                $('#showSelectFormat').click(function () {
+                                    weui.actionSheet([
+                                        {
+                                            label: '月',
+                                            onClick: function () {
+                                                $('#calendar').fullCalendar('changeView', 'month');
+                                            }
+                                        }, {
+                                            label: '周',
+                                            onClick: function () {
+                                                $('#calendar').fullCalendar('changeView', 'listWeek');
+                                            }
+                                        }, {
+                                            label: '日',
+                                            onClick: function () {
+                                                $('#calendar').fullCalendar('changeView', 'listDay');
+                                            }
+                                        }
+                                    ], [
+                                        {
+                                            label: '取消'
+                                        }
+                                    ]);
+                                });
+                                $('#eventListBtn').click(function () {
+                                    page('#!list');
+                                });
+                                $('#eventAddBtn').click(function () {
+                                    page('#!add');
+                                });
+                            } else {
+                                weui.alert('请绑定学号', function(){ wx.closeWindow(); });
+                            }
                         });
                     },
                     add: function (ctx, next) {
@@ -261,8 +271,10 @@
                         }, function (data) {
                             loading.hide();
                             if (data.data.events.length === 0) locals.rest = 0;
-                            locals.events = data.data.events;
-                            curdate = locals.events[locals.events.length-1][0].date;
+                            else {
+                                locals.events = data.data.events;
+                                curdate = locals.events[locals.events.length-1][0].date;
+                            }
                             render('list', locals);
                             $('#more').click(function() {
                                 (function showMore() {

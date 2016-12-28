@@ -204,9 +204,7 @@
                                     });
                                 });
                             } else {
-                                weui.alert('请绑定学号', function(){
-                                    wx.closeWindow();
-                                });
+                                weui.alert('请绑定学号', function(){ wx.closeWindow(); });
                             }
                         });
                     },

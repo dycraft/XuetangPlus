@@ -66,23 +66,11 @@
                             $.get('/api/communicate/list/', {
                                 open_id: openid
                             }, function(data) {
-                                console.log(data);
                                 locals.courses = data.data;
                                 render('main', locals);
                             });
                         } else {
-                            weui.alert('请绑定学号', {
-                                buttons: [{
-                                    label: '绑定',
-                                    type: 'primary',
-                                    onClick: function(){ location.href = '/welcome/account_bind'; }
-                                },
-                                {
-                                    label: '取消',
-                                    type: 'default',
-                                    onClick: function(){ wx.closeWindow(); }
-                                }]
-                            });
+                            weui.alert('请绑定学号', function(){ wx.closeWindow(); });
                         }
                     });
                 }

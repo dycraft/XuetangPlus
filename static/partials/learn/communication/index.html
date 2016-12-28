@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
-        <title>课程互动</title>
+        <title>课程讨论</title>
         <link rel="stylesheet" href="/lib/weui/weui.css"/>
         <link rel="stylesheet" href="/lib/weui/example.css">
         <link rel="stylesheet" href="/css/style.css">
@@ -13,7 +13,7 @@
 
         <script type="text/template" id="tpl-main">
             <div class="page__hd">
-                <h1 class="page__title">课程互动</h1>
+                <h1 class="page__title">课程讨论</h1>
                 <p class="page__desc">{{ courseid }}</p>
             </div>
             <div class="page__bd">
@@ -75,6 +75,14 @@
         <script type="text/javascript" src="/lib/weui/weui.min.js"></script>
         <script type="text/javascript" src="/js/openid.js"></script>
         <script type="text/javascript" src="/js/render.js"></script>
+
+        <!--调用JSSDK-->
+        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
+        <script type="text/javascript">
+            var jssdk_function_list = ['closeWindow'];
+            callJSSDK(jssdk_function_list);
+        </script>
 
         <script type="text/javascript">
             var locals = {};

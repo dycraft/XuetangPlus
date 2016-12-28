@@ -53,6 +53,14 @@
         <script type="text/javascript" src="/js/openid.js"></script>
         <script type="text/javascript" src="/js/render.js"></script>
 
+        <!--调用JSSDK-->
+        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
+        <script type="text/javascript">
+            var jssdk_function_list = ['closeWindow'];
+            callJSSDK(jssdk_function_list);
+        </script>
+
         <script type="text/javascript">
             $(function() {
                 var locals = {};
@@ -64,28 +72,39 @@
                         next();
                     },
                     main: function(ctx, next) {
-                        $.get('/api/course/comment/list', {
+                        $.get('/api/welcome/check_bind/', {
                             open_id: openid
-                        }, function(data) {
-                            if (data.data.length < 10) locals.rest = 0;
-                            locals.comments = data.data;
-                            curid = locals.comments[locals.comments.length-1].id;
-                            render('main', locals);
-                            $('#more').click(function() {
-                                (function showMore() {
-                                    $.get('/api/course/comment/list', {
-                                        open_id: openid,
-                                        end_id: curid,
-                                    }, function(data) {
-                                        if (data.data.length < 10) locals.rest = 0;
-                                        locals.comments = locals.comments.concat(data.data);
-                                        curid = locals.comments[locals.comments.length-1].id;
-                                        render('main', locals);
-                                        $('#more').click(showMore);
+                        }, function (data) {
+                            locals.student_id = data.data.student_id;
+                            var isBind = data.data.bind;
+                            if (isBind) {
+                                $.get('/api/course/comment/list', {
+                                    open_id: openid
+                                }, function(data) {
+                                    if (data.data.length < 10) locals.rest = 0;
+                                    locals.comments = data.data;
+                                    curid = locals.comments[locals.comments.length-1].id;
+                                    render('main', locals);
+                                    $('#more').click(function() {
+                                        (function showMore() {
+                                            $.get('/api/course/comment/list', {
+                                                open_id: openid,
+                                                end_id: curid,
+                                            }, function(data) {
+                                                if (data.data.length < 10) locals.rest = 0;
+                                                locals.comments = locals.comments.concat(data.data);
+                                                curid = locals.comments[locals.comments.length-1].id;
+                                                render('main', locals);
+                                                $('#more').click(showMore);
+                                            });
+                                        })();
                                     });
-                                })();
-                            });
+                                });
+                            } else {
+                                weui.alert('请绑定学号', function(){ wx.closeWindow(); });
+                            }
                         });
+
                     }
                 };
 
