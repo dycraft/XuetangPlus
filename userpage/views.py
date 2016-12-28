@@ -120,7 +120,7 @@ class AccountBind(APIView):
             except:
                 raise LogicError('no such open_id')
         else:
-
+            print(response.content.decode())
             raise ValidateError('Wrong username or password.')
 
 
@@ -549,51 +549,6 @@ class CourseComment(APIView):
         return
 
 
-class ChatMenu(APIView):
-
-    def get(self):
-        self.check_input('open_id')
-        chats = Chatting.filter_by_openid(self.input['open_id'])
-        result = []
-        for c in chats:
-            dic = {}
-            if(c.open_id1 == self.input['open_id']):
-                dic['communicator'] = c.open_id2
-            else:
-                dic['communicator'] = c.open_id1
-            dic['head_content'] = ''
-            x = Message.objects.filter(id = c.content)
-            if len(x) > 0:
-                dic['head_content'] = x[0].content
-            dic['update_time'] = c.update_time
-            dic['is_updated'] =c.is_updated
-            result.append(dic)
-        return sorted(result, key=lambda d: d['update_time'])
-
-    def post(self):
-        return
-
-
-class ChatArea(APIView):
-
-    def get(self):
-        self.check_input('open_id', 'communicator_id')
-        chats = Chatting.filter_by_chater_id(self.input['open_id'], self.input['communicator_id'])
-        if len(chats) == 0:
-            Chatting.objects.create(open_id1 = self.input['open_id'], open_id2 = self.input['communicator_id'])
-            return []
-
-        msgs = Message.filter_by_chater_id(self.input['open_id'], self.input['communicator_id'])
-        for msg in msgs:
-            if msg.create_time < int(current_stamp()) - 30 * 86400:
-                msg.delete()
-
-        return
-
-    def post(self):
-        return
-
-
 class GetOpenId(APIView):
 
     def get(self):
@@ -797,3 +752,40 @@ class ReadNoticeRecord(APIView):
         name += name + '&'
         name += course_id
         return name
+
+class Communicate(APIView):
+    def get(self):
+        self.check_input('open_id', 'course_id')
+
+        msgs = Course.objects.get(courseid=self.input['course_id']).get_oldchatmsg()
+        i = 0
+        answer = []
+
+        for msg in msgs:
+            user = User.objects.get(open_id=msg.sender_id)
+            c = {
+                'realname': user.realname,
+                'content': msg.content
+            }
+
+            answer.append((i, json.dumps(c)))
+            i = i + 1
+        return json.dumps(dict(answer))
+
+    def post(self):
+        if 'update' in self.input:
+            openid = self.input['open_id']
+            courseid = self.input['course_id']
+
+            while True:
+                mycourse = Course.objects.get(courseid=courseid)
+                if mycourse.ismsgupdated == 1:
+                    return mycourse.get_new_msg()
+                time.sleep(5)
+
+        else:
+            openid = self.input['open_id']
+            courseid = self.input['course_id']
+            content = self.input['content']
+            Course.objects.get(courseid=courseid).addmsg(openid, content)
+            return

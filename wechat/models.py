@@ -64,7 +64,37 @@ class Course(models.Model):
     name = models.CharField(max_length=128)
     courseid = models.CharField(max_length=128)
     comments = models.CharField(max_length=1024, default='[]')
+    chatmsg = models.CharField(max_length=1024, default='[]')
+    newchatmsg = models.CharField(max_length=1024, default='[]')
+    ismsgupdated = models.IntegerField(default=0)
 
+    def add_msg(self, open_id, content):
+        msg = Message.objects.create(sender_id=open_id, course_id = self.courseid, content=content, create_time=0)
+        self.newchatmsg = json.dumps(json.loads(self.newchatmsg).append(msg.id))
+        self.ismsgupdated = 1
+        self.save()
+
+    def update_msg(self):
+        self.ismsgupdated = 1
+        self.save()
+
+    def get_new_msg(self):
+        answer = []
+        i = 0
+        for msgid in json.loads(self.newchatmsg):
+            answer.append((i, Message.objects.get(id=msgid).to_json()))
+            i = i + 1
+
+        self.ismsgupdated = 0
+        self.newchatmsg = '[]'
+        self.save()
+
+        return json.dumps(dict(answer))
+
+    def get_old_msg(self):
+        temp = json.loads(self.chatmsg)
+        length = len(temp)
+        return [Message.objects.get(id = x) for x in temp[length - 10, length]]
 
 class Comment(models.Model):
     courseid = models.IntegerField(default=0)
@@ -132,45 +162,16 @@ class WechatConfirmation(models.Model):
         return self.jssdk_ticket
 
 
-class Chatting(models.Model):
-    open_id1 = models.IntegerField(default=0)
-    open_id2 = models.IntegerField(default=0)
-    content = models.IntegerField(default=-1)
-    update_time = models.DateTimeField(default=timezone.now)
-    is_updated = models.IntegerField(default=0)
-
-    @classmethod
-    def filter_by_chater_id(cls, id1, id2):
-        return cls.objects.filter(open_id1=id1, open_id2=id2) + cls.objects.filter(open_id1=id2, open_id2=id1)
-
-    @classmethod
-    def filter_by_openid(cls, openid):
-        return cls.objects.filter(open_id1=openid) + cls.objects.filter(open_id2=openid)
-
-    def to_json(self):
-        answer = []
-        answer.append(('open_id1', self.open_id1))
-        answer.append(('open_id2', self.open_id2))
-        answer.append(('content', self.content))
-        answer.append(('isupdated', self.is_updated))
-        return json.dumps(dict(answer))
-
-
 class Message(models.Model):
     sender_id = models.CharField(max_length=128, default='')
-    receiver_id = models.CharField(max_length=128, default='')
+    course_id = models.CharField(max_length=128, default='')
     content = models.CharField(max_length=1024, default='')
     create_time = models.DateTimeField(default=timezone.now)
-
-
-    @classmethod
-    def filter_by_chater_id(cls, id1, id2):
-        return cls.objects.filter(sender_id=id1, receiver_id=id2) + cls.objects.filter(sender_id=id2, receiver_id=id1)
 
     def to_json(self):
         answer = []
         answer.append(('sender_id', self.sender_id))
-        answer.append(('receiver_id', self.receiver_id))
+        answer.append(('course_id', self.course_id))
         answer.append(('content', self.content))
         answer.append(('create_time', self.create_time))
         return json.dumps(dict(answer))

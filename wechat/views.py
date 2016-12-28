@@ -18,7 +18,8 @@ event_urls = {
     'course_list': 'learn/course_list',
     'communication': 'learn/communication',
     'notice_panel': 'learn/notice_panel',
-    'calendar': 'life/calendar'
+    'calendar': 'life/calendar',
+    'navigation': 'life/navigation'
 }
 
 class CustomWeChatView(WeChatView):
@@ -96,9 +97,9 @@ class CustomWeChatView(WeChatView):
                         'key': event_keys['school_calendar']
                     },
                     {
-                        'type': 'location_select',
+                        'type': 'view',
                         'name': '校园导航',
-                        'key': event_keys['navigation']
+                        'url': get_redirect_url(event_urls['navigation'])
                     }
                 ]
             }
