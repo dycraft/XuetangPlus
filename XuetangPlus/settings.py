@@ -14,6 +14,24 @@ import os
 import json
 import logging
 import urllib.parse
+import djcelery
+from datetime import timedelta
+from celery.schedules import crontab
+
+djcelery.setup_loader()
+#BROKER_URL = 'django://'
+BROKER_HOST = "localhost"
+BROKER_PORT = 5672
+BROKER_USER = "guest"
+BROKER_PASSWORD = "guest"
+BROKER_VHOST = "/"
+
+CELERYBEAT_SCHEDULE = {
+    'add-every-30-seconds':{
+        'task': 'wechat.tasks.remind_informations',
+        'schedule': crontab(hour=8, minute=0)
+    },
+}
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,6 +71,8 @@ INSTALLED_APPS = [
 
     'wechat',
     'userpage',
+    'djcelery',
+    'kombu.transport.django',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -138,7 +158,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
