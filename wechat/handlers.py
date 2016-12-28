@@ -2,7 +2,7 @@
 #
 from wechat.wrapper import WeChatHandler
 from wechat.models import User, WechatConfirmation
-#from wechat.message_models import *
+from wechat.message_models import *
 from codex.baseerror import *
 from util.time import *
 import requests
@@ -11,6 +11,11 @@ import time
 
 __author__ = "Epsirom"
 
+event_keys = {
+    'library_remains': 'LIFE_LIBRARY',
+    'school_calendar': 'LIFE_SCHOOL_CALENDAR',
+    'navigation': 'LIFE_NAVIGATION'
+}
 
 class ErrorHandler(WeChatHandler):
 
@@ -27,7 +32,10 @@ class DefaultHandler(WeChatHandler):
         return True
 
     def handle(self, inputStr):
-        return self.reply_text('对不起，没有找到您需要的信息:( 您查找的内容为' + inputStr)
+        return self.reply_text('对不起，没有找到您需要的信息:(\n您查找的内容为(' + inputStr + ")\n我们目前支持的"
+                                                                          "功能包括帮助、解绑、绑定、我的信息、查找课程、"
+                                                                          "我的课程、师生交流、通知面板、文图、我的日历、"
+                                                                         "校历、地图、提醒")
 
 
 class HelpOrSubscribeHandler(WeChatHandler):
@@ -170,7 +178,7 @@ class NoticePanelHandler(WeChatHandler):
 
 class LibraryRemainsHandler(WeChatHandler):
     def check(self):
-        return self.is_text('文图') or self.is_event_click(self.view.event_keys['library_remains'])
+        return self.is_text('文图') or self.is_event_click(event_keys['library_remains'])
 
     def handle(self):
         response = requests.post('http://se.zhuangty.com:8000/library/hs')
@@ -203,7 +211,7 @@ class MyCalendarHandler(WeChatHandler):
 class SchoolCalendarHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('校历') or self.is_event_click(self.view.event_keys['school_calendar'])
+        return self.is_text('校历') or self.is_event_click(event_keys['school_calendar'])
 
     def handle(self):
         response = requests.post('http://se.zhuangty.com:8000/events')
@@ -220,7 +228,7 @@ class SchoolCalendarHandler(WeChatHandler):
 class NavigationHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('地图') or self.is_event_click(self.view.event_keys['navigation'])
+        return self.is_text('地图') or self.is_event_click(event_keys['navigation'])
 
     def handle(self):
         #if self.user.username == '':
