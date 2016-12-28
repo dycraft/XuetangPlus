@@ -233,7 +233,7 @@ class WeChatView(BaseView):
 
     def handle_wechat_msg(self):
         msg = self.parse_msg_xml(ET.fromstring(self.request.body))
-        #print(msg)
+        print(msg)
         isMedia = False
         if 'FromUserName' not in msg:
             return self.error_message_handler(self, msg, None).handle()

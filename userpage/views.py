@@ -599,6 +599,42 @@ class CourseComment(APIView):
         return
 
 
+class GetUserInfo(APIView):
+    def get(self):
+        self.check_input('code')
+        # print('getopenid')
+        url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='
+        url += CONFIGS['WECHAT_APPID']
+        url += '&secret='
+        url += CONFIGS['WECHAT_SECRET']
+        url += '&code='
+        url += self.input['code']
+        url += '&grant_type=authorization_code'
+
+        response = requests.get(url)
+        result = json.loads(response.content.decode())
+        openid = result['openid']
+        access_token = result['access_token']
+        print(openid)
+        url2 = 'https://api.weixin.qq.com/sns/userinfo?access_token='
+        url2 += access_token
+        url2 += '&openid='
+        url2 += openid
+        url2 += '&lang=zh_CN'
+        response = requests.get(url2)
+        result = json.loads(response.content.decode())
+        try:
+            user = User.get_by_openid(openid)
+            user.avatar_url = result['headimgurl']
+            print(user.avatar_url)
+            user.save()
+            print(user.avatar_url)
+        except:
+            print('can not get avatar')
+        return {
+            'open_id': openid
+        }
+
 class GetOpenId(APIView):
 
     def get(self):

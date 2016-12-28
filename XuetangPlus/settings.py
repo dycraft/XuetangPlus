@@ -181,6 +181,8 @@ def get_redirect_url(input_url):
     url_part1 = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='
     url_part2 = '&redirect_uri=' + urllib.parse.quote_plus(setting_url)
     url_part3 = '&response_type=code&scope=snsapi_base&state=1#wechat_redirect'
+    if input_url == event_urls['account_bind']:
+        url_part3 = '&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect'
 
     des = url_part1 + CONFIGS['WECHAT_APPID'] + url_part2 + url_part3
     print(des)

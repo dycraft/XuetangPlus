@@ -19,6 +19,7 @@ class User(models.Model):
     realname = models.CharField(max_length=32, default='')
     event_list = models.CharField(max_length=256, default='[]')
     notice_list = models.CharField(max_length=8192, default='[]')
+    avatar_url = models.CharField(max_length=8192, default='')
 
     def add_notice(self, name):
         notices = json.loads(self.notice_list)
