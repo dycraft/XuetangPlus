@@ -53,9 +53,7 @@ INSTALLED_APPS = [
     #'django.contrib.staticfiles',
 
     'wechat',
-    'userpage',
-    'djcelery',
-    'kombu.transport.django',
+    'userpage'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -98,10 +96,6 @@ if not DEBUG:
             'django.template.loaders.app_directories.Loader',
         ]),
     ]
-
-
-
-WSGI_APPLICATION = 'XuetangPlus.wsgi.application'
 
 
 # Database

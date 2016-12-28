@@ -470,7 +470,6 @@ class CourseInfo(APIView):
         response = requests.post(url, json=params)
         if response.status_code == 200:
             result_course = json.loads(response.content.decode())
-
             for course in result_course['classes']:
                 if course['courseid'] == self.input['course_id']:
                     result = course
@@ -488,13 +487,9 @@ class CourseInfo(APIView):
                                 result['course_new_file'] = course['newfile']
                                 result['course_unread_notice'] = course['unreadnotice']
                                 result['course_unsubmitted_operations'] = course['unsubmittedoperations']
-
-                    result['cour']
-
-                    raise LogicError('Response Error')
-
-            raise LogicError('No course')
-
+                    else:
+                        raise LogicError('Response Error')
+                raise LogicError('No course')
         else:
             raise LogicError('Response Error')
 
@@ -752,6 +747,7 @@ class ReadNoticeRecord(APIView):
         name += name + '&'
         name += course_id
         return name
+
 
 class Communicate(APIView):
     def get(self):

@@ -32,15 +32,17 @@
                 </div>
                 <div class="weui-cells__title">最新消息</div>
                 <div class="weui-cells">
+                    {% for msg in msgs %}
                     <div class="weui-cell">
                         <div class="weui-cell__hd" style="position: relative;margin-right: 10px;">
-                            <img src="images/pic_160.png" style="width: 50px;display: block"/>
+                            <img src="/img/avatar/example.png" style="width: 50px;display: block"/>
                         </div>
                         <div class="weui-cell__bd">
-                            <p class="weui-media-box__title communication-name">名字</p>
-                            <p class="weui-media-box__desc communication-message">这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，这是一句很长很长的话，</p>
+                            <p class="weui-media-box__title communication-name">{{ msg.realname }}</p>
+                            <p class="weui-media-box__desc communication-message">{{ msg.content }}</p>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
             </div>
         </script>
@@ -127,26 +129,18 @@
                         $('#sendBtn').click(function () {
                             page('#!add');
                         });
-                        function getRtmMsg() {
-                            // $.post("/api/communicate/eventsource/", {
-                            //     "update": a,
-                            // }, function(msg) {
-                            //     if(msg !== null) {
-                            //         getRtmMsg();
-                            //     }
-                            // });
-                            $.ajax({
-                                type: "POST",
-                                url: "/api/communicate/eventsource/",
-                                data: "update",
-                                success: function(msg){
-                                    if(msg !== null) {
-                                        getRtmMsg();
-                                    }
+                        (function getRtmMsg() {
+                            $.post("/api/communicate/eventsource/", {
+                                open_id: openid,
+                                course_id: courseid,
+                                update: ""
+                            }, function(data) {
+                                console.log(data);
+                                if(data !== null) {
+                                    getRtmMsg();
                                 }
                             });
-                        }
-                        getRtmMsg();
+                        })();
                     });
                 },
                 add: function (ctx, next) {
