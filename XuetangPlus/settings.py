@@ -208,6 +208,7 @@ event_urls = {
     'account_bind': 'welcome/account_bind',
     'search_course': 'learn/search_course',
     'course_list': 'learn/course_list',
+    'comment_list': 'learn/course_comment',
     'communication': 'learn/communication',
     'notice_panel': 'learn/notice_panel',
     'calendar': 'life/calendar',

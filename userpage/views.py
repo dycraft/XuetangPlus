@@ -29,6 +29,7 @@ class AccountBind(APIView):
 
     def get(self):
         self.check_input('open_id')
+
         try:
             user = User.get_by_openid(self.input['open_id'])
             return {
@@ -119,7 +120,7 @@ class AccountBind(APIView):
             except:
                 raise LogicError('no such open_id')
         else:
-            # print(response.content.decode())
+
             raise ValidateError('Wrong username or password.')
 
 
@@ -437,9 +438,12 @@ class MeInfo(APIView):
     def get(self):
         self.check_input('open_id')
 
-        user = User.get_by_openid(self.input['open_id'])
-
-        # print(user)
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError('no such open_id')
+        if user.student_id == '':
+            raise LogicError('user not bound')
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         params = {
             'apikey': 'camustest',
@@ -451,22 +455,24 @@ class MeInfo(APIView):
             response_course = json.loads(response.content.decode())
             course_ids = list(set([c['courseid'] for c in response_course['classes']]))
 
-        dic = {
-            'undergraduate': '本科就读',
-            'master': '硕士',
-            'doctor': '博士',
-            'teacher': '教师'
-        }
+            dic = {
+                'undergraduate': '本科就读',
+                'master': '硕士',
+                'doctor': '博士',
+                'teacher': '教师'
+            }
 
-        return {
-            'course_num': len(course_ids),
-            'name': user.realname,
-            'student_id': user.student_id,
-            'status': dic[user.position],
-            'school': user.department,
-            'email': user.email,
-            'course_list_url': get_redirect_url(event_urls['course_list'])
-        }
+            return {
+                'course_num': len(course_ids),
+                'name': user.realname,
+                'student_id': user.student_id,
+                'status': dic[user.position],
+                'school': user.department,
+                'email': user.email,
+                'course_list_url': get_redirect_url(event_urls['course_list'])
+            }
+        else:
+            raise LogicError('response code 400')
 
 
 class SearchCourse(APIView):
@@ -725,7 +731,6 @@ class GetOpenId(APIView):
 
     def get(self):
         self.check_input('code')
-        # print('getopenid')
         url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='
         url += CONFIGS['WECHAT_APPID']
         url += '&secret='
@@ -790,9 +795,16 @@ class EventDetail(APIView):
             raise LogicError('no such open_id')
         event_id_list = json.loads(user.event_list)
         event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
-        id = int(self.input['id'])
-        if len(event_list) > id:
-            return {'name':event_list[id - 1].name, 'date': str(event_list[id - 1].date).split(' ')[0], 'content': event_list[id - 1].content}
+        try:
+            id = int(self.input['id'])
+        except:
+            raise InputError('The given id should be int')
+        if 0 < id <= len(event_list):
+            return {
+                'name':event_list[id - 1].name,
+                'date': stamp_to_utcstr_date(float(event_list[id - 1].date)),
+                'content': event_list[id - 1].content
+            }
         raise InputError('The given id is out of range')
 
     def post(self):
@@ -802,10 +814,17 @@ class EventDetail(APIView):
         except:
             raise LogicError('no such open_id')
         event_id_list = json.loads(user.event_list)
-        if len(event_id_list) > self.input['id']:
+        try:
+            id = int(self.input['id'])
+        except:
+            raise InputError('The given id should be int')
+        if 0 < id <= len(event_id_list):
             event = Event.get_by_id(event_id_list[int(self.input['id']) - 1])
             event.name = self.input['name']
-            event.date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d')
+            try:
+                event.date = utcstr_date_to_stamp(self.input['date'])
+            except:
+                raise InputError('incorrect given date')
             event.content = self.input['content']
             event.save()
             return {
@@ -821,10 +840,16 @@ class EventList(APIView):
         self.check_input('open_id', 'mode')
         if self.input['mode'] == 'day':
             if 'date' not in self.input:
-                date = datetime.date.today()
+                date = date_today()
             else:
-                date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d')
-            user = User.get_by_openid(self.input['open_id'])
+                try:
+                    date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d')
+                except:
+                    raise  InputError('incorrect given date')
+            try:
+                user = User.get_by_openid(self.input['open_id'])
+            except:
+                raise LogicError('no such open_id')
             event_id_list = json.loads(user.event_list)
             event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
 
@@ -832,9 +857,10 @@ class EventList(APIView):
             record = []
             count = 0
             for e in event_list:
-                if time.mktime(e.date.timetuple()) >= time.mktime(date.timetuple()):
+                xsx = stamp_to_utcstr_date(float(e.date))
+                if float(e.date) >= date.timestamp():
                     count += 1
-                    e_date = str(e.date).split(' ')[0]
+                    e_date = stamp_to_utcstr_date(float(e.date))
                     if e_date in record:
                         result[len(result) - 1].append({
                             'id': user.search_event(e.id),
@@ -842,7 +868,7 @@ class EventList(APIView):
                             'date': e_date,
                             'content': e.content
                         })
-                    elif count < 10:
+                    elif count < 11:
                         record.append(e_date)
                         result.append([{
                             'id': user.search_event(e.id),
@@ -857,26 +883,39 @@ class EventList(APIView):
             }
         elif self.input['mode'] == 'month':
             if 'date' not in self.input:
-                date = datetime.date.today().replace(day=1)
+                date = date_today().replace(day=1)
             else:
-                date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d')
-            user = User.get_by_openid(self.input['open_id'])
+                try:
+                    date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d')
+                except:
+                    raise InputError('incorrect given date')
+            try:
+                user = User.get_by_openid(self.input['open_id'])
+            except:
+                raise LogicError('no such open_id')
             event_id_list = json.loads(user.event_list)
             event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
 
             result = []
             for e in event_list:
-                if self.month_range(e.date, date):
-                    e_date = str(e.date).split(' ')[0]
-                    result.append(
-                        [{'id': user.search_event(e.id), 'name': e.name, 'date': e_date, 'content': e.content}])
+                if self.month_range(datetime.datetime.fromtimestamp(float(e.date)), date):
+                    e_date = stamp_to_utcstr_date(float(e.date))
+                    result.append([{
+                        'id': user.search_event(e.id),
+                        'name': e.name,
+                        'date': e_date,
+                        'content': e.content
+                    }])
             return {
                 'events': result
             }
+        else:
+            raise InputError('Unknown mode')
 
     @classmethod
     def month_range(cls, date1, date2):
-        if time.mktime(date2.timetuple()) <= time.mktime(date1.timetuple()) < time.mktime((date2 + datetime.timedelta(month=1)).timetuple()):
+        if time.mktime(date1.timetuple()) >= time.mktime(date2.timetuple())\
+                and date1.month == date2.month and date1.year == date2.year:
             return True
         else:
             return False
@@ -886,8 +925,18 @@ class EventCreate(APIView):
 
     def post(self):
         self.check_input('open_id', 'name', 'date', 'content')
-        event = Event.objects.create(name = self.input['name'], date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d'), content = self.input['content'])
-        id = User.get_by_openid(self.input['open_id']).add_event(event.id)
+        try:
+            event = Event.objects.create(
+                name = self.input['name'],
+                date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d').timestamp(),
+                content = self.input['content']
+            )
+        except:
+            raise  InputError('incorrect given date')
+        try:
+            id = User.get_by_openid(self.input['open_id']).add_event(event.id)
+        except:
+            raise LogicError('no such open_id')
         return {
             'id': id
         }
