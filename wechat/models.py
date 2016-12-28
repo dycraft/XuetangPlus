@@ -228,4 +228,4 @@ class Event(models.Model):
         try:
             return cls.objects.get(id=id)
         except cls.DoesNotExist:
-            raise LogicError('User not found')
+            raise LogicError('Event not found')

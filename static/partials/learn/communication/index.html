@@ -35,7 +35,7 @@
                     {% for msg in msgs %}
                     <div class="weui-cell">
                         <div class="weui-cell__hd" style="position: relative;margin-right: 10px;">
-                            <img src="/img/avatar/example.png" style="width: 50px;display: block"/>
+                            <img src="{{ msg.avatar_url }}" style="width: 50px;display: block"/>
                         </div>
                         <div class="weui-cell__bd">
                             <p class="weui-media-box__title communication-name">{{ msg.realname }}</p>
@@ -87,7 +87,6 @@
                 },
                 main: function (ctx, next) {
                     var params = getQueryParams(ctx.querystring);
-                    console.log(params);
                     if (!openid) openid = params.open_id;
                     if (!courseid) courseid = params.course_id;
                     $.get('/api/communicate/eventsource/', {
@@ -95,6 +94,7 @@
                         course_id: courseid
                     }, function (data) {
                         locals.msgs = data.data;
+                        console.log(data);
                         render('main', locals);
                         $('#sendBtn').click(function () {
                             page('#!add');
