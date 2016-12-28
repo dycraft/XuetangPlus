@@ -20,6 +20,7 @@ class User(models.Model):
     realname = models.CharField(max_length=32, default='')
     event_list = models.CharField(max_length=256, default='[]')
     notice_list = models.CharField(max_length=8192, default='[]')
+    avatar_url = models.CharField(max_length=8192, default='')
 
     def add_notice(self, name):
         notices = json.loads(self.notice_list)
@@ -99,6 +100,49 @@ class Course(models.Model):
             return [Message.objects.get(id = x) for x in temp]
         else:
             return [Message.objects.get(id = x) for x in temp[(length - 10):length]]
+
+class CourseForSearch(models.Model):
+    course_seq = models.CharField(max_length=128)
+    course_name = models.CharField(max_length=128)
+    score = models.CharField(max_length=128)
+    feature = models.CharField(max_length=128)
+    intro = models.CharField(max_length=128)
+    time = models.CharField(max_length=128)
+    second = models.CharField(max_length=128)
+    school = models.CharField(max_length=128)
+    teacher = models.CharField(max_length=128)
+    course_id = models.CharField(max_length=128)
+    week = models.CharField(max_length=128)
+    year = models.CharField(max_length=128)
+
+    @classmethod
+    def fuzzy_search(cls, key_word):
+        result_dict = []
+
+        for x in CourseForSearch.objects.all():
+            search_score = 0
+            for c in key_word:
+                if c == '':
+                    continue
+                for c1 in x.course_name:
+                    if c1 == c:
+                        search_score += 1000
+                for c2 in x.school:
+                    if c2 == c:
+                        search_score += 2
+
+                for c3 in x.feature:
+                    if c3 == c:
+                        search_score += 1
+
+            if search_score != 0:
+                result_dict.append({'course':x, 'search_score': search_score})
+
+        if result_dict != []:
+            result_dict = sorted(result_dict, key=lambda x:x['search_score'], reverse=True)
+
+        return [x['course'] for x in result_dict]
+
 
 class Comment(models.Model):
     course_id = models.CharField(max_length=128, default='')

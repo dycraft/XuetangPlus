@@ -12,14 +12,15 @@
         <div class="weui-toptips weui-toptips_warn js_tooltips">Failed to load resource: 请求的 URL 在此服务器上找不到。</div>
 
         <div id="content">
+        </div>
+        <script type="text/template" id="tpl-main">
             <div class="page__hd">
                 <h1 class="page__title">课程搜索</h1>
-                <p class="page__desc">搜索栏</p>
+                <p class="page__desc">2016-2017春季学期本科生开课信息</p>
             </div>
             <div class="page__bd">
-                <!--<a href="javascript:;" class="weui-btn weui-btn_primary">点击展现searchBar</a>-->
-                <div class="weui-search-bar" id="searchBar">
-                    <form class="weui-search-bar__form">
+                 <div class="weui-search-bar" id="searchBar">
+                    <div class="weui-search-bar__form">
                         <div class="weui-search-bar__box">
                             <i class="weui-icon-search"></i>
                             <input type="search" class="weui-search-bar__input" id="searchInput" placeholder="搜索" required/>
@@ -29,83 +30,351 @@
                             <i class="weui-icon-search"></i>
                             <span>搜索</span>
                         </label>
-                    </form>
+                    </div>
                     <a href="javascript:" class="weui-search-bar__cancel-btn" id="searchCancel">取消</a>
                 </div>
+            </div>
+            <div class="page__bd">
+                <div class="weui-btn-area">
+                    <a class="weui-btn weui-btn_primary" id="searchBtn">搜索</a>
+                </div>
+                <div class="weui-btn-area">
+                    <a class="weui-btn weui-btn_default" id="allBtn">显示全部开课信息</a>
+                </div>
                 <div class="weui-cells searchbar-result" id="searchResult">
-                    <div class="weui-cell weui-cell_access">
-                        <div class="weui-cell__bd weui-cell_primary">
-                            <p>软件工程(1)</p>
+                    {% if total != 0 %}
+                        <div class="weui-panel__hd">
+                            {% if key != "" %}
+                                搜索 "{{ key }}" 的结果
+                            {% else %}
+                                开设课程
+                            {% endif %}
+                            共{{ total }}门课</br>现在是第{{ pageNum }}页({{ totalPageNum }}页)
+                            {% if pageNum != 1 %}
+                                <div class="weui-btn-area">
+                                    <a class="weui-btn weui-btn_default" id="previousBtn">上一页</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% for result in results %}
+                            <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg"
+                               id = "search_{{ result.index }}">
+                                <div class="weui-media-box__bd">
+                                    <h3 style="word-break: normal; font-weight: normal">{{ result.course_name }}</h3>
+                                    <p class="weui-media-box__desc">教师：{{ result.teacher }}</p>
+                                    <p class="weui-media-box__desc">上课时间：{{ result.time }}</p>
+                                    <p class="weui-media-box__desc">周次：{{ result.week }}</p>
+                                </div>
+                            </a>
+                        {% endfor %}
+                        {% if endPage %}
+                            <div class="weui-loadmore weui-loadmore_line">
+                                <span class="weui-loadmore__tips">暂无更多数据</span>
+                            </div>
+                        {% else %}
+
+                            <div class="weui-panel__hd">现在是第{{ pageNum }}页({{ totalPageNum }}页)
+                                <div class="weui-btn-area">
+                                    <a class="weui-btn weui-btn_default" id="nextBtn">下一页</a>
+                                </div>
+                            </div>
+
+                        {% endif %}
+                    {% else %}
+                        <div class="weui-loadmore weui-loadmore_line">
+                            <span class="weui-loadmore__tips">无任何匹配结果</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </script>
+
+        <script type="text/template" id="tpl-detail">
+            <div class="page__hd">
+                <h1 class="page__title">开课信息</h1>
+            </div>
+            <div class="page__bd">
+                <div class="weui-form-preview">
+                    <div class="weui-form-preview__hd">
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程名称</label>
+                            <span class="weui-form-preview__value">{{ info.course_name }}</span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程编号</label>
+                            <span class="weui-form-preview__value">{{ info.course_id }}</span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程序号</label>
+                            <span class="weui-form-preview__value">{{ info.course_seq }}</span>
+                        </div>
+
+                    </div>
+                     <div class="weui-form-preview__hd">
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程信息</label>
                         </div>
                     </div>
-                    <div class="weui-cell weui-cell_access">
-                        <div class="weui-cell__bd weui-cell_primary">
-                            <p>软件工程(2)</p>
+                    <div class="weui-form-preview__bd">
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">开设院系</label>
+                            <span class="weui-form-preview__value">{{ info.school }}</span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程时间</label>
+                            <span class="weui-form-preview__value">{{ info.time }}</span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程周次</label>
+                            <span class="weui-form-preview__value">{{ info.week }}</span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程学分</label>
+                            <span class="weui-form-preview__value">{{ info.score }}</span>
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">选修年级</label>
+                            {% if info.year == "" %}
+                                <span class="weui-form-preview__value">无限制</span>
+                            {% else %}
+                                <span class="weui-form-preview__value">{{ info.year }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">是否二级选课</label>
+                            {% if info.second == "" %}
+                                <span class="weui-form-preview__value">未知</span>
+                            {% else %}
+                                <span class="weui-form-preview__value">{{ info.second }}</span>
+                            {% endif %}
                         </div>
                     </div>
-                    <div class="weui-cell weui-cell_access">
-                        <div class="weui-cell__bd weui-cell_primary">
-                            <p>软件工程(3)</p>
+                    <div class="weui-form-preview__hd">
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程介绍</label>
                         </div>
                     </div>
-                    <div class="weui-cell weui-cell_access">
-                        <div class="weui-cell__bd weui-cell_primary">
-                            <p>软件文化概论</p>
+                    <div class="weui-form-preview__bd">
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程特色</label>
+                            {% if info.feature == "" %}
+                                <span class="weui-form-preview__value">未填写</span>
+                            {% else %}
+                                <span class="weui-form-preview__value">{{ info.feature }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="weui-form-preview__item">
+                            <label class="weui-form-preview__label">课程简介</label>
+                            {% if info.intro  == "" %}
+                                <span class="weui-form-preview__value">未填写</span>
+                            {% else %}
+                                <span class="weui-form-preview__value">{{ info.intro }}</span>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
+
+                 <div class="weui-btn-area">
+                    <a class="weui-btn weui-btn_default" id="backBtn">返回</a>
+                </div>
             </div>
-        </div>
+        </script>
 
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
-        <script type="text/javascript" src="/lib/swig.min.js"></script>
+        <script type="text/javascript" src="/lib/swig/swig.min.js"></script>
+        <script type="text/javascript" src="/lib/page.js"></script>
+        <script type="text/javascript" src="/lib/weui/weui.min.js"></script>
+        <script type="text/javascript" src="/js/openid.js"></script>
+        <script type="text/javascript" src="/js/render.js"></script>
+
+
+        <!--调用JSSDK-->
+        <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script type="text/javascript" src="/js/JSSDK.js"></script>
         <script type="text/javascript">
+            var jssdk_function_list = ['closeWindow'];
+            callJSSDK(jssdk_function_list);
+        </script>
+
+        <script type="text/javascript">
+            function pushHistory(url) {
+                var state = {
+                    title: "title",
+                    url: url
+                };
+                window.history.pushState(state, state.title, state.url);
+            }
+
             $(function(){
-            var $searchBar = $('#searchBar'),
-                $searchResult = $('#searchResult'),
-                $searchText = $('#searchText'),
-                $searchInput = $('#searchInput'),
-                $searchClear = $('#searchClear'),
-                $searchCancel = $('#searchCancel');
-
-            function hideSearchResult(){
-                $searchResult.hide();
-                $searchInput.val('');
-            }
-
-            function cancelSearch(){
-                hideSearchResult();
-                $searchBar.removeClass('weui-search-bar_focusing');
-                $searchText.show();
-            }
-
-            $searchText.on('click', function(){
-                $searchBar.addClass('weui-search-bar_focusing');
-                $searchInput.focus();
+                pushHistory("#");
+                window.addEventListener("popstate", function(e) {
+                    if(locals.detail == 0){
+                        wx.closeWindow();
+                    }
+                    loading = weui.loading('加载中');
+                    if(locals.detail != 0){
+                        locals.detail = 0;
+                        $('#backBtn').click();
+                    }
+                }, false);
             });
+        </script>
 
-            $searchInput
-              .on('blur', function () {
-                if(!this.value.length) cancelSearch();
-              })
-              .on('input', function(){
-                if(this.value.length) {
-                  $searchResult.show();
-                } else {
-                  $searchResult.hide();
+
+        <script type="text/javascript">
+            var locals = {};
+            var key;
+            var loading;
+
+            var route = {
+                init: function(ctx, next) {
+                    next();
+                },
+                
+                main: function (ctx, next) {
+                    loading = weui.loading('加载中');
+                    locals.detail = 0;
+                    locals.pageNum = 1;
+                    locals.endPage = false;
+                    key = "";
+                    page.redirect('#!search');
+                },
+                
+                search: function(ctx, next) {
+                    if(locals.detail == 0) {
+                        $.get('/api/learn/search_course', {
+                            key: key,
+                            page: locals.pageNum
+                        }, function (data) {
+                            locals.total = data.data.total;
+                            locals.results = data.data.search_result;
+                            locals.totalPageNum = parseInt(locals.total / 10);
+                            if (locals.total % 10 != 0) {
+                                locals.totalPageNum += 1;
+                            }
+                            if (locals.pageNum == locals.totalPageNum) {
+                                locals.endPage = true;
+                            }
+                            else {
+                                locals.endPage = false;
+                            }
+                            render('main', locals);
+
+                            var $searchBar = $('#searchBar'),
+                                    $searchResult = $('#searchResult'),
+                                    $searchText = $('#searchText'),
+                                    $searchInput = $('#searchInput'),
+                                    $searchClear = $('#searchClear'),
+                                    $searchCancel = $('#searchCancel');
+
+                            function showOriginResult() {
+                                $searchResult.show();
+                            }
+
+                            function cancelSearch() {
+                                showOriginResult();
+                                $searchInput.val('');
+                                $searchBar.removeClass('weui-search-bar_focusing');
+                                $searchText.show();
+                            }
+
+                            $searchText.on('click', function () {
+                                $searchBar.addClass('weui-search-bar_focusing');
+                                $searchInput.focus();
+                            });
+
+                            $searchInput
+                            .on('blur', function () {
+                                if (!this.value.length) {
+                                    cancelSearch();
+                                }
+                                else {
+                                    showOriginResult();
+                                }
+                            })
+                            .on('input', function () {
+                                $searchResult.hide();
+                                key = this.value;
+                            })
+                            .on('search', function () {
+                                $('#searchBtn').click();
+                            });
+
+                            $searchClear.on('click', function () {
+                                showOriginResult();
+                                $searchInput.focus();
+                            });
+
+                            $searchCancel.on('click', function () {
+                                cancelSearch();
+                                $searchInput.blur();
+                            });
+
+                            var searchNum = locals.total - locals.pageNum * 10;
+                            if (searchNum > 10) {
+                                searchNum = 10;
+                            }
+                            for (var i = 1; i <= searchNum; i++) {
+                                var id_str = '#search_';
+                                id_str += i;
+
+                                $(id_str).click(function (i) {
+                                    return function () {
+                                        pushHistory("#");
+                                        locals.detail = i;
+                                        locals.info = locals.results[i - 1];
+                                        page.redirect('#!search');
+                                    }
+                                }(i));
+                            }
+
+                            $("#searchBtn").click(function () {
+                                locals.pageNum = 1;
+                                locals.detail = 0;
+                                loading = weui.loading('加载中');
+                                page.redirect('#!search');
+                            });
+
+                            $("#allBtn").click(function () {
+                                locals.pageNum = 1;
+                                locals.key = "";
+                                loading = weui.loading('加载中');
+                                page.redirect('#!search');
+                            });
+
+                            $("#previousBtn").click(function () {
+                                locals.pageNum--;
+                                loading = weui.loading('加载中');
+                                page.redirect('#!search');
+                            });
+                            $("#nextBtn").click(function () {
+                                locals.pageNum++;
+                                loading = weui.loading('加载中');
+                                page.redirect('#!search');
+                            });
+
+                            loading.hide();
+                        });
+                    }
+                    else{
+                        render('detail', locals);
+                        $('#backBtn').click(function () {
+                            locals.detail = false;
+                            loading = weui.loading('加载中');
+                            page('#!search')
+                        });
+
+                        loading.hide();
+                    }
                 }
-              });
+            };
 
-            $searchClear.on('click', function(){
-                hideSearchResult();
-                $searchInput.focus();
-            });
+            page.base('/learn/search_course');
+            page('/', route.main);
+            page('search', route.search);
+            page({hashbang: true});
+            page();
 
-            $searchCancel.on('click', function(){
-                cancelSearch();
-                $searchInput.blur();
-            });
-            });
         </script>
     </body>
 </html>

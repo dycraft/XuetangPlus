@@ -275,7 +275,7 @@ class NoticeList(APIView):
 
                 for notice in result_notice['notices']:
                     notice['coursename'] = course_name
-                    notice['read'] = ReadNoticeRecord.notice_name(int(1), notice['title'], course_id) in read_notices
+                    notice['read'] = ReadNoticeRecord.notice_name(1, notice['title'], course_id) in read_notices
 
                 result += result_notice['notices']
 
@@ -284,15 +284,20 @@ class NoticeList(APIView):
 
         length = len(result)
         result = sorted(result, key=lambda n: n['publishtime'], reverse=True)[10 * (pagenum - 1): 10 * pagenum]
+        unread = 0
         for index, r in enumerate(result):
             r['index'] = index + 1
             r['title'] = r['title'].replace('&nbsp;', '')
             r['publishtime'] = stamp_to_localstr_date(r['publishtime'])
             r['content'] = r['content'].replace('\r\n', '</br>')
+            if not r['read']:
+                unread += 1
+
 
         return {
             'total': length,
-            'notices': result
+            'notices': result,
+            'unread': unread
         }
 
 
@@ -348,15 +353,19 @@ class AssignmentList(APIView):
 
         length = len(result)
         result = sorted(result, key=lambda a: a['duedate'], reverse=True)[10 * (pagenum - 1): 10 * pagenum]
+        unread = 0
         for index, r in enumerate(result):
             r['index'] = index + 1
             r['duedate'] = stamp_to_localstr_date(r['duedate'])
             r['detail'] = r['detail'].replace('\r\n', '</br>')
             r['comment'] = r['comment'].replace('\r\n', '</br>')
+            if not r['read']:
+                unread += 1
 
         return {
             'total': length,
-            'assignments': result
+            'assignments': result,
+            'unread': unread
         }
 
 
@@ -409,13 +418,17 @@ class SlideList(APIView):
 
         length = len(result)
         result = sorted(result, key=lambda a: a['updatingtime'], reverse=True)[10 * (pagenum - 1): 10 * pagenum]
+        unread = 0
         for index, r in enumerate(result):
             r['index'] = index + 1
             r['updatingtime'] = stamp_to_localstr_date(r['updatingtime'])
+            if not r['read']:
+                unread += 1
 
         return {
             'total': length,
-            'slides': result
+            'slides': result,
+            'unread': unread
         }
 
 
@@ -453,6 +466,47 @@ class MeInfo(APIView):
             'school': user.department,
             'email': user.email,
             'course_list_url': get_redirect_url(event_urls['course_list'])
+        }
+
+
+class SearchCourse(APIView):
+    def get(self):
+        self.check_input('key', 'page')
+
+        courses = []
+        page_num = int(self.input['page'])
+        key = self.input['key']
+        if key == '':
+            courses = CourseForSearch.objects.all()
+        else:
+            courses = CourseForSearch.objects.filter(course_name=key)
+            if len(courses) == 0:
+                courses = CourseForSearch.fuzzy_search(key)
+
+            print('fuzzy' + str(len(courses)))
+
+        res = [{
+            'course_name': x.course_name,
+            'course_id': x.course_id,
+            'course_seq': x.course_seq,
+            'school': x.school,
+            'time': x.time,
+            'week': x.week,
+            'second': x.second,
+            'intro': x.intro,
+            'feature': x.feature,
+            'score': x.score,
+            'teacher': x.teacher,
+            'year': x.year,
+        } for x in courses][10 * (page_num - 1): 10 * page_num]
+
+        for index, r in enumerate(res):
+            r['index'] = index + 1
+            r['course_seq'] = int(float(r['course_seq']))
+
+        return {
+            'total': len(courses),
+            'search_result': res
         }
 
 
@@ -630,6 +684,42 @@ class CommentList(APIView):
                     result = result[0:10]
         return result
 
+
+class GetUserInfo(APIView):
+    def get(self):
+        self.check_input('code')
+        # print('getopenid')
+        url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='
+        url += CONFIGS['WECHAT_APPID']
+        url += '&secret='
+        url += CONFIGS['WECHAT_SECRET']
+        url += '&code='
+        url += self.input['code']
+        url += '&grant_type=authorization_code'
+
+        response = requests.get(url)
+        result = json.loads(response.content.decode())
+        openid = result['openid']
+        access_token = result['access_token']
+        print(openid)
+        url2 = 'https://api.weixin.qq.com/sns/userinfo?access_token='
+        url2 += access_token
+        url2 += '&openid='
+        url2 += openid
+        url2 += '&lang=zh_CN'
+        response = requests.get(url2)
+        result = json.loads(response.content.decode())
+        try:
+            user = User.get_by_openid(openid)
+            user.avatar_url = result['headimgurl']
+            print(user.avatar_url)
+            user.save()
+            print(user.avatar_url)
+        except:
+            print('can not get avatar')
+        return {
+            'open_id': openid
+        }
 
 class GetOpenId(APIView):
 
@@ -871,3 +961,4 @@ class Communicate(APIView):
             content = self.input['content']
             Course.objects.get(course_id=courseid).add_msg(openid, content)
             return
+

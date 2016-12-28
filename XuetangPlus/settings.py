@@ -181,6 +181,8 @@ def get_redirect_url(input_url):
     url_part1 = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='
     url_part2 = '&redirect_uri=' + urllib.parse.quote_plus(setting_url)
     url_part3 = '&response_type=code&scope=snsapi_base&state=1#wechat_redirect'
+    if input_url == event_urls['account_bind']:
+        url_part3 = '&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect'
 
     des = url_part1 + CONFIGS['WECHAT_APPID'] + url_part2 + url_part3
     print(des)
@@ -192,3 +194,22 @@ logging.basicConfig(
     format='%(levelname)-7s [%(asctime)s] %(module)s.%(funcName)s:%(lineno)d  %(message)s',
     level=logging.DEBUG if DEBUG else logging.WARNING,
 )
+
+#define key
+event_keys = {
+    'library_remains': 'LIFE_LIBRARY',
+    'school_calendar': 'LIFE_SCHOOL_CALENDAR',
+    'navigation': 'LIFE_NAVIGATION'
+}
+
+# define url
+event_urls = {
+    'help': 'welcome/help',
+    'account_bind': 'welcome/account_bind',
+    'search_course': 'learn/search_course',
+    'course_list': 'learn/course_list',
+    'communication': 'learn/communication',
+    'notice_panel': 'learn/notice_panel',
+    'calendar': 'life/calendar',
+    'navigation': 'life/navigation'
+}

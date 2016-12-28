@@ -246,7 +246,7 @@ class WeChatView(BaseView):
                 if msg['Recognition'] == None:
                     msg['Content'] = ' '
                 else:
-                    msg['Content'] = msg['Recognition']
+                    msg['Content'] = msg['Recognition'].replace('。', '')
                 msg['MsgType'] = "text"
             for handler in self.handlers:
                 inst = handler(self, msg, user)

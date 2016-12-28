@@ -15,7 +15,12 @@
     };
 
     window.getOpenId = function(next) {
-        $.get('/api/welcome/openid/', {
+        var openIdUrl = '/api/welcome/openid/';
+        if(isAccountBind)
+        {
+            openIdUrl = '/api/welcome/userinfo/';
+        }
+        $.get(openIdUrl, {
             'code': getQueryParams(document.location.search).code
         }, function(data){
             next(data.data.open_id);
