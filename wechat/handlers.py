@@ -8,6 +8,7 @@ from util.time import *
 import requests
 import json
 import time
+from XuetangPlus.settings import event_keys, event_urls
 
 __author__ = "Epsirom"
 

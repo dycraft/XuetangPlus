@@ -3,24 +3,7 @@ from wechat.handlers import *
 from wechat.models import *
 from XuetangPlus.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
 from XuetangPlus.settings import get_url, get_redirect_url
-
-event_keys = {
-    'library_remains': 'LIFE_LIBRARY',
-    'school_calendar': 'LIFE_SCHOOL_CALENDAR',
-    'navigation': 'LIFE_NAVIGATION'
-}
-
-# define url
-event_urls = {
-    'help': 'welcome/help',
-    'account_bind': 'welcome/account_bind',
-    'search_course': 'learn/search_course',
-    'course_list': 'learn/course_list',
-    'communication': 'learn/communication',
-    'notice_panel': 'learn/notice_panel',
-    'calendar': 'life/calendar',
-    'navigation': 'life/navigation'
-}
+from XuetangPlus.settings import event_keys, event_urls
 
 class CustomWeChatView(WeChatView):
 

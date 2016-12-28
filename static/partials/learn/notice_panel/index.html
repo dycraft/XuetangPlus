@@ -431,7 +431,7 @@
             callJSSDK(jssdk_function_list);
         </script>
 
-        <script>
+        <script type="text/javascript">
             function pushHistory(url) {
                 var state = {
                     title: "title",
@@ -515,7 +515,7 @@
                                 id_str += i;
                                 $(id_str).click(function (i) {
                                     return function () {
-                                        pushHistory("#!notice");
+                                        pushHistory("#");
                                         locals.detail = i;
                                         locals.info = locals.notices[i - 1];
                                         page.redirect('#!notice');
@@ -535,7 +535,6 @@
                             });
 
                             $("#assignment_bar").click(function () {
-                                locals.needLoad = true
                                 locals.page_num = 1;
                                 locals.clickTab = 2;
                                 locals.detail = 0;
@@ -572,7 +571,6 @@
                         $('#backBtn').click(function () {
                             locals.detail = 0;
                             loading = weui.loading('加载中');
-                            locals.needLoad = true;
                             page('#!notice')
                         });
 

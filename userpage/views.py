@@ -451,6 +451,47 @@ class MeInfo(APIView):
         }
 
 
+class SearchCourse(APIView):
+    def get(self):
+        self.check_input('key', 'page')
+
+        courses = []
+        page_num = int(self.input['page'])
+        key = self.input['key']
+        if key == '':
+            courses = CourseForSearch.objects.all()
+        else:
+            courses = CourseForSearch.objects.filter(course_name=key)
+            if len(courses) == 0:
+                courses = CourseForSearch.fuzzy_search(key)
+
+            print('fuzzy' + str(len(courses)))
+
+        res = [{
+            'course_name': x.course_name,
+            'course_id': x.course_id,
+            'course_seq': x.course_seq,
+            'school': x.school,
+            'time': x.time,
+            'week': x.week,
+            'second': x.second,
+            'intro': x.intro,
+            'feature': x.feature,
+            'score': x.score,
+            'teacher': x.teacher,
+            'year': x.year,
+        } for x in courses][10 * (page_num - 1): 10 * page_num]
+
+        for index, r in enumerate(res):
+            r['index'] = index + 1
+            r['course_seq'] = int(float(r['course_seq']))
+
+        return {
+            'total': len(courses),
+            'search_result': res
+        }
+
+
 class CourseInfo(APIView):
 
     def get(self):
@@ -470,6 +511,7 @@ class CourseInfo(APIView):
         response = requests.post(url, json=params)
         if response.status_code == 200:
             result_course = json.loads(response.content.decode())
+
             for course in result_course['classes']:
                 if course['courseid'] == self.input['course_id']:
                     result = course
@@ -785,3 +827,4 @@ class Communicate(APIView):
             content = self.input['content']
             Course.objects.get(courseid=courseid).addmsg(openid, content)
             return
+

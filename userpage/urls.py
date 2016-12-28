@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^welcome/account_bind/?$', AccountBind.as_view()),
     url(r'^welcome/check_bind/?$', CheckBind.as_view()),
     url(r'^welcome/unbind/?$', UnBind.as_view()),
+    url(r'^learn/search_course/?$', SearchCourse.as_view()),
     url(r'^learn/course_list/?$', CourseList.as_view()),
     url(r'^learn/notice_panel/notice/?$', NoticeList.as_view()),
     url(r'^learn/notice_panel/assignment/?$', AssignmentList.as_view()),

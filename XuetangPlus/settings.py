@@ -192,3 +192,22 @@ logging.basicConfig(
     format='%(levelname)-7s [%(asctime)s] %(module)s.%(funcName)s:%(lineno)d  %(message)s',
     level=logging.DEBUG if DEBUG else logging.WARNING,
 )
+
+#define key
+event_keys = {
+    'library_remains': 'LIFE_LIBRARY',
+    'school_calendar': 'LIFE_SCHOOL_CALENDAR',
+    'navigation': 'LIFE_NAVIGATION'
+}
+
+# define url
+event_urls = {
+    'help': 'welcome/help',
+    'account_bind': 'welcome/account_bind',
+    'search_course': 'learn/search_course',
+    'course_list': 'learn/course_list',
+    'communication': 'learn/communication',
+    'notice_panel': 'learn/notice_panel',
+    'calendar': 'life/calendar',
+    'navigation': 'life/navigation'
+}
