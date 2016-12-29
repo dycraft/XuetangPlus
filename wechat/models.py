@@ -161,6 +161,7 @@ class Comment(models.Model):
         else:
             return User.objects.get(id=self.commenter_id).realname
 
+
 class WechatConfirmation(models.Model):
     access_token = models.CharField(max_length=1024, default='')
     jssdk_ticket = models.CharField(max_length=1024, default='')
@@ -168,9 +169,8 @@ class WechatConfirmation(models.Model):
     jssdk_ticket_expire_time = models.IntegerField(default=0)
 
     def get_access_token(self):
-        print("get access")
         if time.mktime(datetime.datetime.now().timetuple()) >= self.access_token_expire_time:
-            print("get a new access")
+
             access_token_url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='
             access_token_url += CONFIGS['WECHAT_APPID']
             access_token_url += '&secret='
@@ -182,15 +182,13 @@ class WechatConfirmation(models.Model):
             self.access_token = result['access_token']
             self.access_token_expire_time = time.mktime(datetime.datetime.now().timetuple()) + result['expires_in'] - 300
             self.save()
-            print('Got access token %s', self.access_token)
-        print("mytoken")
-        print(self.access_token)
+
         return self.access_token
 
     def get_jssdk_ticket(self):
-        print("get jssdk")
+
         if time.mktime(datetime.datetime.now().timetuple()) >= self.jssdk_ticket_expire_time:
-            print("get a new jssdk")
+
             jsapi_ticket_url = 'https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token='
             jsapi_ticket_url += self.get_access_token()
             jsapi_ticket_url += '&type=jsapi'
@@ -201,7 +199,7 @@ class WechatConfirmation(models.Model):
             self.jssdk_ticket = result['ticket']
             self.jssdk_ticket_expire_time = time.mktime(datetime.datetime.now().timetuple()) + result['expires_in'] - 300
             self.save()
-            print(self.jssdk_ticket)
+
         return self.jssdk_ticket
 
 
