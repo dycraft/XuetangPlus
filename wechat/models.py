@@ -19,17 +19,40 @@ class User(models.Model):
     email = models.CharField(max_length=32, default='')
     realname = models.CharField(max_length=32, default='')
     event_list = models.CharField(max_length=256, default='[]')
-    notice_list = models.CharField(max_length=8192, default='[]')
-    avatar_url = models.CharField(max_length=8192, default='')
+    notice_list = models.CharField(max_length=4096, default='[]')
+    assignment_list = models.CharField(max_length=4096, default='[]')
+    slide_list = models.CharField(max_length=8192, default='[]')
+    avatar_url = models.CharField(max_length=4096, default='')
 
     def add_notice(self, name):
         notices = json.loads(self.notice_list)
-        notices.append(name)
-        self.notice_list = json.dumps(notices)
-        self.save()
+        if name not in notices:
+            notices.append(name)
+            self.notice_list = json.dumps(notices)
+            self.save()
+
+    def add_assignment(self, name):
+        assignments = json.loads(self.assignment_list)
+        if name not in assignments:
+            assignments.append(name)
+            self.assignment_list = json.dumps(assignments)
+            self.save()
+
+    def add_slide(self, name):
+        slides = json.loads(self.slide_list)
+        if name not in slides:
+            slides.append(name)
+            self.slide_list = json.dumps(slides)
+            self.save()
 
     def get_read_notice_list(self):
         return json.loads(self.notice_list)
+
+    def get_read_assignment_list(self):
+        return json.loads(self.assigment_list)
+
+    def get_read_slide_list(self):
+        return json.loads(self.slide_list)
 
     def add_event(self, id):
         events = json.loads(self.event_list)
@@ -50,10 +73,6 @@ class User(models.Model):
         del events[id]
         self.event_list = json.dumps(events)
         self.save()
-
-    def search_event(self, id):
-        events = json.loads(self.event_list)
-        return events.index(id)
 
     @classmethod
     def get_by_openid(cls, openid):

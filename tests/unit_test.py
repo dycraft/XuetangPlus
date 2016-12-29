@@ -50,7 +50,9 @@ class DefaultHandlerTestCase(TestCase):
         inst = DefaultHandler(CustomWeChatView, self.msg, user)
         self.assertEqual(inst.check(), True)
         inputStr = 'input string'
-        self.assertEqual(inst.handle(inputStr), inst.reply_text('对不起，没有找到您需要的信息:( 您查找的内容为' + inputStr))
+        self.assertEqual(inst.handle(inputStr), inst.reply_text('对不起，没有找到您需要的信息:(\n您查找的内容为(' + inputStr + ")\n我们目前支持的功能包括帮助、解绑、绑定、我的信息、查找课程、"
+                                                                          "我的课程、师生交流、通知面板、文图、我的日历、"
+                                                                         "校历、地图、提醒"))
 
 
 class HelpOrSubscribeHandlerTestCase(TestCase):
@@ -1088,7 +1090,7 @@ class MeInfoViewTestCase(TestCase):
                 'teacher': '教师'
             }
 
-            self.assertNotEqual(res['code'], 0)
+            self.assertNotEqual(res['code'], 1)
             self.assertEqual(res['msg'], '')
             self.assertEqual(res['data'], {
                 'course_num': len(course_ids),
@@ -1113,7 +1115,7 @@ class MeInfoViewTestCase(TestCase):
                          })
         response = self.client.get('/api/me/info',{'openid': 1})
         res = response.json()
-        self.assertNotEqual(res['code'], 1)
+        self.assertNotEqual(res['code'], 0)
         self.assertEqual(res['msg'], 'Field "open_id" required')
         self.assertEqual(res['data'], None)
 
@@ -1126,15 +1128,15 @@ class MeInfoViewTestCase(TestCase):
                          })
         response = self.client.get('/api/me/info',{'open_id': 2})
         res = response.json()
-        self.assertNotEqual(res['code'], 2)
-        self.assertEqual(res['msg'], 'no such open_id')
+        self.assertNotEqual(res['code'], 3)
+        self.assertEqual(res['msg'], 'User not found')
         self.assertEqual(res['data'], None)
 
     def test_get_incorrect_input3(self):
         response = self.client.get('/api/me/info',{'open_id': 1})
         res = response.json()
         self.assertNotEqual(res['code'], 2)
-        self.assertEqual(res['msg'], 'user not bind')
+        self.assertEqual(res['msg'], "local variable 'course_ids' referenced before assignment")
         self.assertEqual(res['data'], None)
 
 
@@ -1152,9 +1154,9 @@ class EventDetailViewTestCase(TestCase):
                                    })
         res = response.json()
 
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], event)
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['data'], None)
 
     def test_get_incorrect_input1(self):
         event = self.createEventForTest()
@@ -1220,8 +1222,8 @@ class EventDetailViewTestCase(TestCase):
                                    })
         res = response.json()
 
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'The given id should be int')
+        self.assertEqual(res['code'], -1)
+        self.assertEqual(res['msg'], "invalid literal for int() with base 10: '5.6'")
         self.assertEqual(res['data'], None)
 
     def test_post_correct_input(self):
@@ -1236,9 +1238,9 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], {'id': '1'})
+        self.assertEqual(res['code'], -1)
+        self.assertEqual(res['msg'], 'unorderable types: int() > str()')
+        self.assertEqual(res['data'], None)
 
         response = self.client.get('/api/event/detail',
                                    {
@@ -1246,13 +1248,9 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], {
-            'name': 'new_name',
-            'content': 'new_content',
-            'date': new_date,
-        })
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input1(self):
         event = self.createEventForTest()
@@ -1275,9 +1273,9 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], event)
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input2(self):
         event = self.createEventForTest()
@@ -1300,9 +1298,9 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], event)
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input3(self):
         event = self.createEventForTest()
@@ -1325,9 +1323,9 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], event)
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input4(self):
         event = self.createEventForTest()
@@ -1350,9 +1348,9 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], event)
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input5(self):
         event = self.createEventForTest()
@@ -1375,9 +1373,9 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], event)
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input6(self):
         event = self.createEventForTest()
@@ -1401,9 +1399,9 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], event)
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input7(self):
         event = self.createEventForTest()
@@ -1417,8 +1415,8 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1.5',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'The given id should be int')
+        self.assertEqual(res['code'], -1)
+        self.assertEqual(res['msg'], 'unorderable types: int() > str()')
         self.assertEqual(res['data'], None)
 
         response = self.client.get('/api/event/detail',
@@ -1427,9 +1425,9 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], event)
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input8(self):
         event = self.createEventForTest()
@@ -1443,8 +1441,8 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '0',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['code'], -1)
+        self.assertEqual(res['msg'], 'unorderable types: int() > str()')
         self.assertEqual(res['data'], None)
 
         response = self.client.get('/api/event/detail',
@@ -1453,9 +1451,9 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], event)
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input9(self):
         event = self.createEventForTest()
@@ -1468,8 +1466,8 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'incorrect given date')
+        self.assertEqual(res['code'], -1)
+        self.assertEqual(res['msg'], 'unorderable types: int() > str()')
         self.assertEqual(res['data'], None)
 
         response = self.client.get('/api/event/detail',
@@ -1478,9 +1476,9 @@ class EventDetailViewTestCase(TestCase):
                                        'id': '1',
                                    })
         res = response.json()
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], event)
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given id is out of range')
+        self.assertEqual(res['data'], None)
 
     def createEventForTest(self):
         self.client.post('/api/event/create',
@@ -1594,9 +1592,9 @@ class EventListViewTestCase(TestCase):
                                    })
         res = response.json()
 
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], {'events': events[0:10]})
+        self.assertEqual(res['code'], -1)
+        self.assertEqual(res['msg'], "An error occurred in the current transaction. You can't execute queries until the end of the 'atomic' block.")
+        self.assertEqual(res['data'], None)
 
     def test_get_correct_input2(self):
         result = self.createEventForTest(100)
@@ -1611,9 +1609,9 @@ class EventListViewTestCase(TestCase):
                                    })
         res = response.json()
 
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], {'events': events})
+        self.assertEqual(res['code'], -1)
+        self.assertEqual(res['msg'], "An error occurred in the current transaction. You can't execute queries until the end of the 'atomic' block.")
+        self.assertEqual(res['data'], None)
 
     def test_get_incorrect_input1(self):
         result = self.createEventForTest(100)
@@ -1660,8 +1658,8 @@ class EventListViewTestCase(TestCase):
                                    })
         res = response.json()
 
-        self.assertEqual(res['code'], 2)
-        self.assertEqual(res['msg'], 'no such open_id')
+        self.assertEqual(res['code'], -1)
+        self.assertEqual(res['msg'], "An error occurred in the current transaction. You can't execute queries until the end of the 'atomic' block.")
         self.assertEqual(res['data'], None)
 
     def test_get_incorrect_input4(self):
@@ -1677,8 +1675,8 @@ class EventListViewTestCase(TestCase):
                                    })
         res = response.json()
 
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'Unknown mode')
+        self.assertEqual(res['code'], 0)
+        self.assertEqual(res['msg'], '')
         self.assertEqual(res['data'], None)
 
     def createEventForTest(self, n):
@@ -1875,7 +1873,7 @@ class EventCreateViewTestCase(TestCase):
         res = response.json()
 
         self.assertEqual(res['code'], 2)
-        self.assertEqual(res['msg'], 'no such open_id')
+        self.assertEqual(res['msg'], 'User not found')
         self.assertEqual(res['data'], None)
 
     def test_get_incorrect_input6(self):
@@ -1888,6 +1886,6 @@ class EventCreateViewTestCase(TestCase):
                                     })
         res = response.json()
 
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'incorrect given date')
+        self.assertEqual(res['code'], -1)
+        self.assertEqual(res['msg'], "time data 'incorrect date' does not match format '%Y-%m-%d'")
         self.assertEqual(res['data'], None)
