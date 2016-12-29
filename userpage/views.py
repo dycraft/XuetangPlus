@@ -880,35 +880,27 @@ class EventList(APIView):
                 'events': result
             }
         elif self.input['mode'] == 'month':
-            if 'date' not in self.input:
-                date = date_today().replace(day=1)
-            else:
-                try:
-                    date = datetime.datetime.strptime(self.input['date'], '%Y-%m-%d')
-                except:
-                    raise InputError('incorrect given date')
+            self.check_input('month')
+            try:
+                date = datetime.datetime.strptime(self.input['month'], '%Y-%m')
+            except:
+                raise InputError('incorrect given month')
             try:
                 user = User.get_by_openid(self.input['open_id'])
             except:
                 raise LogicError('no such open_id')
             event_id_list = json.loads(user.event_list)
             event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
-
             result = []
             for e in event_list:
                 if self.month_range(datetime.datetime.fromtimestamp(float(e.date)), date):
                     e_date = stamp_to_utcstr_date(float(e.date))
-                    result.append([{
+                    result.append({
                         'id': user.search_event(e.id),
                         'name': e.name,
                         'date': e_date,
-                        'content': e.content
-                    }])
-            return {
-                'events': result
-            }
-        else:
-            raise InputError('Unknown mode')
+                    })
+            return result
 
     @classmethod
     def month_range(cls, date1, date2):

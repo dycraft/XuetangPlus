@@ -196,15 +196,52 @@
                         			editable: true,
                         			eventLimit: false
                                 });
-                                var month = $('#calendar').fullCalendar('getDate')._d.getMonth() + 1;
-                                $.get('/api/event/list', {
-                                    open_id: openid,
-                                    mode: 'month',
-                                    date: locals.now
-                                }, function (data) {
-                                    $('#calendar').fullCalendar('addEvent', {
-                                        title: "",
-                                        start: ""
+                                (function getEvent() {
+                                    var year = $('#calendar').fullCalendar('getDate')._d.getYear() + 1900;
+                                    var month = $('#calendar').fullCalendar('getDate')._d.getMonth() + 1;
+                                    $.get('/api/event/list', {
+                                        open_id: openid,
+                                        mode: 'month',
+                                        month: year+'-'+month
+                                    }, function (data) {
+                                        for (var i = 0; i < data.data.length; i++) {
+                                            $('#calendar').fullCalendar('renderEvent', {
+                                                title: data.data[i].name,
+                                                start: data.data[i].date
+                                            });
+                                        }
+                                    });
+                                })();
+                                $('.fc-prev-button').click(function() {
+                                    var year = $('#calendar').fullCalendar('getDate')._d.getYear() + 1900;
+                                    var month = $('#calendar').fullCalendar('getDate')._d.getMonth() + 1;
+                                    $.get('/api/event/list', {
+                                        open_id: openid,
+                                        mode: 'month',
+                                        month: year+'-'+month
+                                    }, function (data) {
+                                        for (var i = 0; i < data.data.length; i++) {
+                                            $('#calendar').fullCalendar('renderEvent', {
+                                                title: data.data[i].name,
+                                                start: data.data[i].date
+                                            });
+                                        }
+                                    });
+                                });
+                                $('.fc-next-button').click(function() {
+                                    var year = $('#calendar').fullCalendar('getDate')._d.getYear() + 1900;
+                                    var month = $('#calendar').fullCalendar('getDate')._d.getMonth() + 1;
+                                    $.get('/api/event/list', {
+                                        open_id: openid,
+                                        mode: 'month',
+                                        month: year+'-'+month
+                                    }, function (data) {
+                                        for (var i = 0; i < data.data.length; i++) {
+                                            $('#calendar').fullCalendar('renderEvent', {
+                                                title: data.data[i].name,
+                                                start: data.data[i].date
+                                            });
+                                        }
                                     });
                                 });
                                 $('#showSelectFormat').click(function () {
