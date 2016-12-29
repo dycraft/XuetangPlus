@@ -42,6 +42,7 @@ class DefaultHandler(WeChatHandler):
 class HelpOrSubscribeHandler(WeChatHandler):
 
     def check(self):
+
         return self.is_text('帮助', 'help') or self.is_event('scan', 'subscribe')
 
     def handle(self):
@@ -113,7 +114,7 @@ class CourseSearchHandler(WeChatHandler):
 
     def handle(self):
         if self.user.username == '':
-            return  self.reply_text("请先进行绑定")
+            return self.reply_text("请先进行绑定")
         return self.reply_single_news({
             'Title': '欢迎使用课程搜索',
             'Description': '在这里你可以方便的查询课程的信息',
@@ -232,6 +233,7 @@ class NavigationHandler(WeChatHandler):
         return self.is_text('地图') or self.is_event_click(event_keys['navigation'])
 
     def handle(self):
+        print('233')
         #if self.user.username == '':
         #    return  self.reply_text("请先进行绑定")
         return self.reply_single_news({
