@@ -5,6 +5,7 @@ from XuetangPlus.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
 from XuetangPlus.settings import get_url, get_redirect_url
 from XuetangPlus.settings import event_keys, event_urls
 
+
 class CustomWeChatView(WeChatView):
 
     lib = WeChatLib(WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET)

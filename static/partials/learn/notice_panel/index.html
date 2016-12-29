@@ -546,7 +546,7 @@
 
                             render('main', locals);
 
-                            var noticeNum = locals.total - locals.pageNum * 10;
+                            var noticeNum = locals.total - (locals.pageNum - 1) * 10;
                             if(noticeNum > 10){
                                 noticeNum = 10;
                             }
@@ -641,7 +641,7 @@
 
                             render('main', locals);
 
-                            var assignmentNum = locals.total - locals.pageNum * 10;
+                            var assignmentNum = locals.total - (locals.pageNum - 1) * 10;
                             if(assignmentNum > 10){
                                 assignmentNum = 10;
                             }
@@ -737,7 +737,7 @@
 
                             render('main', locals);
 
-                            var slideNum = locals.total - locals.pageNum * 10;
+                            var slideNum = locals.total - (locals.pageNum - 1) * 10;
                             if(slideNum > 10){
                                 slideNum = 10;
                             }

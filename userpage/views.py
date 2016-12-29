@@ -115,6 +115,7 @@ class AccountBind(APIView):
                             user.add_notice(ReadNoticeRecord.notice_name(3, slide['title'], course_id))
                     else:
                         raise LogicError("Response Error in AccountBind")
+
             except:
                 raise LogicError('no such open_id')
         else:
@@ -148,6 +149,7 @@ class UnBind(APIView):
 
     def post(self):
         self.check_input('open_id')
+        print(self.input['open_id'])
         try:
             user = User.get_by_openid(self.input['open_id'])
         except:
@@ -508,6 +510,7 @@ class SearchCourse(APIView):
             r['index'] = index + 1
             r['course_seq'] = int(float(r['course_seq']))
 
+        print(res)
         return {
             'total': len(courses),
             'search_result': res
