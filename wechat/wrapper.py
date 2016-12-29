@@ -93,7 +93,10 @@ class WeChatHandler(object):
         return settings.get_redirect_url(event_urls['calendar'])
 
     def url_my_course(self):
-        return settings.get_redirect_url(event_urls['my_course'])
+        return settings.get_redirect_url(event_urls['course_list'])
+
+    def url_communication(self):
+        return settings.get_redirect_url(event_urls['communication'])
 
     def url_notification(self):
         return settings.get_redirect_url(event_urls['notice_panel'])

@@ -25,8 +25,8 @@ class DefaultHandler(WeChatHandler):
         return True
 
     def handle(self, inputStr):
-        return self.reply_text('对不起，没有找到您需要的信息:(\n您查找的内容为(' + inputStr + ')\n我们目前支持的' +
-            '功能包括帮助、解绑、绑定、我的信息、查找课程、我的课程、课程交流、通知面板、文图、我的日历、校历、地图、提醒')
+        return self.reply_text('对不起，没有找到您需要的信息:(\n您查找的内容为(' + inputStr + ')\n\n我们目前支持的' +
+            '功能包括帮助、解绑、绑定、我的信息、查找课程、我的课程、课程交流、通知面板、文图、我的日历、校历、导航、提醒')
 
 
 class HelpOrSubscribeHandler(WeChatHandler):
@@ -110,6 +110,7 @@ class CourseSearchHandler(WeChatHandler):
             'Title': '欢迎使用课程搜索',
             'Description': '在这里你可以方便的查询课程的信息',
             'Url': self.url_course_search(),
+            'PicUrl': self.url_pic('/img/theme/search_course.png')
         })
 
 
@@ -140,16 +141,12 @@ class CommunicateHandler(WeChatHandler):
     def handle(self):
         if self.user.username == '':
             return self.reply_text('请先进行绑定')
-        if self.user.position == 'teacher':
-            return self.reply_single_news({
-                'Title': '欢迎使用师生交流',
-                'Description': '有一门课程有新消息，点击查看。',
-                'Url': self.url_communicate_teacher(),
-            })
+
         return self.reply_single_news({
-            'Title': '欢迎使用师生交流',
-            'Description': '有一门课程有新消息，点击查看。',
-            'Url': self.url_communicate_student(),
+            'Title': '欢迎使用课程交流',
+            'Description': '在交流中学习',
+            'Url': self.url_communication(),
+            'PicUrl': self.url_pic('/img/theme/communication.png')
         })
 
 
@@ -198,6 +195,7 @@ class MyCalendarHandler(WeChatHandler):
             'Title': '欢迎使用个人日历',
             'Description': '在这里你可以方便查看和管理你的日程',
             'Url': self.url_my_calendar(),
+            'PicUrl': self.url_pic('/img/theme/calendar.png')
         })
 
 
@@ -221,13 +219,14 @@ class SchoolCalendarHandler(WeChatHandler):
 class NavigationHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('地图') or self.is_event_click(event_keys['navigation'])
+        return self.is_text('导航') or self.is_event_click(event_keys['navigation'])
 
     def handle(self):
         return self.reply_single_news({
-            'Title': '欢迎使用地图',
-            'Description': '方便查看地图',
+            'Title': '欢迎使用校园导航',
+            'Description': '输入地点进行导航',
             'Url': self.url_navigation(),
+            'PicUrl': self.url_pic('/img/theme/navigation.png')
         })
 
 

@@ -294,7 +294,6 @@ class NoticeList(APIView):
             if not r['read']:
                 unread += 1
 
-
         return {
             'total': length,
             'notices': result,
@@ -510,7 +509,6 @@ class SearchCourse(APIView):
             r['index'] = index + 1
             r['course_seq'] = int(float(r['course_seq']))
 
-        print(res)
         return {
             'total': len(courses),
             'search_result': res
@@ -925,7 +923,7 @@ class EventCreate(APIView):
                 content = self.input['content']
             )
         except:
-            raise  InputError('incorrect given date')
+            raise InputError('incorrect given date')
         try:
             id = User.get_by_openid(self.input['open_id']).add_event(event.id)
         except:
@@ -1013,6 +1011,7 @@ class CommunicateList(APIView):
             raise LogicError("no such open_id")
 
         url = 'http://se.zhuangty.com:8000/learnhelper/' + user.student_id + '/courses'
+
         params = {
             'apikey': 'camustest',
             'apisecret': 'camustest'
