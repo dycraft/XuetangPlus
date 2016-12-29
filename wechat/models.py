@@ -49,7 +49,7 @@ class User(models.Model):
         return json.loads(self.notice_list)
 
     def get_read_assignment_list(self):
-        return json.loads(self.assigment_list)
+        return json.loads(self.assignment_list)
 
     def get_read_slide_list(self):
         return json.loads(self.slide_list)
