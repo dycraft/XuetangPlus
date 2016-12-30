@@ -16,7 +16,6 @@ urlpatterns = [
     url(r'^learn/notice_panel/notice/?$', NoticeList.as_view()),
     url(r'^learn/notice_panel/assignment/?$', AssignmentList.as_view()),
     url(r'^learn/notice_panel/slide/?$', SlideList.as_view()),
-    url(r'^learn/notice_panel/get_course_id/?$', GetCourseId.as_view()),
     url(r'^me/info/?$', MeInfo.as_view()),
     url(r'^course/information/?$', CourseInfo.as_view()),
     url(r'^course/comment/create?$', CommentCreate.as_view()),

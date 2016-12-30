@@ -55,7 +55,7 @@
                         <div class="weui-cell__ft" style="font-size: 0"></div>
                     </div>
                 </div>
-                <div class="weui-cells__title">最新消息</div>
+                <div class="weui-cells__title">最新消息(只显示最新10条)</div>
                 <div class="weui-cells">
                     {% for msg in msgs %}
                     <div class="weui-cell">
@@ -112,6 +112,25 @@
         </script>
 
         <script type="text/javascript">
+            exitDiscussion = function () {
+                $.post('/api/communicate/control/',{
+                    open_id: openid,
+                    mode: 0,
+                    course_id: ''
+                }, function (data) {
+                    wx.closeWindow();
+                });
+            };
+
+            $(function(){
+                window.addEventListener("popstate", function(e) {
+                    exitDiscussion();
+                }, false);
+            });
+
+        </script>
+
+        <script type="text/javascript">
             $(function(){
                 window.addEventListener("popstate", function(e) {
                     $('#backBtn').click();
@@ -128,8 +147,9 @@
                     open_id: openid,
                     course_id: courseid
                 }, function (data) {
-                    locals.msgs = data.data;
-                    render('main', locals);
+                    locals.msgs = data.data.msgs;
+                    locals.update = data.data.update_index;
+                    render('page', locals);
                     // $('#new').hide();
                     // $('#freshBtn').click(fresh);
                     $('#sendBtn').click(function () {
@@ -141,7 +161,8 @@
             var getRtmMsg = function() {
                 $.post("/api/communicate/eventsource/", {
                     open_id: openid,
-                    course_id: courseid
+                    course_id: courseid,
+                    index: locals.update
                 }, function(data) {
                     if(data.code === 0) {
                         // $('#new').show();
@@ -165,11 +186,10 @@
                                 open_id: openid
                             }, function(data) {
                                 locals.courses = data.data.courses;
-                                locals.comment_url = data.data.url;
                                 render('main', locals);
-                                $('.js-info').click(function() {
+                                $('.js-course').click(function() {
                                     courseid = $(this).attr('courseid');
-                                    page.redirect('#!page');
+                                    page('#!page');
                                 });
                             });
                         } else {
@@ -192,7 +212,7 @@
                                     content: $('#inputContent').val()
                                 }, function (data) {
                                     loading.hide();
-                                    page('');
+                                    page('#!page');
                                 });
                             } else {
                                 loading.hide();
