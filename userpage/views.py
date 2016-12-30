@@ -216,28 +216,6 @@ class CourseList(APIView):
             raise LogicError('Response error')
 
 
-class GetCourseId(APIView):
-
-    def get(self):
-        self.check_input('open_id')
-        try:
-            user = User.get_by_openid(self.input['open_id'])
-        except:
-            raise LogicError('no such open_id')
-
-        if user.student_id == '':
-            raise LogicError('user not bound')
-
-        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-        response = requests.post(url)
-        course_ids = []
-        if response.status_code == 200:
-            result = json.loads(response.content.decode())
-            course_ids = list(set([c['courseid'] for c in result['classes']]))
-
-        return course_ids
-
-
 class NoticeList(APIView):
 
     def get(self):
@@ -622,7 +600,7 @@ class CommentCreate(APIView):
         except:
             raise LogicError('no such open_id')
         if user.student_id == '':
-            raise LogicError('user not bind')
+            raise LogicError('user not bound')
         commenter_id = user.id
         try:
             score = int(params['score'])
@@ -650,13 +628,14 @@ class CommentList(APIView):
         except:
             raise LogicError('no such open_id')
         if user.student_id == '':
-            raise LogicError('user not bind')
+            raise LogicError('user not bound')
         all_comments = [{
                             'time': float(x.comment_time),
                             'content': x.content,
                             'id': x.id,
                             'real_name': x.get_commenter_name(),
                             'course_name': x.course_name,
+                            'course_id': x.course_id,
                         }
                         for x in Comment.objects.all()]
         if 'course_id' in self.input:
@@ -715,7 +694,6 @@ class CommentList(APIView):
 class GetUserInfo(APIView):
     def get(self):
         self.check_input('code')
-        # print('getopenid')
         url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='
         url += CONFIGS['WECHAT_APPID']
         url += '&secret='
@@ -728,7 +706,6 @@ class GetUserInfo(APIView):
         result = json.loads(response.content.decode())
         openid = result['openid']
         access_token = result['access_token']
-        print(openid)
         url2 = 'https://api.weixin.qq.com/sns/userinfo?access_token='
         url2 += access_token
         url2 += '&openid='
@@ -743,7 +720,7 @@ class GetUserInfo(APIView):
             user.save()
             print(user.avatar_url)
         except:
-            print('can not get avatar')
+            raise LogicError('can not get avatar')
         return {
             'open_id': openid
         }
@@ -1002,7 +979,14 @@ class Communicate(APIView):
 
     def get(self):
         self.check_input('open_id', 'course_id')
-        msgs = Course.objects.get(course_id=self.input['course_id']).get_msg()
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError('no such open_id')
+        try:
+            msgs = Course.objects.get(course_id=self.input['course_id']).get_msg()
+        except:
+            raise InputError('no such course_id')
         answer = []
         for msg in msgs:
             user = User.objects.get(open_id=msg.sender_id)
@@ -1015,6 +999,11 @@ class Communicate(APIView):
         return answer
 
     def post(self):
+        self.check_input('open_id', 'course_id')
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError('no such open_id')
         if 'update' in self.input:
             openid = self.input['open_id']
             courseid = self.input['course_id']
@@ -1027,7 +1016,10 @@ class Communicate(APIView):
             openid = self.input['open_id']
             courseid = self.input['course_id']
             content = self.input['content']
-            Course.objects.get(course_id=courseid).add_msg(openid, content)
+            try:
+                Course.objects.get(course_id=courseid).add_msg(openid, content)
+            except:
+                raise InputError('no such course_id')
             update = True
             return
 

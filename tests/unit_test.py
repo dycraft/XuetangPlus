@@ -9,7 +9,7 @@ from wechat.handlers import ErrorHandler, DefaultHandler, HelpOrSubscribeHandler
     AccountBindHandler, ViewPersonalInformationHandler, CourseSearchHandler, CourseListHandler, CommunicateHandler, \
     NoticePanelHandler, LibraryRemainsHandler, MyCalendarHandler, SchoolCalendarHandler, NavigationHandler, \
     RemindHandler
-from wechat.models import User, Event, CourseForSearch
+from wechat.models import User, Event, CourseForSearch, Comment, Course
 from userpage.views import ReadNoticeRecord, CourseInfo
 
 data_for_test = {
@@ -1022,54 +1022,6 @@ class CourseListViewTestCase(TestCase):
         self.assertEqual(res['data'], None)
 
 
-class GetCourseIdViewTestCase(TestCase):
-    fixtures = ['user.json']
-
-    def test_get_correct_input(self):
-        self.client.post('/api/welcome/account_bind',
-                         {
-                             'open_id': '1',
-                             'student_id': data_for_test['username'],
-                             'password': data_for_test['password']
-                         })
-        response = self.client.get('/api/learn/notice_panel/get_course_id', {'open_id': 1})
-        res = response.json()
-        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
-        response = requests.post(url)
-        course_ids = []
-        if response.status_code == 200:
-            result = json.loads(response.content.decode())
-            course_ids = list(set([c['courseid'] for c in result['classes']]))
-            self.assertEqual(res['code'], 0)
-            self.assertEqual(res['msg'], '')
-            self.assertEqual(res['data'], course_ids)
-        else:
-            self.assertEqual(res['code'], 0)
-            self.assertEqual(res['msg'], '')
-            self.assertEqual(res['data'], [])
-
-    def test_get_incorrect_input1(self):
-        response = self.client.get('/api/learn/notice_panel/get_course_id', {'sth':'sth'})
-        res = response.json()
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'Field "open_id" required')
-        self.assertEqual(res['data'], None)
-
-    def test_get_incorrect_input2(self):
-        response = self.client.get('/api/learn/notice_panel/get_course_id', {'open_id': 2})
-        res = response.json()
-        self.assertEqual(res['code'], 2)
-        self.assertEqual(res['msg'], 'no such open_id')
-        self.assertEqual(res['data'], None)
-
-    def test_get_incorrect_input3(self):
-        response = self.client.get('/api/learn/notice_panel/get_course_id', {'open_id': 1})
-        res = response.json()
-        self.assertEqual(res['code'], 2)
-        self.assertEqual(res['msg'], 'user not bound')
-        self.assertEqual(res['data'], None)
-
-
 class NoticeListViewTestCase(TestCase):
     fixtures = ['user.json']
 
@@ -1841,10 +1793,913 @@ class CourseInfoViewTestCase(TestCase):
                              })
             response = self.client.get('/api/course/information',
                                        {
+                                           'course_id': course_id,
+                                       })
+            res = response.json()
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'Field "open_id" required')
+            self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input2(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.get('/api/course/information',
+                                       {
+                                           'open_id': 1,
+                                       })
+            res = response.json()
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'Field "course_id" required')
+            self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input3(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.get('/api/course/information',
+                                       {
+                                           'open_id': 2,
+                                           'course_id': course_id,
+                                       })
+            res = response.json()
+            self.assertEqual(res['code'], 2)
+            self.assertEqual(res['msg'], 'no such open_id')
+            self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input4(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            response = self.client.get('/api/course/information',
+                                       {
                                            'open_id': 1,
                                            'course_id': course_id,
                                        })
             res = response.json()
+            self.assertEqual(res['code'], 2)
+            self.assertEqual(res['msg'], 'user not bound')
+            self.assertEqual(res['data'], None)
+
+
+class CommentCreateViewTestCase(TestCase):
+    fixtures = ['user.json']
+
+    def test_post_correct_input(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.post('/api/course/comment/create',
+                                        {
+                                            'open_id': 1,
+                                            'score': 1,
+                                            'content': 'content',
+                                            'isanonymous': 'true',
+                                            'course_name': course_name,
+                                            'course_id': course_id,
+                                        })
+            res = response.json()
+
+            self.assertEqual(res['code'], 0)
+            self.assertEqual(res['msg'], '')
+            self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input1(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.post('/api/course/comment/create',
+                                        {
+                                            'score': 1,
+                                            'content': 'content',
+                                            'isanonymous': 'true',
+                                            'course_name': course_name,
+                                            'course_id': course_id,
+                                        })
+            res = response.json()
+
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'Field "open_id" required')
+            self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input2(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.post('/api/course/comment/create',
+                                        {
+                                            'open_id': 1,
+                                            'content': 'content',
+                                            'isanonymous': 'true',
+                                            'course_name': course_name,
+                                            'course_id': course_id,
+                                        })
+            res = response.json()
+
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'Field "score" required')
+            self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input3(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.post('/api/course/comment/create',
+                                        {
+                                            'open_id': 1,
+                                            'score': 1,
+                                            'isanonymous': 'true',
+                                            'course_name': course_name,
+                                            'course_id': course_id,
+                                        })
+            res = response.json()
+
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'Field "content" required')
+            self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input4(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.post('/api/course/comment/create',
+                                        {
+                                            'open_id': 1,
+                                            'score': 1,
+                                            'content': 'content',
+                                            'course_name': course_name,
+                                            'course_id': course_id,
+                                        })
+            res = response.json()
+
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'Field "isanonymous" required')
+            self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input5(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.post('/api/course/comment/create',
+                                        {
+                                            'open_id': 1,
+                                            'score': 1,
+                                            'content': 'content',
+                                            'isanonymous': 'true',
+                                            'course_id': course_id,
+                                        })
+            res = response.json()
+
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'Field "course_name" required')
+            self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input6(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.post('/api/course/comment/create',
+                                        {
+                                            'open_id': 1,
+                                            'score': 1,
+                                            'content': 'content',
+                                            'isanonymous': 'true',
+                                            'course_name': course_name,
+                                        })
+            res = response.json()
+
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'Field "course_id" required')
+            self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input7(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.post('/api/course/comment/create',
+                                        {
+                                            'open_id': 2,
+                                            'score': 1,
+                                            'content': 'content',
+                                            'isanonymous': 'true',
+                                            'course_name': course_name,
+                                            'course_id': course_id,
+                                        })
+            res = response.json()
+
+            self.assertEqual(res['code'], 2)
+            self.assertEqual(res['msg'], 'no such open_id')
+            self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input8(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            response = self.client.post('/api/course/comment/create',
+                                        {
+                                            'open_id': 1,
+                                            'score': 1,
+                                            'content': 'content',
+                                            'isanonymous': 'true',
+                                            'course_name': course_name,
+                                            'course_id': course_id,
+                                        })
+            res = response.json()
+
+            self.assertEqual(res['code'], 2)
+            self.assertEqual(res['msg'], 'user not bound')
+            self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input9(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.post('/api/course/comment/create',
+                                        {
+                                            'open_id': 1,
+                                            'score': 1.5,
+                                            'content': 'content',
+                                            'isanonymous': 'true',
+                                            'course_name': course_name,
+                                            'course_id': course_id,
+                                        })
+            res = response.json()
+
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'The given score should be int')
+            self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input10(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.post('/api/course/comment/create',
+                                        {
+                                            'open_id': 1,
+                                            'score': 6,
+                                            'content': 'content',
+                                            'isanonymous': 'true',
+                                            'course_name': course_name,
+                                            'course_id': course_id,
+                                        })
+            res = response.json()
+
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'The given score is out of range')
+            self.assertEqual(res['data'], None)
+
+
+class CommentListViewTestCase(TestCase):
+    fixtures = ['user.json']
+
+    def test_get_correct_input1(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password'],
+                         })
+        user = User.get_by_openid(1)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            result = []
+            id = 50
+            for i in range(0, 100):
+                create_time = current_stamp()
+                comment = Comment.objects.create(isanonymous=0, course_id=course_id, course_name=course_name,
+                                                 comment_time=create_time, commenter_id=user.id,
+                                                 content='content' + str(i), score=i % 5 + 1)
+                if i == 50:
+                    id = comment.id
+
+            response = self.client.get('/api/course/comment/list',
+                                       {
+                                           'open_id': 1,
+                                       })
+            res = response.json()
+            all_comments = [{
+                                'time': float(x.comment_time),
+                                'content': x.content,
+                                'id': x.id,
+                                'real_name': x.get_commenter_name(),
+                                'course_name': x.course_name,
+                                'course_id': x.course_id,
+                            }
+                            for x in Comment.objects.all()]
+            result = sorted(all_comments, key=lambda d: d['time'], reverse=True)
+            length = len(result)
+            if length > 10:
+                result = result[0:10]
+            self.assertEqual(res['code'], 0)
+            self.assertEqual(res['msg'], '')
+            self.assertEqual(res['data'], result)
+
+    def test_get_correct_input2(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password'],
+                         })
+        user = User.get_by_openid(1)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            result = []
+            id = 50
+            for i in range(0, 100):
+                create_time = current_stamp()
+                comment = Comment.objects.create(isanonymous=0, course_id=course_id, course_name=course_name,
+                                       comment_time=create_time, commenter_id=user.id,
+                                       content='content' + str(i), score=i % 5 + 1)
+                if i == 50:
+                    id = comment.id
+
+            response = self.client.get('/api/course/comment/list',
+                                       {
+                                           'open_id': 1,
+                                           'end_id': id,
+                                       })
+            res = response.json()
+            all_comments = [{
+                                'time': float(x.comment_time),
+                                'content': x.content,
+                                'id': x.id,
+                                'real_name': x.get_commenter_name(),
+                                'course_name': x.course_name,
+                                'course_id': x.course_id,
+                            }
+                            for x in Comment.objects.all()]
+            end_time = float(Comment.objects.get(id=id).comment_time)
+            comments = []
+            for cmt in all_comments:
+                if cmt['time'] < end_time:
+                    comments.append(cmt)
+            result = sorted(comments, key=lambda d: d['time'], reverse=True)
+            length = len(result)
+            if length > 10:
+                result = result[0:10]
+            self.assertEqual(res['code'], 0)
+            self.assertEqual(res['msg'], '')
+            self.assertEqual(res['data'], result)
+
+    def test_get_correct_input3(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password'],
+                         })
+        user = User.get_by_openid(1)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            result = []
+            id = 50
+            for i in range(0, 100):
+                create_time = current_stamp()
+                comment = Comment.objects.create(isanonymous=0, course_id=course_id, course_name=course_name,
+                                                 comment_time=create_time, commenter_id=user.id,
+                                                 content='content' + str(i), score=i % 5 + 1)
+                if i == 50:
+                    id = comment.id
+
+            response = self.client.get('/api/course/comment/list',
+                                       {
+                                           'open_id': 1,
+                                           'course_id': course_id,
+                                       })
+            res = response.json()
+            all_comments = [{
+                                'time': float(x.comment_time),
+                                'content': x.content,
+                                'id': x.id,
+                                'real_name': x.get_commenter_name(),
+                                'course_name': x.course_name,
+                                'course_id': x.course_id,
+                            }
+                            for x in Comment.objects.all()]
+            comments = []
+            for cmt in all_comments:
+                if cmt['course_id'] == course_id:
+                    comments.append(cmt)
+            result = sorted(comments, key=lambda d: d['time'], reverse=True)
+            length = len(result)
+            if length > 10:
+                result = result[0:10]
+            self.assertEqual(res['code'], 0)
+            self.assertEqual(res['msg'], '')
+            self.assertEqual(res['data'], result)
+
+    def test_get_correct_input4(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password'],
+                         })
+        user = User.get_by_openid(1)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            result = []
+            id = 50
+            for i in range(0, 100):
+                create_time = current_stamp()
+                comment = Comment.objects.create(isanonymous=0, course_id=course_id, course_name=course_name,
+                                                 comment_time=create_time, commenter_id=user.id,
+                                                 content='content' + str(i), score=i % 5 + 1)
+                if i == 50:
+                    id = comment.id
+
+            response = self.client.get('/api/course/comment/list',
+                                       {
+                                           'open_id': 1,
+                                           'end_id': id,
+                                           'course_id': course_id,
+                                       })
+            res = response.json()
+            all_comments = [{
+                                'time': float(x.comment_time),
+                                'content': x.content,
+                                'id': x.id,
+                                'real_name': x.get_commenter_name(),
+                                'course_name': x.course_name,
+                                'course_id': x.course_id,
+                            }
+                            for x in Comment.objects.all()]
+            end_time = float(Comment.objects.get(id=id).comment_time)
+            comments = []
+            for cmt in all_comments:
+                if cmt['time'] < end_time and cmt['course_id'] == course_id:
+                    comments.append(cmt)
+            result = sorted(comments, key=lambda d: d['time'], reverse=True)
+            length = len(result)
+            if length > 10:
+                result = result[0:10]
+            self.assertEqual(res['code'], 0)
+            self.assertEqual(res['msg'], '')
+            self.assertEqual(res['data'], result)
+
+    def test_get_incorrect_input1(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password'],
+                         })
+        user = User.get_by_openid(1)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            result = []
+            id = 50
+            for i in range(0, 100):
+                create_time = current_stamp()
+                comment = Comment.objects.create(isanonymous=0, course_id=course_id, course_name=course_name,
+                                                 comment_time=create_time, commenter_id=user.id,
+                                                 content='content' + str(i), score=i % 5 + 1)
+                if i == 50:
+                    id = comment.id
+
+            response = self.client.get('/api/course/comment/list',
+                                       {
+                                           'end_id': id,
+                                           'course_id': course_id,
+                                       })
+            res = response.json()
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'Field "open_id" required')
+            self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input2(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password'],
+                         })
+        user = User.get_by_openid(1)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            result = []
+            id = 50
+            for i in range(0, 100):
+                create_time = current_stamp()
+                comment = Comment.objects.create(isanonymous=0, course_id=course_id, course_name=course_name,
+                                                 comment_time=create_time, commenter_id=user.id,
+                                                 content='content' + str(i), score=i % 5 + 1)
+                if i == 50:
+                    id = comment.id
+
+            response = self.client.get('/api/course/comment/list',
+                                       {
+                                           'open_id': 2,
+                                           'end_id': id,
+                                           'course_id': course_id,
+                                       })
+            res = response.json()
+            self.assertEqual(res['code'], 2)
+            self.assertEqual(res['msg'], 'no such open_id')
+            self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input3(self):
+        user = User.get_by_openid(1)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            result = []
+            id = 50
+            for i in range(0, 100):
+                create_time = current_stamp()
+                comment = Comment.objects.create(isanonymous=0, course_id=course_id, course_name=course_name,
+                                                 comment_time=create_time, commenter_id=user.id,
+                                                 content='content' + str(i), score=i % 5 + 1)
+                if i == 50:
+                    id = comment.id
+
+            response = self.client.get('/api/course/comment/list',
+                                       {
+                                           'open_id': 1,
+                                           'end_id': id,
+                                           'course_id': course_id,
+                                       })
+            res = response.json()
+            self.assertEqual(res['code'], 2)
+            self.assertEqual(res['msg'], 'user not bound')
+            self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input4(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password'],
+                         })
+        user = User.get_by_openid(1)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            result = []
+            id = 50
+            for i in range(0, 100):
+                create_time = current_stamp()
+                comment = Comment.objects.create(isanonymous=0, course_id=course_id, course_name=course_name,
+                                                 comment_time=create_time, commenter_id=user.id,
+                                                 content='content' + str(i), score=i % 5 + 1)
+                if i == 50:
+                    id = comment.id
+
+            response = self.client.get('/api/course/comment/list',
+                                       {
+                                           'open_id': 1,
+                                           'end_id': 50.1,
+                                           'course_id': course_id,
+                                       })
+            res = response.json()
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'The given id should be int')
+            self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input5(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password'],
+                         })
+        user = User.get_by_openid(1)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            result = []
+            id = 50
+            for i in range(0, 100):
+                create_time = current_stamp()
+                comment = Comment.objects.create(isanonymous=0, course_id=course_id, course_name=course_name,
+                                                 comment_time=create_time, commenter_id=user.id,
+                                                 content='content' + str(i), score=i % 5 + 1)
+                if i == 50:
+                    id = comment.id
+
+            response = self.client.get('/api/course/comment/list',
+                                       {
+                                           'open_id': 1,
+                                           'end_id': 10000,
+                                           'course_id': course_id,
+                                       })
+            res = response.json()
+            self.assertEqual(res['code'], 2)
+            self.assertEqual(res['msg'], 'no such id')
+            self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input6(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password'],
+                         })
+        user = User.get_by_openid(1)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            result = []
+            id = 50
+            for i in range(0, 100):
+                create_time = current_stamp()
+                comment = Comment.objects.create(isanonymous=0, course_id=course_id, course_name=course_name,
+                                                 comment_time=create_time, commenter_id=user.id,
+                                                 content='content' + str(i), score=i % 5 + 1)
+                if i == 50:
+                    id = comment.id
+
+            response = self.client.get('/api/course/comment/list',
+                                       {
+                                           'open_id': 1,
+                                           'end_id': 50.1,
+                                       })
+            res = response.json()
+            self.assertEqual(res['code'], 1)
+            self.assertEqual(res['msg'], 'The given id should be int')
+            self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input7(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password'],
+                         })
+        user = User.get_by_openid(1)
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            course_name = r[0]['coursename']
+            result = []
+            id = 50
+            for i in range(0, 100):
+                create_time = current_stamp()
+                comment = Comment.objects.create(isanonymous=0, course_id=course_id, course_name=course_name,
+                                       comment_time=create_time, commenter_id=user.id,
+                                       content='content' + str(i), score=i % 5 + 1)
+                if i == 50:
+                    id = comment.id
+
+            response = self.client.get('/api/course/comment/list',
+                                       {
+                                           'open_id': 1,
+                                           'end_id': 10000,
+                                       })
+            res = response.json()
+            self.assertEqual(res['code'], 2)
+            self.assertEqual(res['msg'], 'no such id')
+            self.assertEqual(res['data'], None)
 
 
 class EventDetailViewTestCase(TestCase):
@@ -2205,90 +3060,6 @@ class EventDetailViewTestCase(TestCase):
         }
 
 
-class ReadNoticeRecordViewTestCase(TestCase):
-    fixtures = ['user.json']
-
-    def test_post_correct_input(self):
-        response = self.client.post('/api/read/notice/record',
-                                    {
-                                        'open_id': 1,
-                                        'type': 1,
-                                        'name': 'name',
-                                        'course_id': 'course_id',
-                                    })
-        res = response.json()
-
-        self.assertEqual(res['code'], 0)
-        self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], None)
-
-    def test_post_incorrect_input1(self):
-        response = self.client.post('/api/read/notice/record',
-                                    {
-                                        'type': 1,
-                                        'name': 'name',
-                                        'course_id': 'course_id',
-                                    })
-        res = response.json()
-
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'Field "open_id" required')
-        self.assertEqual(res['data'], None)
-
-    def test_post_incorrect_input2(self):
-        response = self.client.post('/api/read/notice/record',
-                                    {
-                                        'open_id': 1,
-                                        'name': 'name',
-                                        'course_id': 'course_id',
-                                    })
-        res = response.json()
-
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'Field "type" required')
-        self.assertEqual(res['data'], None)
-
-    def test_post_incorrect_input3(self):
-        response = self.client.post('/api/read/notice/record',
-                                    {
-                                        'open_id': 1,
-                                        'type': 1,
-                                        'course_id': 'course_id',
-                                    })
-        res = response.json()
-
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'Field "name" required')
-        self.assertEqual(res['data'], None)
-
-    def test_post_incorrect_input4(self):
-        response = self.client.post('/api/read/notice/record',
-                                    {
-                                        'open_id': 1,
-                                        'type': 1,
-                                        'name': 'name',
-                                    })
-        res = response.json()
-
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'Field "course_id" required')
-        self.assertEqual(res['data'], None)
-
-    def test_get_incorrect_input5(self):
-        response = self.client.post('/api/read/notice/record',
-                                    {
-                                        'open_id': 2,
-                                        'type': 1,
-                                        'name': 'name',
-                                        'course_id': 'course_id',
-                                    })
-        res = response.json()
-
-        self.assertEqual(res['code'], 2)
-        self.assertEqual(res['msg'], 'no such open_id')
-        self.assertEqual(res['data'], None)
-
-
 class EventListViewTestCase(TestCase):
     fixtures = ['user.json']
 
@@ -2431,6 +3202,103 @@ class EventListViewTestCase(TestCase):
         return result
 
 
+class EventCreateViewTestCase(TestCase):
+    fixtures = ['user.json']
+
+    def test_post_correct_input(self):
+        response = self.client.post('/api/event/create',
+                                    {
+                                        'open_id': 1,
+                                        'name': 'name',
+                                        'date': datetime.date.today().strftime('%Y-%m-%d'),
+                                        'content': 'content',
+                                    })
+        res = response.json()
+        self.assertEqual(res['code'], 0)
+        self.assertEqual(res['msg'], '')
+        self.assertEqual(res['data'], {'id': 0})
+
+    def test_post_incorrect_input1(self):
+        response = self.client.post('/api/event/create',
+                                    {
+                                        'name': 'name',
+                                        'date': datetime.date.today().strftime('%Y-%m-%d'),
+                                        'content': 'content',
+                                    })
+        res = response.json()
+
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "open_id" required')
+        self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input2(self):
+        response = self.client.post('/api/event/create',
+                                    {
+                                        'open_id': 1,
+                                        'date': datetime.date.today().strftime('%Y-%m-%d'),
+                                        'content': 'content',
+                                    })
+        res = response.json()
+
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "name" required')
+        self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input3(self):
+        response = self.client.post('/api/event/create',
+                                    {
+                                        'open_id': 1,
+                                        'name': 'name',
+                                        'content': 'content',
+                                    })
+        res = response.json()
+
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "date" required')
+        self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input4(self):
+        response = self.client.post('/api/event/create',
+                                    {
+                                        'open_id': 1,
+                                        'name': 'name',
+                                        'date': datetime.date.today().strftime('%Y-%m-%d'),
+                                    })
+        res = response.json()
+
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "content" required')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input5(self):
+        response = self.client.post('/api/event/create',
+                                    {
+                                        'open_id': 2,
+                                        'name': 'name',
+                                        'date': datetime.date.today().strftime('%Y-%m-%d'),
+                                        'content': 'content',
+                                    })
+        res = response.json()
+
+        self.assertEqual(res['code'], 2)
+        self.assertEqual(res['msg'], 'no such open_id')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input6(self):
+        response = self.client.post('/api/event/create',
+                                    {
+                                        'open_id': 1,
+                                        'name': 'name',
+                                        'date': 'incorrect date',
+                                        'content': 'content',
+                                    })
+        res = response.json()
+
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'incorrect given date')
+        self.assertEqual(res['data'], None)
+
+
 class EventDeleteViewTestCase(TestCase):
     fixtures = ['user.json']
 
@@ -2527,28 +3395,29 @@ class EventDeleteViewTestCase(TestCase):
         self.assertEqual(res['data'], None)
 
 
-class EventCreateViewTestCase(TestCase):
+class ReadNoticeRecordViewTestCase(TestCase):
     fixtures = ['user.json']
 
     def test_post_correct_input(self):
-        response = self.client.post('/api/event/create',
+        response = self.client.post('/api/read/notice/record',
                                     {
                                         'open_id': 1,
+                                        'type': 1,
                                         'name': 'name',
-                                        'date': datetime.date.today().strftime('%Y-%m-%d'),
-                                        'content': 'content',
+                                        'course_id': 'course_id',
                                     })
         res = response.json()
+
         self.assertEqual(res['code'], 0)
         self.assertEqual(res['msg'], '')
-        self.assertEqual(res['data'], {'id': 0})
+        self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input1(self):
-        response = self.client.post('/api/event/create',
+        response = self.client.post('/api/read/notice/record',
                                     {
+                                        'type': 1,
                                         'name': 'name',
-                                        'date': datetime.date.today().strftime('%Y-%m-%d'),
-                                        'content': 'content',
+                                        'course_id': 'course_id',
                                     })
         res = response.json()
 
@@ -2557,11 +3426,24 @@ class EventCreateViewTestCase(TestCase):
         self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input2(self):
-        response = self.client.post('/api/event/create',
+        response = self.client.post('/api/read/notice/record',
                                     {
                                         'open_id': 1,
-                                        'date': datetime.date.today().strftime('%Y-%m-%d'),
-                                        'content': 'content',
+                                        'name': 'name',
+                                        'course_id': 'course_id',
+                                    })
+        res = response.json()
+
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "type" required')
+        self.assertEqual(res['data'], None)
+
+    def test_post_incorrect_input3(self):
+        response = self.client.post('/api/read/notice/record',
+                                    {
+                                        'open_id': 1,
+                                        'type': 1,
+                                        'course_id': 'course_id',
                                     })
         res = response.json()
 
@@ -2569,56 +3451,29 @@ class EventCreateViewTestCase(TestCase):
         self.assertEqual(res['msg'], 'Field "name" required')
         self.assertEqual(res['data'], None)
 
-    def test_post_incorrect_input3(self):
-        response = self.client.post('/api/event/create',
-                                    {
-                                        'open_id': 1,
-                                        'name': 'name',
-                                        'content': 'content',
-                                    })
-        res = response.json()
-
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'Field "date" required')
-        self.assertEqual(res['data'], None)
-
     def test_post_incorrect_input4(self):
-        response = self.client.post('/api/event/create',
+        response = self.client.post('/api/read/notice/record',
                                     {
                                         'open_id': 1,
+                                        'type': 1,
                                         'name': 'name',
-                                        'date': datetime.date.today().strftime('%Y-%m-%d'),
                                     })
         res = response.json()
 
         self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'Field "content" required')
+        self.assertEqual(res['msg'], 'Field "course_id" required')
         self.assertEqual(res['data'], None)
 
     def test_get_incorrect_input5(self):
-        response = self.client.post('/api/event/create',
+        response = self.client.post('/api/read/notice/record',
                                     {
                                         'open_id': 2,
+                                        'type': 1,
                                         'name': 'name',
-                                        'date': datetime.date.today().strftime('%Y-%m-%d'),
-                                        'content': 'content',
+                                        'course_id': 'course_id',
                                     })
         res = response.json()
 
         self.assertEqual(res['code'], 2)
         self.assertEqual(res['msg'], 'no such open_id')
-        self.assertEqual(res['data'], None)
-
-    def test_get_incorrect_input6(self):
-        response = self.client.post('/api/event/create',
-                                    {
-                                        'open_id': 1,
-                                        'name': 'name',
-                                        'date': 'incorrect date',
-                                        'content': 'content',
-                                    })
-        res = response.json()
-
-        self.assertEqual(res['code'], 1)
-        self.assertEqual(res['msg'], 'incorrect given date')
         self.assertEqual(res['data'], None)
