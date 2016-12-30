@@ -53,7 +53,7 @@ class CustomWeChatView(WeChatView):
                     {
                         'type': 'view',
                         'name': '课程讨论',
-                        'url': get_redirect_url(event_urls['communication'])
+                        'url': get_redirect_url(event_urls['communication_list'])
                     },
                     {
                         'type': 'view',

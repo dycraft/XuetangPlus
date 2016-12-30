@@ -28,5 +28,6 @@ urlpatterns = [
     url(r'^event/detail?$', EventDetail.as_view()),
     url(r'^jssdk/?$', GetJSSDK.as_view()),
     url(r'^communicate/eventsource/', Communicate.as_view()),
-    url(r'^communicate/list/', CommunicateList.as_view())
+    url(r'^communicate/list/', CommunicateList.as_view()),
+    url(r'^communicate/control/', CommunicateListControl.as_view())
 ]

@@ -209,7 +209,8 @@ event_urls = {
     'search_course': 'learn/search_course',
     'course_list': 'learn/course_list',
     'comment_list': 'learn/course_comment',
-    'communication': 'learn/communication_list',
+    'communication_list': 'learn/communication_list',
+    'communication': 'learn/communication',
     'notice_panel': 'learn/notice_panel',
     'calendar': 'life/calendar',
     'navigation': 'life/navigation'

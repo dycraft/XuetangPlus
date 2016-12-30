@@ -1,8 +1,6 @@
 from codex.baseerror import *
 from codex.baseview import APIView
 from wechat.models import *
-from XuetangPlus.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
-from wechat.wrapper import WeChatLib
 from wechat.views import event_urls
 from XuetangPlus.settings import CONFIGS, get_redirect_url
 from util.time import *
@@ -579,9 +577,10 @@ class CourseInfo(APIView):
                                 result['course_new_file'] = course['newfile']
                                 result['course_unread_notice'] = course['unreadnotice']
                                 result['course_unsubmitted_operations'] = course['unsubmittedoperations']
-                                return result
-
-                        return result
+                                return {
+                                    'info': result,
+                                    'url': get_redirect_url(event_urls['communication'])
+                                }
 
                     raise LogicError('Response Error')
 
@@ -1041,7 +1040,7 @@ class CommunicateList(APIView):
         except:
             raise LogicError("no such open_id")
 
-        url = 'http://se.zhuangty.com:8000/learnhelper/' + user.student_id + '/courses'
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
 
         params = {
             'apikey': 'camustest',
@@ -1050,8 +1049,60 @@ class CommunicateList(APIView):
 
         result = {}
         response = requests.post(url, json=params)
-        if response.status_code == 200:
-            result_course = json.loads(response.content.decode())
-            return result_course['courses']
-        else:
+        try:
+            if response.status_code == 200:
+                result_course = json.loads(response.content.decode())['classes']
+                for index, c in enumerate(result_course):
+                    c['index'] = index + 1
+                return {
+                    'courses': result_course,
+                    'url': get_redirect_url(event_urls['communication'])
+                }
+
+            else:
+                raise LogicError('Response Error')
+        except:
             raise LogicError('Response Error')
+
+
+class CommunicateListControl(APIView):
+
+    def get(self):
+        self.check_input('open_id')
+
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+            courseid = user.communicate_course
+            coursename = ''
+            try:
+                coursename = Course.objects.get(course_id=courseid).name
+                return {
+                    'course_name':coursename,
+                    'course_id':courseid
+                }
+            except:
+                raise LogicError('no ushc course')
+
+        except:
+            raise LogicError('no such openid')
+
+    def post(self):
+        #mode 0: delete, mode 1: add
+        self.check_input('open_id', 'course_id', 'mode')
+        mode = self.input['mode']
+
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+
+            if mode == 0:
+                user.communicate_course = ''
+                user.save()
+
+            else:
+
+                user.communicate_course = self.input['course_id']
+                user.save()
+
+
+        except:
+            raise LogicError('no such openid')

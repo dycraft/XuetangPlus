@@ -21,8 +21,9 @@ class User(models.Model):
     event_list = models.CharField(max_length=1024, default='[]')
     notice_list = models.CharField(max_length=4096, default='[]')
     assignment_list = models.CharField(max_length=4096, default='[]')
-    slide_list = models.CharField(max_length=8192, default='[]')
-    avatar_url = models.CharField(max_length=4096, default='')
+    slide_list = models.CharField(max_length=4096, default='[]')
+    avatar_url = models.CharField(max_length=1024, default='')
+    communicate_course = models.CharField(max_length=128, default='')
 
     def add_notice(self, name):
         notices = json.loads(self.notice_list)

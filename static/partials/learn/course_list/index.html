@@ -93,12 +93,6 @@
 
                 <div class="page__category js_categoryInner" style>
                     <div class="weui-cells page__category-content">
-                        <a class="weui-cell weui-cell_access js_item" href="/learn/communication?open_id={{ openid }}&course_id={{ courseid }}">
-                            <div class="weui-cell__bd">
-                                <p>课程讨论</p>
-                            </div>
-                            <div class="weui-cell__ft"></div>
-                        </a>
                         <a class="weui-cell weui-cell_access js_item" onclick="page('#!comment');">
                             <div class="weui-cell__bd">
                                 <p>评价课程</p>
@@ -233,8 +227,11 @@
                             open_id: openid,
                             course_id: courseid
                         }, function (data) {
-                            locals.info = data.data;
+                            locals.info = data.data.info;
+                            locals.url = data.data.url;
+
                             render('info', locals);
+
                             $('#comment').click(function () {
                                 page('#!comment');
                             });
