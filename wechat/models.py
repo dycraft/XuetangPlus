@@ -18,25 +18,48 @@ class User(models.Model):
     position = models.CharField(max_length=32, default='')
     email = models.CharField(max_length=32, default='')
     realname = models.CharField(max_length=32, default='')
-    event_list = models.CharField(max_length=256, default='[]')
-    notice_list = models.CharField(max_length=8192, default='[]')
-    avatar_url = models.CharField(max_length=8192, default='')
+    event_list = models.CharField(max_length=1024, default='[]')
+    notice_list = models.CharField(max_length=4096, default='[]')
+    assignment_list = models.CharField(max_length=4096, default='[]')
+    slide_list = models.CharField(max_length=4096, default='[]')
+    avatar_url = models.CharField(max_length=1024, default='')
 
     def add_notice(self, name):
         notices = json.loads(self.notice_list)
-        notices.append(name)
-        self.notice_list = json.dumps(notices)
-        self.save()
+        if name not in notices:
+            notices.append(name)
+            self.notice_list = json.dumps(notices)
+            self.save()
+
+    def add_assignment(self, name):
+        assignments = json.loads(self.assignment_list)
+        if name not in assignments:
+            assignments.append(name)
+            self.assignment_list = json.dumps(assignments)
+            self.save()
+
+    def add_slide(self, name):
+        slides = json.loads(self.slide_list)
+        if name not in slides:
+            slides.append(name)
+            self.slide_list = json.dumps(slides)
+            self.save()
 
     def get_read_notice_list(self):
         return json.loads(self.notice_list)
+
+    def get_read_assignment_list(self):
+        return json.loads(self.assignment_list)
+
+    def get_read_slide_list(self):
+        return json.loads(self.slide_list)
 
     def add_event(self, id):
         events = json.loads(self.event_list)
         events.append(id)
         self.event_list = json.dumps(events)
         self.save()
-        return len(events)
+        return len(events) - 1
 
     def search_event(self, id):
         events = json.loads(self.event_list)
@@ -51,10 +74,6 @@ class User(models.Model):
         self.event_list = json.dumps(events)
         self.save()
 
-    def search_event(self, id):
-        events = json.loads(self.event_list)
-        return events.index(id)
-
     @classmethod
     def get_by_openid(cls, openid):
         try:
@@ -68,23 +87,29 @@ class Course(models.Model):
     course_id = models.CharField(max_length=128, default='')
     comments = models.CharField(max_length=1024, default='[]')
     chatmsg = models.CharField(max_length=1024, default='[]')
-    msg_update = models.IntegerField(default=0)
+    update_index = models.IntegerField(default=0)
 
     def add_msg(self, open_id, content):
         msg = Message.objects.create(sender_id=open_id, course_id=self.course_id, content=content, create_time=current_stamp())
         temp = json.loads(self.chatmsg)
         temp.append(msg.id)
         self.chatmsg = json.dumps(temp)
-        self.msg_update = 1
+        self.update_index = self.update_index + 1
         self.save()
 
     def get_msg(self):
         temp = json.loads(self.chatmsg)
         length = len(temp)
         if length < 10:
-            return [Message.objects.get(id = x) for x in temp[::-1]]
+            return {
+                'data': [Message.objects.get(id = x) for x in temp[::-1]],
+                'index': self.update_index
+            }
         else:
-            return [Message.objects.get(id = x) for x in temp[(length - 10):length][::-1]]
+            return {
+                'data': [Message.objects.get(id = x) for x in temp[(length - 10):length][::-1]],
+                'index': self.update_index
+            }
 
 class CourseForSearch(models.Model):
     course_seq = models.CharField(max_length=128)
@@ -144,6 +169,7 @@ class Comment(models.Model):
         else:
             return User.objects.get(id=self.commenter_id).realname
 
+
 class WechatConfirmation(models.Model):
     access_token = models.CharField(max_length=1024, default='')
     jssdk_ticket = models.CharField(max_length=1024, default='')
@@ -151,9 +177,8 @@ class WechatConfirmation(models.Model):
     jssdk_ticket_expire_time = models.IntegerField(default=0)
 
     def get_access_token(self):
-        print("get access")
         if time.mktime(datetime.datetime.now().timetuple()) >= self.access_token_expire_time:
-            print("get a new access")
+
             access_token_url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='
             access_token_url += CONFIGS['WECHAT_APPID']
             access_token_url += '&secret='
@@ -165,15 +190,13 @@ class WechatConfirmation(models.Model):
             self.access_token = result['access_token']
             self.access_token_expire_time = time.mktime(datetime.datetime.now().timetuple()) + result['expires_in'] - 300
             self.save()
-            print('Got access token %s', self.access_token)
-        print("mytoken")
-        print(self.access_token)
+
         return self.access_token
 
     def get_jssdk_ticket(self):
-        print("get jssdk")
+
         if time.mktime(datetime.datetime.now().timetuple()) >= self.jssdk_ticket_expire_time:
-            print("get a new jssdk")
+
             jsapi_ticket_url = 'https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token='
             jsapi_ticket_url += self.get_access_token()
             jsapi_ticket_url += '&type=jsapi'
@@ -184,8 +207,15 @@ class WechatConfirmation(models.Model):
             self.jssdk_ticket = result['ticket']
             self.jssdk_ticket_expire_time = time.mktime(datetime.datetime.now().timetuple()) + result['expires_in'] - 300
             self.save()
-            print(self.jssdk_ticket)
+
         return self.jssdk_ticket
+
+    @classmethod
+    def get_or_create(cls):
+        elems = cls.objects.all()
+        if len(elems) == 0:
+            cls.objects.create()
+        return cls.objects.all()[0]
 
 
 class Message(models.Model):

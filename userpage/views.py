@@ -1,8 +1,6 @@
 from codex.baseerror import *
 from codex.baseview import APIView
 from wechat.models import *
-from XuetangPlus.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
-from wechat.wrapper import WeChatLib
 from wechat.views import event_urls
 from XuetangPlus.settings import CONFIGS, get_redirect_url
 from util.time import *
@@ -62,63 +60,73 @@ class AccountBind(APIView):
 
             try:
                 user = User.get_by_openid(open_id)
-                user.username = result['username']
-                user.student_id = result['information']['studentnumber']
-                user.department = result['information']['department']
-                user.position = result['information']['position']
-                user.email = result['information']['email']
-                user.realname = result['information']['realname']
-                user.save()
-                url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-                params = {
-                    'apikey': 'camustest',
-                    'apisecret': 'camustest',
-                }
-                response = requests.post(url, json=params)
+            except:
+                raise LogicError('no such open_id')
+            user.username = result['username']
+            user.student_id = result['information']['studentnumber']
+            user.department = result['information']['department']
+            user.position = result['information']['position']
+            user.email = result['information']['email']
+            user.realname = result['information']['realname']
+            user.save()
+            url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
+            params = {
+                'apikey': 'camustest',
+                'apisecret': 'camustest',
+            }
+            response = requests.post(url, json=params)
+            course_ids = []
+            if response.status_code == 200:
+                response_course = json.loads(response.content.decode())
                 course_ids = []
-                if response.status_code == 200:
-                    response_course = json.loads(response.content.decode())
-                    course_ids = list(set([c['courseid'] for c in response_course['classes']]))
+                for c in response_course['classes']:
+                    course_ids.append(c['courseid'])
+                    cs = Course.objects.filter(course_id=c['courseid'])
+                    if len(cs) == 0:
+                        Course.objects.create(name=c['coursename'], course_id=c['courseid'])
+                    elif cs[0].name != c['coursename']:
+                        cs[0].name = c['coursename']
+                        cs[0].save()
+
+
+                course_ids = list(set(course_ids))
+            else:
+                raise LogicError("Response Error in AccountBind")
+
+            for course_id in course_ids:
+                response_notice = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                                + user.student_id + '/courses/' + course_id
+                                                + '/notices')
+                if response_notice.status_code == 200:
+                    result_notice = json.loads(response_notice.content.decode())
+
+                    for notice in result_notice['notices']:
+                        user.add_notice(ReadNoticeRecord.notice_name(notice['title'], course_id))
+                else:
+                    raise LogicError("Response Error in AccountBind")
+                xsx = user.get_read_notice_list()
+                response_assignment = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                                    + user.student_id + '/courses/' + course_id
+                                                    + '/assignments')
+                if response_assignment.status_code == 200:
+                    result_assignment = json.loads(response_assignment.content.decode())
+
+                    for assignment in result_assignment['assignments']:
+                        user.add_assignment(ReadNoticeRecord.notice_name(assignment['title'], course_id))
                 else:
                     raise LogicError("Response Error in AccountBind")
 
-                for course_id in course_ids:
-                    response_notice = requests.post('http://se.zhuangty.com:8000/learnhelper/'
-                                                    + user.student_id + '/courses/' + course_id
-                                                    + '/notices')
-                    if response_notice.status_code == 200:
-                        result_notice = json.loads(response_notice.content.decode())
+                response_slide = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                               + user.student_id + '/courses/' + course_id
+                                               + '/documents')
+                if response_slide.status_code == 200:
+                    result_slide = json.loads(response_slide.content.decode())
 
-                        for notice in result_notice['notices']:
-                            user.add_notice(ReadNoticeRecord.notice_name(1, notice['title'], course_id))
-                    else:
-                        raise LogicError("Response Error in AccountBind")
-
-                    response_assignment = requests.post('http://se.zhuangty.com:8000/learnhelper/'
-                                                        + user.student_id + '/courses/' + course_id
-                                                        + '/assignments')
-                    if response_assignment.status_code == 200:
-                        result_assignment = json.loads(response_assignment.content.decode())
-
-                        for assignment in result_assignment['assignments']:
-                            user.add_notice(ReadNoticeRecord.notice_name(2, assignment['title'], course_id))
-                    else:
-                        raise LogicError("Response Error in AccountBind")
-
-                    response_slide = requests.post('http://se.zhuangty.com:8000/learnhelper/'
-                                                        + user.student_id + '/courses/' + course_id
-                                                        + '/documents')
-                    if response_slide.status_code == 200:
-                        result_slide = json.loads(response_slide.content.decode())
-
-                        for slide in result_slide['documents']:
-                            user.add_notice(ReadNoticeRecord.notice_name(3, slide['title'], course_id))
-                    else:
-                        raise LogicError("Response Error in AccountBind")
-            except:
-                raise LogicError('no such open_id')
+                    for slide in result_slide['documents']:
+                        user.add_slide(ReadNoticeRecord.notice_name(slide['title'], course_id))
+                else:
+                    raise LogicError("Response Error in AccountBind")
         else:
-
             raise ValidateError('Wrong username or password.')
 
 
@@ -148,12 +156,13 @@ class UnBind(APIView):
 
     def post(self):
         self.check_input('open_id')
+        print(self.input['open_id'])
         try:
             user = User.get_by_openid(self.input['open_id'])
         except:
             raise LogicError('no such open_id')
         if user.student_id == '':
-            raise LogicError('has not bind')
+            raise LogicError('user not bound')
 
         else:
             user.username = ''
@@ -175,7 +184,7 @@ class CourseList(APIView):
             raise LogicError('no such open_id')
 
         if user.student_id == '':
-            raise LogicError('has not bind')
+            raise LogicError('unbind user')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         params = {
@@ -195,13 +204,7 @@ class CourseList(APIView):
 
             for i in range(7):
                 classes[i] = sorted(classes[i], key=lambda d: d['start'])
-                for x in classes[i]:
-                    cs = Course.objects.filter(course_id=x['courseid'])
-                    if len(cs) == 0:
-                        Course.objects.create(name = x['coursename'], course_id = x['courseid'])
-                    elif cs[0].name != x['coursename']:
-                        cs[0].name = x['coursename']
-                        cs[0].save()
+
 
             return {
                 'classes': classes
@@ -221,7 +224,7 @@ class GetCourseId(APIView):
             raise LogicError('no such open_id')
 
         if user.student_id == '':
-            raise LogicError('has not bind')
+            raise LogicError('user not bound')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         response = requests.post(url)
@@ -238,12 +241,17 @@ class NoticeList(APIView):
     def get(self):
         self.check_input('open_id', 'page')
 
-        pagenum = int(self.input['page'])
-
-        user = User.get_by_openid(self.input['open_id'])
+        try:
+            pagenum = int(self.input['page'])
+        except:
+            raise InputError('The given page should be int')
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError('no such open_id')
         read_notices = user.get_read_notice_list()
         if user.student_id == '':
-            raise LogicError('user has not bind')
+            raise LogicError('user not bound')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         params = {
@@ -274,10 +282,9 @@ class NoticeList(APIView):
 
                 for notice in result_notice['notices']:
                     notice['coursename'] = course_name
-                    notice['read'] = ReadNoticeRecord.notice_name(1, notice['title'], course_id) in read_notices
+                    notice['read'] = ReadNoticeRecord.notice_name(notice['title'], course_id) in read_notices
 
                 result += result_notice['notices']
-
             else:
                 raise LogicError("Response Error in NoticeList")
 
@@ -292,7 +299,6 @@ class NoticeList(APIView):
             if not r['read']:
                 unread += 1
 
-
         return {
             'total': length,
             'notices': result,
@@ -305,12 +311,17 @@ class AssignmentList(APIView):
     def get(self):
         self.check_input('open_id', 'page')
 
-        pagenum = int(self.input['page'])
-
-        user = User.get_by_openid(self.input['open_id'])
-        read_notices = user.get_read_notice_list()
+        try:
+            pagenum = int(self.input['page'])
+        except:
+            raise InputError('The given page should be int')
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError('no such open_id')
+        read_assignments = user.get_read_assignment_list()
         if user.student_id == '':
-            raise LogicError('user has not bind')
+            raise LogicError('user not bound')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         params = {
@@ -318,11 +329,12 @@ class AssignmentList(APIView):
             'apisecret': 'camustest',
         }
         response = requests.post(url, json=params)
-
+        course_ids = []
         if response.status_code == 200:
             response_course = json.loads(response.content.decode())
             course_ids = list(set([c['courseid'] for c in response_course['classes']]))
-
+        else:
+            raise LogicError('Response Error in AssignmentList')
         result = []
 
         for course_id in course_ids:
@@ -344,11 +356,11 @@ class AssignmentList(APIView):
 
                     assignment['startdate'] = stamp_to_localstr_date(assignment['startdate'])
                     assignment['evaluatingdate'] = stamp_to_localstr_date(assignment['evaluatingdate'])
-                    assignment['read'] = ReadNoticeRecord.notice_name(2, assignment['title'], course_id) in read_notices
+                    assignment['read'] = ReadNoticeRecord.notice_name(assignment['title'], course_id) in read_assignments
 
                 result += result_assignment['assignments']
             else:
-                raise LogicError('Response Error')
+                raise LogicError('Response Error in AssignmentList')
 
         length = len(result)
         result = sorted(result, key=lambda a: a['duedate'], reverse=True)[10 * (pagenum - 1): 10 * pagenum]
@@ -371,15 +383,22 @@ class AssignmentList(APIView):
 class SlideList(APIView):
 
     def get(self):
-        self.check_input('open_id')
+        self.check_input('open_id', 'page')
 
-        pagenum = int(self.input['page'])
+        try:
+            pagenum = int(self.input['page'])
+        except:
+            raise InputError('The given page should be int')
 
-        user = User.get_by_openid(self.input['open_id'])
-        read_notices = user.get_read_notice_list()
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+        except:
+            raise LogicError('no such open_id')
+
+        read_slides = user.get_read_slide_list()
 
         if user.student_id == '':
-            raise LogicError('user has not bind')
+            raise LogicError('user not bound')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         params = {
@@ -408,7 +427,7 @@ class SlideList(APIView):
 
                 for file in result_file['documents']:
                     file['coursename'] = course_name
-                    file['read'] = ReadNoticeRecord.notice_name(3, file['title'], course_id) in read_notices
+                    file['read'] = ReadNoticeRecord.notice_name(file['title'], course_id) in read_slides
 
                 result += result_file['documents']
 
@@ -478,7 +497,10 @@ class SearchCourse(APIView):
         self.check_input('key', 'page')
 
         courses = []
-        page_num = int(self.input['page'])
+        try:
+            page_num = int(self.input['page'])
+        except:
+            raise InputError('the given page should be int')
         key = self.input['key']
         if key == '':
             courses = CourseForSearch.objects.all()
@@ -486,8 +508,6 @@ class SearchCourse(APIView):
             courses = CourseForSearch.objects.filter(course_name=key)
             if len(courses) == 0:
                 courses = CourseForSearch.fuzzy_search(key)
-
-            print('fuzzy' + str(len(courses)))
 
         res = [{
             'course_name': x.course_name,
@@ -522,7 +542,8 @@ class CourseInfo(APIView):
             user = User.get_by_openid(self.input['open_id'])
         except:
             raise LogicError("no such open_id")
-
+        if user.student_id == '':
+            raise LogicError('user not bound')
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         params = {
             'apikey': 'camustest',
@@ -556,9 +577,10 @@ class CourseInfo(APIView):
                                 result['course_new_file'] = course['newfile']
                                 result['course_unread_notice'] = course['unreadnotice']
                                 result['course_unsubmitted_operations'] = course['unsubmittedoperations']
-                                return result
-
-                        return result
+                                return {
+                                    'info': result,
+                                    'url': get_redirect_url(event_urls['communication'])
+                                }
 
                     raise LogicError('Response Error')
 
@@ -725,6 +747,7 @@ class GetUserInfo(APIView):
             'open_id': openid
         }
 
+
 class GetOpenId(APIView):
 
     def get(self):
@@ -751,7 +774,7 @@ class GetJSSDK(APIView):
     def get(self):
         self.check_input('url')
 
-        confirm = WechatConfirmation.objects.get(id=1)
+        confirm = WechatConfirmation.get_or_create()
         jsapi_ticket = confirm.get_jssdk_ticket()
 
         current_url = self.input['url']
@@ -817,7 +840,7 @@ class EventDetail(APIView):
         except:
             raise InputError('The given id should be int')
         if 0 <= id < len(event_id_list):
-            event = Event.get_by_id(event_id_list[int(self.input['id'])])
+            event = Event.get_by_id(event_id_list[id])
             event.name = self.input['name']
             try:
                 event.date = utcstr_date_to_stamp(self.input['date'])
@@ -826,7 +849,7 @@ class EventDetail(APIView):
             event.content = self.input['content']
             event.save()
             return {
-                'id': self.input['id']
+                'id': id,
             }
         else:
             raise InputError('The given id is out of range')
@@ -849,7 +872,6 @@ class EventList(APIView):
             except:
                 raise LogicError('no such open_id')
             event_id_list = json.loads(user.event_list)
-            print(event_id_list)
             event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
             result = []
             record = []
@@ -922,7 +944,7 @@ class EventCreate(APIView):
                 content = self.input['content']
             )
         except:
-            raise  InputError('incorrect given date')
+            raise InputError('incorrect given date')
         try:
             id = User.get_by_openid(self.input['open_id']).add_event(event.id)
         except:
@@ -954,29 +976,41 @@ class ReadNoticeRecord(APIView):
             user = User.get_by_openid(self.input['open_id'])
         except:
             raise LogicError('no such open_id')
-        name = self.notice_name(self.input['type'], self.input['name'], self.input['course_id'])
-        user.add_notice(name)
+        name = self.notice_name(self.input['name'], self.input['course_id'])
+        if self.input['type'] == '1':
+            user.add_notice(name)
+        elif self.input['type'] == '2':
+            user.add_assignment(name)
+        elif self.input['type'] == '3':
+            user.add_slide(name)
+        else:
+            raise InputError('unknown type')
+
 
     @classmethod
-    def notice_name(cls, type, name, course_id):
-        name = str(type) + '&'
-        name += name + '&'
-        name += course_id
-        return name
+    def notice_name(cls, name, course_id):
+        if len(name) > 5:
+            name = name[0:5]
+        result = name + '&'
+        result += course_id
+        return result
 
 
 class Communicate(APIView):
 
     def get(self):
         self.check_input('open_id', 'course_id')
-        msgs = Course.objects.get(course_id=self.input['course_id']).get_msg()
+        reply = Course.objects.get(course_id=self.input['course_id']).get_msg()
+        msgs = reply['data']
+        update_index = reply['index']
         answer = []
         for msg in msgs:
             user = User.objects.get(open_id=msg.sender_id)
             c = {
                 'realname': user.realname,
                 'avatar_url': user.avatar_url,
-                'content': msg.content
+                'content': msg.content,
+                'update_index': update_index
             }
             answer.append(c)
         return answer
@@ -993,16 +1027,13 @@ class Communicate(APIView):
 class CommunicateNew(APIView):
 
     def post(self):
-        self.check_input('open_id', 'course_id')
+        self.check_input('open_id', 'course_id', 'index')
         openid = self.input['open_id']
         courseid = self.input['course_id']
+        last_update = self.input['index']
         course = Course.objects.get(course_id=courseid)
         while True:
-            if course.msg_update == 1:
-                time.sleep(3)
-                if course.msg_update == 1:
-                    course.msg_update = 0
-                    course.save()
+            if course.update_index > last_update:
                 return
             time.sleep(2)
 
@@ -1016,7 +1047,8 @@ class CommunicateList(APIView):
         except:
             raise LogicError("no such open_id")
 
-        url = 'http://se.zhuangty.com:8000/learnhelper/' + user.student_id + '/courses'
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
+
         params = {
             'apikey': 'camustest',
             'apisecret': 'camustest'
@@ -1024,8 +1056,60 @@ class CommunicateList(APIView):
 
         result = {}
         response = requests.post(url, json=params)
-        if response.status_code == 200:
-            result_course = json.loads(response.content.decode())
-            return result_course
-        else:
+        try:
+            if response.status_code == 200:
+                result_course = json.loads(response.content.decode())['classes']
+                for index, c in enumerate(result_course):
+                    c['index'] = index + 1
+                return {
+                    'courses': result_course,
+                    'url': get_redirect_url(event_urls['communication'])
+                }
+
+            else:
+                raise LogicError('Response Error')
+        except:
             raise LogicError('Response Error')
+
+
+class CommunicateListControl(APIView):
+
+    def get(self):
+        self.check_input('open_id')
+
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+            courseid = user.communicate_course
+            coursename = ''
+            try:
+                coursename = Course.objects.get(course_id=courseid).name
+                return {
+                    'course_name':coursename,
+                    'course_id':courseid
+                }
+            except:
+                raise LogicError('no ushc course')
+
+        except:
+            raise LogicError('no such openid')
+
+    def post(self):
+        #mode 0: delete, mode 1: add
+        self.check_input('open_id', 'course_id', 'mode')
+        mode = self.input['mode']
+
+        try:
+            user = User.get_by_openid(self.input['open_id'])
+
+            if mode == 0:
+                user.communicate_course = ''
+                user.save()
+
+            else:
+
+                user.communicate_course = self.input['course_id']
+                user.save()
+
+
+        except:
+            raise LogicError('no such openid')

@@ -14,6 +14,7 @@
         <script type="text/template" id="tpl-main">
             <div class="page__hd">
                 <h1 class="page__title">课程讨论</h1>
+                <p class="page__desc">{{ coursename }}</p>
                 <p class="page__desc">{{ courseid }}</p>
             </div>
             <div class="page__bd">
@@ -58,7 +59,9 @@
                     <div class="weui-cells weui-cells_form">
                         <div class="weui-cell">
                             <div class="weui-cell__bd">
-                                <textarea class="weui-textarea" id="inputContent" required placeholder="消息将显示真实名称，对同课程内用户可见" emptyTips="新消息不能为空" rows="4" maxlength="100"></textarea>
+                                <textarea class="weui-textarea" id="inputContent"
+                                          required placeholder="消息将显示真实名称，对同课程内用户可见"
+                                          emptyTips="新消息不能为空" rows="4" maxlength="100"></textarea>
                             </div>
                         </div>
                     </div>
@@ -82,6 +85,25 @@
         <script type="text/javascript">
             var jssdk_function_list = ['closeWindow'];
             callJSSDK(jssdk_function_list);
+        </script>
+
+        <script type="text/javascript">
+            exitDiscussion = function () {
+                $.post('/api/communicate/control/',{
+                    open_id: openid,
+                    mode: 0,
+                    course_id: ''
+                }, function (data) {
+                    wx.closeWindow();
+                });
+            };
+
+            $(function(){
+                window.addEventListener("popstate", function(e) {
+                    exitDiscussion();
+                }, false);
+            });
+
         </script>
 
         <script type="text/javascript">
@@ -120,9 +142,6 @@
                     next();
                 },
                 main: function (ctx, next) {
-                    var params = getQueryParams(ctx.querystring);
-                    if (!openid) openid = params.open_id;
-                    if (!courseid) courseid = params.course_id;
                     locals.courseid = courseid;
                     fresh(getRtmMsg);
                 },
@@ -148,12 +167,21 @@
                 }
             };
 
-            page.base('/learn/communication');
-            page('/', route.main);
-            page('*', route.init);
-            page('add', route.add);
-            page({hashbang: true});
-            page();
+            getOpenId(function (get_open_id) {
+                openid = get_open_id;
+                $.get('/api/communicate/control/',{
+                    open_id: openid
+                }, function (data) {
+                    courseid = data.data.course_id;
+                    locals.coursename = data.data.course_name;
+                    page.base('/learn/communication');
+                    page('/', route.main);
+                    page('*', route.init);
+                    page('add', route.add);
+                    page({hashbang: true});
+                    page();
+                });
+            })
         </script>
     </body>
 </html>

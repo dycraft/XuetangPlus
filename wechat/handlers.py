@@ -7,16 +7,8 @@ from codex.baseerror import *
 from util.time import *
 import requests
 import json
-import time
-from XuetangPlus.settings import event_keys, event_urls
+from XuetangPlus.settings import event_keys
 
-__author__ = "Epsirom"
-
-event_keys = {
-    'library_remains': 'LIFE_LIBRARY',
-    'school_calendar': 'LIFE_SCHOOL_CALENDAR',
-    'navigation': 'LIFE_NAVIGATION'
-}
 
 class ErrorHandler(WeChatHandler):
 
@@ -33,10 +25,9 @@ class DefaultHandler(WeChatHandler):
         return True
 
     def handle(self, inputStr):
-        return self.reply_text('对不起，没有找到您需要的信息:(\n您查找的内容为(' + inputStr + ")\n我们目前支持的"
-                                                                          "功能包括帮助、解绑、绑定、我的信息、查找课程、"
-                                                                          "我的课程、师生交流、通知面板、文图、我的日历、"
-                                                                         "校历、地图、提醒")
+        return self.reply_text('对不起，没有找到您需要的信息:(\n您查找的内容为(' + inputStr
+                               + ')\n\n我们目前支持的功能包括帮助、解绑、绑定、我的信息、查找课程、我的课程、'
+                                 '课程交流、通知面板、文图、我的日历、校历、导航、提醒')
 
 
 class HelpOrSubscribeHandler(WeChatHandler):
@@ -60,7 +51,7 @@ class UnbindOrUnsubscribeHandler(WeChatHandler):
 
     def handle(self):
         if self.user.username == '':
-            return self.reply_text("您还未绑定")
+            return self.reply_text('您还未绑定')
         response = requests.post('http://se.zhuangty.com:8000/users/' + self.user.username + '/cancel')
         if response.status_code == 200:
             self.user.username = ''
@@ -72,7 +63,7 @@ class UnbindOrUnsubscribeHandler(WeChatHandler):
             self.user.save()
             return self.reply_text(self.get_message('account_unbind'))
         else:
-            return self.reply_text("请您重新进行绑定，若仍然失败请联系管理员。")
+            return self.reply_text('请您重新进行绑定，若仍然失败请联系管理员。')
 
 
 class AccountBindHandler(WeChatHandler):
@@ -94,16 +85,18 @@ class ViewPersonalInformationHandler(WeChatHandler):
 
     def handle(self):
         if self.user.username == '':
-            return self.reply_text("请先进行绑定")
-        dic = { 'undergraduate': '本科就读',
-                'master': '硕士',
-                'doctor': '博士',
-                'teacher': '教师'}
+            return self.reply_text('请先进行绑定')
+        dic = {
+            'undergraduate': '本科就读',
+            'master': '硕士',
+            'doctor': '博士',
+            'teacher': '教师'
+        }
         return self.reply_text('姓名：' + self.user.realname + '\n'
-                               + '学号：' + self.user.student_id + '\n'
-                               + '学位：' + dic[self.user.position] + '\n'
-                               + '院系：' + self.user.department + '\n'
-                               + '邮箱：' + self.user.email + '\n')
+            + '学号：' + self.user.student_id + '\n'
+            + '学位：' + dic[self.user.position] + '\n'
+            + '院系：' + self.user.department + '\n'
+            + '邮箱：' + self.user.email + '\n')
 
 
 class CourseSearchHandler(WeChatHandler):
@@ -113,11 +106,12 @@ class CourseSearchHandler(WeChatHandler):
 
     def handle(self):
         if self.user.username == '':
-            return  self.reply_text("请先进行绑定")
+            return self.reply_text('请先进行绑定')
         return self.reply_single_news({
             'Title': '欢迎使用课程搜索',
             'Description': '在这里你可以方便的查询课程的信息',
             'Url': self.url_course_search(),
+            'PicUrl': self.url_pic('/img/theme/search_course.png')
         })
 
 
@@ -128,7 +122,7 @@ class CourseListHandler(WeChatHandler):
 
     def handle(self):
         if self.user.username == '':
-            return self.reply_text("请先进行绑定")
+            return self.reply_text('请先进行绑定')
 
         print(self.url_pic('theme/my_course_png'))
 
@@ -143,21 +137,17 @@ class CourseListHandler(WeChatHandler):
 class CommunicateHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('师生交流')
+        return self.is_text('课程交流')
 
     def handle(self):
         if self.user.username == '':
-            return  self.reply_text("请先进行绑定")
-        if self.user.position == 'teacher':
-            return self.reply_single_news({
-                'Title': '欢迎使用师生交流',
-                'Description': '有一门课程有新消息，点击查看。',
-                'Url': self.url_communicate_teacher(),
-            })
+            return self.reply_text('请先进行绑定')
+
         return self.reply_single_news({
-            'Title': '欢迎使用师生交流',
-            'Description': '有一门课程有新消息，点击查看。',
-            'Url': self.url_communicate_student(),
+            'Title': '欢迎使用课程交流',
+            'Description': '在交流中学习',
+            'Url': self.url_communication(),
+            'PicUrl': self.url_pic('/img/theme/communication.png')
         })
 
 
@@ -168,7 +158,7 @@ class NoticePanelHandler(WeChatHandler):
 
     def handle(self):
         if self.user.username == '':
-            return  self.reply_text("请先进行绑定")
+            return self.reply_text('请先进行绑定')
         return self.reply_single_news({
             'Title': '欢迎使用通知面板',
             'Description': '查看各个课程的公告与作业',
@@ -185,7 +175,7 @@ class LibraryRemainsHandler(WeChatHandler):
         response = requests.post('http://se.zhuangty.com:8000/library/hs')
         if response.status_code == 200:
             res = json.loads(response.content.decode())
-            reply = "文图剩余座位\n"
+            reply = '文图剩余座位\n'
             reply += '\n'.join([area['name'] + '：' + str(area['left'])
                                 + '/' + str(area['left'] + area['used']) for area in res['areas']])
             return self.reply_text(reply)
@@ -201,11 +191,12 @@ class MyCalendarHandler(WeChatHandler):
 
     def handle(self):
         if self.user.username == '':
-            return  self.reply_text("请先进行绑定")
+            return self.reply_text('请先进行绑定')
         return self.reply_single_news({
             'Title': '欢迎使用个人日历',
             'Description': '在这里你可以方便查看和管理你的日程',
             'Url': self.url_my_calendar(),
+            'PicUrl': self.url_pic('/img/theme/calendar.png')
         })
 
 
@@ -229,16 +220,16 @@ class SchoolCalendarHandler(WeChatHandler):
 class NavigationHandler(WeChatHandler):
 
     def check(self):
-        return self.is_text('地图') or self.is_event_click(event_keys['navigation'])
+        return self.is_text('导航') or self.is_event_click(event_keys['navigation'])
 
     def handle(self):
-        #if self.user.username == '':
-        #    return  self.reply_text("请先进行绑定")
         return self.reply_single_news({
-            'Title': '欢迎使用地图',
-            'Description': '方便查看地图',
+            'Title': '欢迎使用校园导航',
+            'Description': '输入地点进行导航',
             'Url': self.url_navigation(),
+            'PicUrl': self.url_pic('/img/theme/navigation.png')
         })
+
 
 class RemindHandler(WeChatHandler):
 
@@ -246,8 +237,13 @@ class RemindHandler(WeChatHandler):
         return self.is_text('提醒')
 
     def handle(self):
-        confirm = WechatConfirmation.objects.get(id=1)
-        user = User.objects.get(username=self.user.username)
+        confirm = WechatConfirmation.get_or_create()
+        if self.user.student_id == '':
+            return self.reply_text('请先进行绑定')
+        try:
+            user = User.get_by_openid(self.user.open_id)
+        except:
+            raise LogicError('no such open_id')
 
         hw_num = 0
         info_num = 0

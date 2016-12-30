@@ -7,7 +7,7 @@ import logging
 import urllib.request
 import xml.etree.ElementTree as ET
 from XuetangPlus.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
-
+from XuetangPlus.settings import event_urls, event_keys
 from django.http import Http404, HttpResponse
 from django.template.loader import get_template
 
@@ -87,31 +87,25 @@ class WeChatHandler(object):
         return settings.get_url('welcome/help')
 
     def url_course_search(self):
-        return settings.get_url('learn/search_course')
-
-    def url_communicate_student(self):
-        return settings.get_url('learn/communication_s')
-
-    def url_communicate_teacher(self):
-        return settings.get_url('learn/communication_t')
+        return settings.get_redirect_url(event_urls['search_course'])
 
     def url_my_calendar(self):
-        return settings.get_url('life/calendar')
+        return settings.get_redirect_url(event_urls['calendar'])
 
     def url_my_course(self):
-        return settings.get_url('learn/course_list', {'openid': self.user.open_id})
+        return settings.get_redirect_url(event_urls['course_list'])
+
+    def url_communication(self):
+        return settings.get_redirect_url(event_urls['communication'])
 
     def url_notification(self):
-        return settings.get_url('learn/notice_panel', {'openid': self.user.open_id})
-
-    def url_school_calendar(self):
-        return settings.get_url('u/help')
+        return settings.get_redirect_url(event_urls['notice_panel'])
 
     def url_navigation(self):
-        return settings.get_url('life/search_location')
+        return settings.get_redirect_url(event_urls['navigation'])
 
     def url_account_bind(self):
-        return settings.get_redirect_url('welcome/account_bind')
+        return settings.get_redirect_url(event_urls['account_bind'])
 
     def url_pic(self, url):
         return settings.get_url(url)
@@ -179,12 +173,8 @@ class WeChatLib(object):
 
     @classmethod
     def get_wechat_access_token(cls):
-        try:
-            wechat_confirm = WechatConfirmation.objects.get(id=1)
-            return wechat_confirm.get_access_token()
-        except:
-            wechat_confirm = WechatConfirmation.objects.create()
-            return wechat_confirm.get_access_token()
+        wechat_confirm = WechatConfirmation.get_or_create()
+        return wechat_confirm.get_access_token()
 
     def get_wechat_menu(self):
         res = self._http_get(

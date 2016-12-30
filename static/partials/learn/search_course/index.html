@@ -176,7 +176,7 @@
 
                  <div class="weui-btn-area">
                     <a class="weui-btn weui-btn_default" id="backBtn">返回</a>
-                </div>
+                 </div>
             </div>
         </script>
 
@@ -310,14 +310,14 @@
                                 $searchInput.blur();
                             });
 
-                            var searchNum = locals.total - locals.pageNum * 10;
+                            var searchNum = locals.total - (locals.pageNum - 1) * 10;
                             if (searchNum > 10) {
                                 searchNum = 10;
                             }
+
                             for (var i = 1; i <= searchNum; i++) {
                                 var id_str = '#search_';
                                 id_str += i;
-
                                 $(id_str).click(function (i) {
                                     return function () {
                                         pushHistory("#");

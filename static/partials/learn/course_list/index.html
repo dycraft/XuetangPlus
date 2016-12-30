@@ -93,12 +93,6 @@
 
                 <div class="page__category js_categoryInner" style>
                     <div class="weui-cells page__category-content">
-                        <a class="weui-cell weui-cell_access js_item" href="/learn/communication?open_id={{ openid }}&course_id={{ courseid }}">
-                            <div class="weui-cell__bd">
-                                <p>课程讨论</p>
-                            </div>
-                            <div class="weui-cell__ft"></div>
-                        </a>
                         <a class="weui-cell weui-cell_access js_item" onclick="page('#!comment');">
                             <div class="weui-cell__bd">
                                 <p>评价课程</p>
@@ -106,12 +100,16 @@
                             <div class="weui-cell__ft"></div>
                         </a>
                         <a class="weui-cell weui-cell_access js_item" data-id="location">
-                            <div class="weui-cell__bd">
-                                <p>教室位置信息</p>
+                            <div class="weui-cell__bd" onclick="locationFunc();">
+                                <p>打开地图</p>
                             </div>
                             <div class="weui-cell__ft"></div>
                         </a>
                     </div>
+                </div>
+
+                <div class="weui-btn-area">
+                    <a class="weui-btn weui-btn_default" id="backBtn">返回</a>
                 </div>
             </div>
         </script>
@@ -147,12 +145,14 @@
                     <div class="weui-cell">
                         <div class="weui-cell__bd">
                             <textarea class="weui-textarea" id="inputContent" placeholder="请输入文本" rows="3"></textarea>
-                            <div class="weui-textarea-counter"><span>0</span>/200</div>
                         </div>
                     </div>
                 </div>
                 <div class="weui-btn-area">
                     <a class="weui-btn weui-btn_primary" id="confirmBtn">确定</a>
+                </div>
+                <div class="weui-btn-area">
+                    <a class="weui-btn weui-btn_default" id="backBtn">返回</a>
                 </div>
             </div>
         </script>
@@ -168,89 +168,159 @@
         <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
         <script type="text/javascript" src="/js/JSSDK.js"></script>
         <script type="text/javascript">
-            var jssdk_function_list = ['closeWindow'];
+            var jssdk_function_list = ['closeWindow','getLocation','openLocation'];
             callJSSDK(jssdk_function_list);
         </script>
 
         <script type="text/javascript">
-            $(function() {
-                var locals = {};
-                var openid, courseid, coursename;
+            function pushHistory(url) {
+                var state = {
+                    title: "title",
+                    url: url
+                };
+                window.history.pushState(state, state.title, state.url);
+            }
 
-                var route = {
-                    init: function(ctx, next) {
-                        next();
-                    },
-                    main: function(ctx, next) {
-                        $.get('/api/welcome/check_bind/', {
-                            open_id: openid
-                        }, function (data) {
-                            locals.student_id = data.data.student_id;
-                            var isBind = data.data.bind;
-                            if (isBind) {
-                                locals.week = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-                                locals.one = 1;
-                                $.get('/api/learn/course_list', {
-                                    open_id: openid
-                                }, function(data) {
-                                    locals.classes = data.data.classes;
-                                    render('main', locals);
-                                    $('.js-info').click(function() {
-                                        courseid = $(this).attr('courseid');
-                                        coursename = $(this).attr('coursename');
-                                        locals.courseid = courseid;
-                                        locals.coursename = coursename;
-                                        page('#!info');
-                                    });
-                                });
-                            } else {
-                                weui.alert('请绑定学号', function(){ wx.closeWindow(); });
-                            }
-                        });
-                    },
-                    info: function(ctx, next) {
-                        $.get('/api/course/information/', {
-                            open_id: openid,
-                            course_id: courseid
-                        }, function (data) {
-                            locals.info = data.data;
-                            render('info', locals);
-                            $('#comment').click(function () {
-                                page('#!comment');
-                            });
-                        });
-                    },
-                    comment: function(ctx, next) {
-                        render('comment', locals);
-                        $('#confirmBtn').click(function () {
-                            var loading = weui.loading('提交中...');
-                            $.post('/api/course/comment/create', {
-                                open_id: openid,
-                                course_id: courseid,
-                                course_name: coursename,
-                                score: $('#inputScore').val(),
-                                isanonymous: $('#inputAnonymous').prop('checked'),
-                                content: $('#inputContent').val()
-                            }, function (data) {
-                                loading.hide();
-                                page('');
-                            });
+            $(function(){
+                pushHistory("#");
+                window.addEventListener("popstate", function(e) {
+                    if(e.state == undefined){
+                        wx.closeWindow();
+                    }
+                    loading = weui.loading('加载中');
+                    $('#backBtn').click();
+                }, false);
+            });
+        </script>
+        <script>
+            locationFunc = function(){
+                wx.getLocation({
+                    type: 'gcj02',
+                    success: function(res) {
+                        var latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
+                        var longitude = res.longitude; // 经度，浮点数，范围为180 ~ -180。
+                        var speed = res.speed; // 速度，以米/每秒计
+                        var accuracy = res.accuracy; // 位置精度
+                        wx.openLocation({
+                            latitude: latitude, // 纬度，浮点数，范围为90 ~ -90
+                            longitude: longitude, // 经度，浮点数，范围为180 ~ -180。
+                            name: '您的位置', // 位置名
+                            address: '您的位置', // 地址详情说明
+                            scale: 26, // 地图缩放级别,整形值,范围从1~28。默认为最大
                         });
                     }
-                };
-
-                getOpenId(function (get_open_id) {
-                    openid = get_open_id;
-                    locals.openid = openid;
-                    page.base('/learn/course_list');
-                    page('/', route.main);
-                    page('comment', route.comment);
-                    page('info', route.info);
-                    page('*', route.init);
-                    page({hashbang: true});
-                    page();
                 });
+            }
+        </script>
+
+        <script type="text/javascript">
+
+            var locals = {};
+            var loading;
+            var openid, courseid, coursename;
+
+            var route = {
+                init: function(ctx, next) {
+                    next();
+                },
+                main: function(ctx, next) {
+                    loading = weui.loading('加载中');
+                    $.get('/api/welcome/check_bind/', {
+                        open_id: openid
+                    }, function (data) {
+                        locals.student_id = data.data.student_id;
+                        var isBind = data.data.bind;
+                        if (isBind) {
+                            page.redirect('#!list')
+                        } else {
+                            weui.alert('请绑定学号', function(){ wx.closeWindow(); });
+                        }
+                    });
+                },
+                list: function (ctx, next) {
+                    locals.week = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+                    locals.one = 1;
+                    $.get('/api/learn/course_list', {
+                        open_id: openid
+                    }, function(data) {
+                        locals.classes = data.data.classes;
+                        render('main', locals);
+                        $('.js-info').click(function() {
+                            pushHistory("#");
+                            courseid = $(this).attr('courseid');
+                            coursename = $(this).attr('coursename');
+                            locals.courseid = courseid;
+                            locals.coursename = coursename;
+                            page.redirect('#!info');
+                        });
+                        loading.hide();
+                    });
+                },
+
+                info: function(ctx, next) {
+                    locals.detail = 1;
+                    $.get('/api/course/information/', {
+                        open_id: openid,
+                        course_id: courseid
+                    }, function (data) {
+                        locals.info = data.data.info;
+                        locals.url = data.data.url;
+
+                        render('info', locals);
+
+                        $('#backBtn').click(function () {
+                            loading = weui.loading('加载中');
+                            page.redirect('#!list')
+                        });
+
+                        $('#comment').click(function () {
+                            pushHistory("#");
+                            loading = weui.loading('加载中');
+                            page.redirect('#!comment');
+                        });
+                        loading.hide();
+                    });
+                },
+                comment: function(ctx, next) {
+                    render('comment', locals);
+
+                    $('#confirmBtn').click(function () {
+                        var loading = weui.loading('提交中...');
+                        $.post('/api/course/comment/create', {
+                            open_id: openid,
+                            course_id: courseid,
+                            course_name: coursename,
+                            score: $('#inputScore').val(),
+                            isanonymous: $('#inputAnonymous').prop('checked'),
+                            content: $('#inputContent').val()
+                        }, function (data) {
+                            loading.hide();
+                            page.redirect('#!info');
+                        });
+                    });
+
+                    $('#backBtn').click(function () {
+                        loading = weui.loading('加载中');
+                        page.redirect('#!info')
+                    });
+
+                    loading.hide();
+                }
+            };
+
+            getOpenId(function (get_open_id) {
+                openid = get_open_id;
+                locals.openid = openid;
+                page.base('/learn/course_list');
+                page('/', route.main);
+                page('list', route.list);
+                page('comment', route.comment);
+                page('info', route.info);
+                page('*', route.init);
+                page({hashbang: true});
+                page();
             });
+
         </script>
     </body>
 </html>

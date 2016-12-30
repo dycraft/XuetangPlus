@@ -467,7 +467,7 @@
         <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
         <script type="text/javascript" src="/js/JSSDK.js"></script>
         <script type="text/javascript">
-            var jssdk_function_list = ['closeWindow'];
+            var jssdk_function_list = ['closeWindow', 'hideOptionMenu'];
             callJSSDK(jssdk_function_list);
         </script>
 
@@ -523,6 +523,7 @@
                      });
                 },
                 notice: function(ctx, next) {
+                    wx.hideOptionMenu();
                     if(locals.detail == 0) {
 
                         $.get('/api/learn/notice_panel/notice', {
@@ -546,7 +547,7 @@
 
                             render('main', locals);
 
-                            var noticeNum = locals.total - locals.pageNum * 10;
+                            var noticeNum = locals.total - (locals.pageNum - 1) * 10;
                             if(noticeNum > 10){
                                 noticeNum = 10;
                             }
@@ -641,7 +642,7 @@
 
                             render('main', locals);
 
-                            var assignmentNum = locals.total - locals.pageNum * 10;
+                            var assignmentNum = locals.total - (locals.pageNum - 1) * 10;
                             if(assignmentNum > 10){
                                 assignmentNum = 10;
                             }
@@ -737,7 +738,7 @@
 
                             render('main', locals);
 
-                            var slideNum = locals.total - locals.pageNum * 10;
+                            var slideNum = locals.total - (locals.pageNum - 1) * 10;
                             if(slideNum > 10){
                                 slideNum = 10;
                             }
@@ -804,7 +805,6 @@
 
                         render('main', locals);
 
-                        console.log($("#courseListBtn")[0])
                         $("#courseListBtn")[0].href = data.data.course_list_url;
 
                         $("#notice_bar").click(function (){
@@ -853,8 +853,6 @@
                 page({hashbang: true});
                 page();
             });
-
-
         </script>
     </body>
 </html>

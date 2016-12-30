@@ -35,7 +35,7 @@
                             <span class="weui-form-preview__value">{{ comment.content }}</span>
                         </div>
                     </div>
-                    {% if loop.last && rest == 1 %}
+                    {% if loop.last and rest == 1 %}
                     <div class="weui-form-preview__ft">
                         <a class="weui-form-preview__btn weui-form-preview__btn_primary" id="more">查看更多</a>
                     </div>
@@ -89,7 +89,7 @@
                                         (function showMore() {
                                             $.get('/api/course/comment/list', {
                                                 open_id: openid,
-                                                end_id: curid,
+                                                end_id: curid
                                             }, function(data) {
                                                 if (data.data.length < 10) locals.rest = 0;
                                                 locals.comments = locals.comments.concat(data.data);
