@@ -156,7 +156,6 @@ class UnBind(APIView):
 
     def post(self):
         self.check_input('open_id')
-        print(self.input['open_id'])
         try:
             user = User.get_by_openid(self.input['open_id'])
         except:
@@ -548,7 +547,7 @@ class CourseInfo(APIView):
                         result['course_new_file'] = 0
                         result['course_unread_notice'] = 0
                         result['course_unsubmitted_operations'] = 0
-                        for course in res['courses']:
+                        for course in res:
                             if course['courseid'] == self.input['course_id']:
                                 result['teacher_email'] = course['email']
                                 result['teacher_phone'] = course['phone']
@@ -715,9 +714,7 @@ class GetUserInfo(APIView):
         try:
             user = User.get_by_openid(openid)
             user.avatar_url = result['headimgurl']
-            print(user.avatar_url)
             user.save()
-            print(user.avatar_url)
         except:
             raise LogicError('can not get avatar')
         return {
@@ -974,18 +971,12 @@ class ReadNoticeRecord(APIView):
 
 
 class Communicate(APIView):
-    update = False
 
     def get(self):
         self.check_input('open_id', 'course_id')
-        try:
-            user = User.get_by_openid(self.input['open_id'])
-        except:
-            raise LogicError('no such open_id')
-        try:
-            msgs = Course.objects.get(course_id=self.input['course_id']).get_msg()
-        except:
-            raise InputError('no such course_id')
+        reply = Course.objects.get(course_id=self.input['course_id']).get_msg()
+        msgs = reply['data']
+        update_index = reply['index']
         answer = []
         for msg in msgs:
             user = User.objects.get(open_id=msg.sender_id)
@@ -995,32 +986,32 @@ class Communicate(APIView):
                 'content': msg.content
             }
             answer.append(c)
-        return answer
+        return {
+            'update_index': update_index,
+            'msgs': answer
+        }
 
     def post(self):
-        self.check_input('open_id', 'course_id')
-        try:
-            user = User.get_by_openid(self.input['open_id'])
-        except:
-            raise LogicError('no such open_id')
-        if 'update' in self.input:
-            openid = self.input['open_id']
-            courseid = self.input['course_id']
-            while True:
-                if update == True:
-                    return
-                time.sleep(5)
-                update = False
-        else:
-            openid = self.input['open_id']
-            courseid = self.input['course_id']
-            content = self.input['content']
-            try:
-                Course.objects.get(course_id=courseid).add_msg(openid, content)
-            except:
-                raise InputError('no such course_id')
-            update = True
-            return
+        self.check_input('open_id', 'course_id', 'content')
+        openid = self.input['open_id']
+        courseid = self.input['course_id']
+        content = self.input['content']
+        Course.objects.get(course_id=courseid).add_msg(openid, content)
+        return
+
+
+class CommunicateNew(APIView):
+
+    def post(self):
+        self.check_input('open_id', 'course_id', 'index')
+        openid = self.input['open_id']
+        courseid = self.input['course_id']
+        last_update = self.input['index']
+        while True:
+            course = Course.objects.get(course_id=courseid)
+            if course.update_index > int(last_update):
+                return
+            time.sleep(2)
 
 
 class CommunicateList(APIView):
@@ -1032,69 +1023,22 @@ class CommunicateList(APIView):
         except:
             raise LogicError("no such open_id")
 
-        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
-
+        url = 'http://se.zhuangty.com:8000/learnhelper/' + user.student_id + '/courses'
         params = {
             'apikey': 'camustest',
             'apisecret': 'camustest'
         }
-
         result = {}
         response = requests.post(url, json=params)
         try:
             if response.status_code == 200:
-                result_course = json.loads(response.content.decode())['classes']
+                result_course = json.loads(response.content.decode())['courses']
                 for index, c in enumerate(result_course):
                     c['index'] = index + 1
                 return {
                     'courses': result_course,
-                    'url': get_redirect_url(event_urls['communication'])
                 }
-
             else:
                 raise LogicError('Response Error')
         except:
             raise LogicError('Response Error')
-
-
-class CommunicateListControl(APIView):
-
-    def get(self):
-        self.check_input('open_id')
-
-        try:
-            user = User.get_by_openid(self.input['open_id'])
-            courseid = user.communicate_course
-            coursename = ''
-            try:
-                coursename = Course.objects.get(course_id=courseid).name
-                return {
-                    'course_name':coursename,
-                    'course_id':courseid
-                }
-            except:
-                raise LogicError('no ushc course')
-
-        except:
-            raise LogicError('no such openid')
-
-    def post(self):
-        #mode 0: delete, mode 1: add
-        self.check_input('open_id', 'course_id', 'mode')
-        mode = self.input['mode']
-
-        try:
-            user = User.get_by_openid(self.input['open_id'])
-
-            if mode == 0:
-                user.communicate_course = ''
-                user.save()
-
-            else:
-
-                user.communicate_course = self.input['course_id']
-                user.save()
-
-
-        except:
-            raise LogicError('no such openid')

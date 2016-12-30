@@ -23,7 +23,6 @@ class User(models.Model):
     assignment_list = models.CharField(max_length=4096, default='[]')
     slide_list = models.CharField(max_length=4096, default='[]')
     avatar_url = models.CharField(max_length=1024, default='')
-    communicate_course = models.CharField(max_length=128, default='')
 
     def add_notice(self, name):
         notices = json.loads(self.notice_list)
@@ -88,22 +87,29 @@ class Course(models.Model):
     course_id = models.CharField(max_length=128, default='')
     comments = models.CharField(max_length=1024, default='[]')
     chatmsg = models.CharField(max_length=1024, default='[]')
+    update_index = models.IntegerField(default=0)
 
     def add_msg(self, open_id, content):
         msg = Message.objects.create(sender_id=open_id, course_id=self.course_id, content=content, create_time=current_stamp())
         temp = json.loads(self.chatmsg)
         temp.append(msg.id)
         self.chatmsg = json.dumps(temp)
+        self.update_index = self.update_index + 1
         self.save()
 
     def get_msg(self):
         temp = json.loads(self.chatmsg)
         length = len(temp)
         if length < 10:
-            return [Message.objects.get(id = x) for x in temp[::-1]]
+            return {
+                'data': [Message.objects.get(id = x) for x in temp[::-1]],
+                'index': self.update_index
+            }
         else:
-            return [Message.objects.get(id = x) for x in temp[(length - 10):length][::-1]]
-
+            return {
+                'data': [Message.objects.get(id = x) for x in temp[(length - 10):length][::-1]],
+                'index': self.update_index
+            }
 
 class CourseForSearch(models.Model):
     course_seq = models.CharField(max_length=128)

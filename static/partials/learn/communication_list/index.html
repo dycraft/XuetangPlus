@@ -21,7 +21,7 @@
                     <div class="weui-panel__hd">课程列表</div>
                     <div class="weui-panel__bd">
                         {% for course in courses %}
-                        <a class="weui-media-box weui-media-box_appmsg js-course" id="course_{{ course.index }}">
+                        <a class="weui-media-box weui-media-box_appmsg js-course" courseid="{{ course.courseid }}">
                             <div class="weui-media-box__bd">
                                 <h4 style="word-break: normal; font-weight: normal">{{ course.coursename }}</h4>
                             </div>
@@ -33,8 +33,67 @@
                     <a class="weui-btn weui-btn_default" id="backBtn" onclick="wx.closeWindow();">返回</a>
                 </div>
             </div>
+        </script>
 
+        <script type="text/template" id="tpl-page">
+            <div class="page__hd">
+                <h1 class="page__title">课程讨论</h1>
+                <p class="page__desc">{{ coursename }}</p>
+                <p class="page__desc">{{ courseid }}</p>
+            </div>
+            <div class="page__bd">
+                <div class="weui-cells__title">消息操作</div>
+                <div class="weui-cells">
+                    <!-- <div class="weui-cell weui-cell_access" id="freshBtn">
+                        <div class="weui-cell__bd">刷新消息</div>
+                        <div class="weui-cell__ft" style="font-size: 0">
+                            <span class="weui-badge weui-badge_dot" style="margin-left: 5px;margin-right: 5px;" id="new"></span>
+                        </div>
+                    </div> -->
+                    <div class="weui-cell weui-cell_access" id="sendBtn">
+                        <div class="weui-cell__bd">发送消息</div>
+                        <div class="weui-cell__ft" style="font-size: 0"></div>
+                    </div>
+                </div>
+                <div class="weui-cells__title">最新消息(只显示最新10条)</div>
+                <div class="weui-cells">
+                    {% for msg in msgs %}
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd" style="position: relative;margin-right: 10px;">
+                            <img src="{{ msg.avatar_url }}" style="width: 50px;display: block"/>
+                        </div>
+                        <div class="weui-cell__bd">
+                            <p class="weui-media-box__title communication-name">{{ msg.realname }}</p>
+                            <p class="weui-media-box__desc communication-message">{{ msg.content }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </script>
 
+        <script type="text/template" id="tpl-add">
+            <div class="page__hd">
+                <h1 class="page__title">发送消息</h1>
+                <p class="page__desc">{{ courseid }}</p>
+            </div>
+            <div class="page__bd">
+                <div id="form">
+                    <div class="weui-cells__title">请提交新的消息</div>
+                    <div class="weui-cells weui-cells_form">
+                        <div class="weui-cell">
+                            <div class="weui-cell__bd">
+                                <textarea class="weui-textarea" id="inputContent"
+                                          required placeholder="消息将显示真实名称，对同课程内用户可见"
+                                          emptyTips="新消息不能为空" rows="4" maxlength="100"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="weui-btn-area">
+                        <a class="weui-btn weui-btn_primary" id="confirmBtn">提交</a>
+                    </div>
+                </div>
+            </div>
         </script>
 
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
@@ -53,6 +112,25 @@
         </script>
 
         <script type="text/javascript">
+            exitDiscussion = function () {
+                $.post('/api/communicate/control/',{
+                    open_id: openid,
+                    mode: 0,
+                    course_id: ''
+                }, function (data) {
+                    wx.closeWindow();
+                });
+            };
+
+            $(function(){
+                window.addEventListener("popstate", function(e) {
+                    exitDiscussion();
+                }, false);
+            });
+
+        </script>
+
+        <script type="text/javascript">
             $(function(){
                 window.addEventListener("popstate", function(e) {
                     $('#backBtn').click();
@@ -64,6 +142,34 @@
             var locals = {};
             var openid;
             var courseid;
+            var fresh = function(next) {
+                $.get('/api/communicate/message/', {
+                    open_id: openid,
+                    course_id: courseid
+                }, function (data) {
+                    locals.msgs = data.data.msgs;
+                    locals.update = data.data.update_index;
+                    render('page', locals);
+                    // $('#new').hide();
+                    // $('#freshBtn').click(fresh);
+                    $('#sendBtn').click(function () {
+                        page('#!add');
+                    });
+                    next();
+                });
+            };
+            var getRtmMsg = function() {
+                $.post("/api/communicate/eventsource/", {
+                    open_id: openid,
+                    course_id: courseid,
+                    index: locals.update
+                }, function(data) {
+                    if(data.code === 0) {
+                        // $('#new').show();
+                        fresh(getRtmMsg);
+                    }
+                });
+            };
 
             var route = {
                 init: function (ctx, next) {
@@ -80,29 +186,38 @@
                                 open_id: openid
                             }, function(data) {
                                 locals.courses = data.data.courses;
-                                locals.comment_url = data.data.url;
                                 render('main', locals);
-
-                                for(var i = 0; i < locals.courses.length; i++)
-                                {
-                                    var id_str = '#course_';
-                                    id_str += locals.courses[i].index;
-                                    $(id_str).click(function (i, openid, courseid, url) {
-                                        return function () {
-                                            $.post('/api/communicate/control/',{
-                                                open_id: openid,
-                                                mode: 1,
-                                                course_id: courseid
-                                            }, function () {
-                                                window.location.href = url;
-                                            });
-                                        }
-                                    }(i, openid, locals.courses[i].courseid, locals.comment_url));
-                                }
+                                $('.js-course').click(function() {
+                                    courseid = $(this).attr('courseid');
+                                    page('#!page');
+                                });
                             });
                         } else {
                             weui.alert('请绑定学号', function(){ wx.closeWindow(); });
                         }
+                    });
+                },
+                page: function (ctx, next) {
+                    fresh(getRtmMsg);
+                },
+                add: function (ctx, next) {
+                    render('add', locals);
+                    $('#confirmBtn').click(function () {
+                        weui.form.validate('#form', function (error) {
+                            var loading = weui.loading('提交中...');
+                            if (!error) {
+                                $.post('/api/communicate/message/', {
+                                    open_id: openid,
+                                    course_id: courseid,
+                                    content: $('#inputContent').val()
+                                }, function (data) {
+                                    loading.hide();
+                                    page('#!page');
+                                });
+                            } else {
+                                loading.hide();
+                            }
+                        });
                     });
                 }
             };
@@ -112,6 +227,8 @@
                 locals.openid = openid;
                 page.base('/learn/communication_list');
                 page('/', route.main);
+                page('page', route.page);
+                page('add', route.add);
                 page('*', route.init);
                 page({hashbang: true});
                 page();
