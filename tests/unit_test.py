@@ -7,8 +7,10 @@ from util.time import *
 from wechat.views import CustomWeChatView
 from wechat.handlers import ErrorHandler, DefaultHandler, HelpOrSubscribeHandler, UnbindOrUnsubscribeHandler, \
     AccountBindHandler, ViewPersonalInformationHandler, CourseSearchHandler, CourseListHandler, CommunicateHandler, \
-    NoticePanelHandler, LibraryRemainsHandler, MyCalendarHandler, SchoolCalendarHandler, NavigationHandler
-from wechat.models import User, Event
+    NoticePanelHandler, LibraryRemainsHandler, MyCalendarHandler, SchoolCalendarHandler, NavigationHandler, \
+    RemindHandler
+from wechat.models import User, Event, CourseForSearch
+from userpage.views import ReadNoticeRecord, CourseInfo
 
 data_for_test = {
     'username': '2014013421',
@@ -587,6 +589,7 @@ class MyCalendarHandlerTestCase(TestCase):
             'Title': '欢迎使用个人日历',
             'Description': '在这里你可以方便查看和管理你的日程',
             'Url': inst.url_my_calendar(),
+            'PicUrl': inst.url_pic('/img/theme/calendar.png')
         }))
 
     def test_when_incorrect_text(self):
@@ -670,66 +673,31 @@ class NavigationHandlerTestCase(TestCase):
             'Event': ''
         }
 
-    '''诚哥注释了NavigationHandler的绑定判定'''
-    '''
-    def test_when_correct_text1(self):
+    def test_when_correct_text(self):
         self.msg['MsgType'] = 'text'
-        self.msg['Content'] = '地图'
-        user = User.get_by_openid('1')
-        inst = NavigationHandler(CustomWeChatView, self.msg, user)
-        self.assertEqual(inst.check(), True)
-        self.assertEqual(inst.handle(), inst.reply_text('请先进行绑定'))
-    '''
-    def test_when_correct_text2(self):
-        self.msg['MsgType'] = 'text'
-        self.msg['Content'] = '地图'
-        '''
-        self.client.post('/api/welcome/account_bind',
-                         {
-                             'open_id': '1',
-                             'student_id': data_for_test['username'],
-                             'password': data_for_test['password']
-                         })
-        '''
+        self.msg['Content'] = '导航'
         user = User.get_by_openid('1')
         inst = NavigationHandler(CustomWeChatView, self.msg, user)
         self.assertEqual(inst.check(), True)
         self.assertEqual(inst.handle(), inst.reply_single_news({
-            'Title': '欢迎使用地图',
-            'Description': '方便查看地图',
+            'Title': '欢迎使用校园导航',
+            'Description': '输入地点进行导航',
             'Url': inst.url_navigation(),
+            'PicUrl': inst.url_pic('/img/theme/navigation.png')
         }))
-
-    '''
-    def test_when_correct_event_click1(self):
-        self.msg['MsgType'] = 'event'
-        self.msg['Event'] = 'CLICK'
-        self.msg['EventKey'] = 'LIFE_NAVIGATION'
-        user = User.get_by_openid('1')
-        inst = NavigationHandler(CustomWeChatView, self.msg, user)
-        self.assertEqual(inst.check(), True)
-        self.assertEqual(inst.handle(), inst.reply_text('请先进行绑定'))
-    '''
 
     def test_when_correct_event_click(self):
         self.msg['MsgType'] = 'event'
         self.msg['Event'] = 'CLICK'
         self.msg['EventKey'] = 'LIFE_NAVIGATION'
-        '''
-        self.client.post('/api/welcome/account_bind',
-                         {
-                             'open_id': '1',
-                             'student_id': data_for_test['username'],
-                             'password': data_for_test['password']
-                         })
-        '''
         user = User.get_by_openid('1')
         inst = NavigationHandler(CustomWeChatView, self.msg, user)
         self.assertEqual(inst.check(), True)
         self.assertEqual(inst.handle(), inst.reply_single_news({
-            'Title': '欢迎使用地图',
-            'Description': '方便查看地图',
+            'Title': '欢迎使用校园导航',
+            'Description': '输入地点进行导航',
             'Url': inst.url_navigation(),
+            'PicUrl': inst.url_pic('/img/theme/navigation.png')
         }))
 
     def test_when_incorrect_text(self):
@@ -743,6 +711,49 @@ class NavigationHandlerTestCase(TestCase):
         self.msg['MsgType'] = 'event'
         self.msg['Event'] = 'CLICK'
         self.msg['EventKey'] = '123'
+        user = User.get_by_openid('1')
+        inst = NavigationHandler(CustomWeChatView, self.msg, user)
+        self.assertEqual(inst.check(), False)
+
+
+class RemindHandlerTestCase(TestCase):
+    fixtures = ['user.json']
+
+    @classmethod
+    def setUp(cls):
+        cls.msg = {
+            'ToUserName': '2',
+            'FromUserName': '1',
+            'MsgType': '',
+            'Content': '',
+            'Event': ''
+        }
+
+    def test_when_correct_text1(self):
+        self.msg['MsgType'] = 'text'
+        self.msg['Content'] = '提醒'
+        user = User.get_by_openid('1')
+        inst = RemindHandler(CustomWeChatView, self.msg, user)
+        self.assertEqual(inst.check(), True)
+        self.assertEqual(inst.handle(), inst.reply_text('请先进行绑定'))
+
+    def test_when_correct_text2(self):
+        self.msg['MsgType'] = 'text'
+        self.msg['Content'] = '提醒'
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        user = User.get_by_openid('1')
+        inst = RemindHandler(CustomWeChatView, self.msg, user)
+        self.assertEqual(inst.check(), True)
+        self.assertEqual(inst.handle(), inst.reply_text('欢迎使用提醒功能'))
+
+    def test_when_incorrect_text(self):
+        self.msg['MsgType'] = 'text'
+        self.msg['Content'] = '123'
         user = User.get_by_openid('1')
         inst = NavigationHandler(CustomWeChatView, self.msg, user)
         self.assertEqual(inst.check(), False)
@@ -937,7 +948,7 @@ class UnBindViewTestCase(TestCase):
         response = self.client.post('/api/welcome/unbind', {'open_id': 1})
         res = response.json()
         self.assertEqual(res['code'], 2)
-        self.assertEqual(res['msg'], '')
+        self.assertEqual(res['msg'], 'user not bound')
         self.assertEqual(res['data'], None)
 
     def test_post_incorrect_input2(self):
@@ -1055,7 +1066,492 @@ class GetCourseIdViewTestCase(TestCase):
         response = self.client.get('/api/learn/notice_panel/get_course_id', {'open_id': 1})
         res = response.json()
         self.assertEqual(res['code'], 2)
-        self.assertEqual(res['msg'], 'has not bind')
+        self.assertEqual(res['msg'], 'user not bound')
+        self.assertEqual(res['data'], None)
+
+
+class NoticeListViewTestCase(TestCase):
+    fixtures = ['user.json']
+
+    def test_get_correct_input(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/notice',
+                                   {
+                                       'open_id': 1,
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        user = User.get_by_openid(1)
+        read_notices = user.get_read_notice_list()
+
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        course_ids = []
+        if response.status_code == 200:
+            response_course = json.loads(response.content.decode())
+            course_ids = list(set([c['courseid'] for c in response_course['classes']]))
+        else:
+            self.assertEqual(res['code'], 2)
+            self.assertEqual(res['msg'], 'Response Error in NoticeList')
+            self.assertEqual(res['data'], None)
+
+        result = []
+
+        for course_id in course_ids:
+            response_notice = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                            + user.student_id + '/courses/' + course_id
+                                            + '/notices')
+            if response_notice.status_code == 200:
+                result_notice = json.loads(response_notice.content.decode())
+
+                for rc in response_course['classes']:
+                    if rc['courseid'] == course_id:
+                        course_name = rc['coursename']
+                        break
+
+                for notice in result_notice['notices']:
+                    notice['coursename'] = course_name
+                    notice['read'] = ReadNoticeRecord.notice_name(notice['title'], course_id) in read_notices
+
+                result += result_notice['notices']
+            else:
+                self.assertEqual(res['code'], 2)
+                self.assertEqual(res['msg'], 'Response Error in NoticeList')
+                self.assertEqual(res['data'], None)
+
+        length = len(result)
+        result = sorted(result, key=lambda n: n['publishtime'], reverse=True)[10 * (page_num - 1): 10 * page_num]
+        unread = 0
+        for index, r in enumerate(result):
+            r['index'] = index + 1
+            r['title'] = r['title'].replace('&nbsp;', '')
+            r['publishtime'] = stamp_to_localstr_date(r['publishtime'])
+            r['content'] = r['content'].replace('\r\n', '</br>')
+            if not r['read']:
+                unread += 1
+
+        self.assertEqual(res['code'], 0)
+        self.assertEqual(res['msg'], '')
+        self.assertEqual(res['data'], {
+            'total': length,
+            'notices': result,
+            'unread': unread
+        })
+
+    def test_get_incorrect_input1(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/notice',
+                                   {
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "open_id" required')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input2(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/notice',
+                                   {
+                                       'open_id': 1,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "page" required')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input3(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/notice',
+                                   {
+                                       'open_id': 2,
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 2)
+        self.assertEqual(res['msg'], 'no such open_id')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input4(self):
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/notice',
+                                   {
+                                       'open_id': 1,
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 2)
+        self.assertEqual(res['msg'], 'user not bound')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input5(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        response = self.client.get('/api/learn/notice_panel/notice',
+                                   {
+                                       'open_id': 1,
+                                       'page': 1.3,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given page should be int')
+        self.assertEqual(res['data'], None)
+
+
+class AssignmentListViewTestCase(TestCase):
+    fixtures = ['user.json']
+
+    def test_get_correct_input(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/assignment',
+                                   {
+                                       'open_id': 1,
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        user = User.get_by_openid(1)
+        read_assignments = user.get_read_assignment_list()
+
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        course_ids = []
+        if response.status_code == 200:
+            response_course = json.loads(response.content.decode())
+            course_ids = list(set([c['courseid'] for c in response_course['classes']]))
+        else:
+            self.assertEqual(res['code'], 2)
+            self.assertEqual(res['msg'], 'Response Error in AssignmentList')
+            self.assertEqual(res['data'], None)
+
+        result = []
+
+        for course_id in course_ids:
+            response_assignment = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                                + user.student_id + '/courses/' + course_id
+                                                + '/assignments')
+            if response_assignment.status_code == 200:
+                result_assignment = json.loads(response_assignment.content.decode())
+                course_name = ''
+                for rc in response_course['classes']:
+                    if rc['courseid'] == course_id:
+                        course_name = rc['coursename']
+                        break
+
+                for assignment in result_assignment['assignments']:
+                    assignment['coursename'] = course_name
+
+                    assignment['processing'] = assignment['duedate'] > current_stamp()
+
+                    assignment['startdate'] = stamp_to_localstr_date(assignment['startdate'])
+                    assignment['evaluatingdate'] = stamp_to_localstr_date(assignment['evaluatingdate'])
+                    assignment['read'] = ReadNoticeRecord.notice_name(assignment['title'], course_id) in read_assignments
+
+                result += result_assignment['assignments']
+            else:
+                self.assertEqual(res['code'], 2)
+                self.assertEqual(res['msg'], 'Response Error in AssignmentList')
+                self.assertEqual(res['data'], None)
+
+        length = len(result)
+        result = sorted(result, key=lambda a: a['duedate'], reverse=True)[10 * (page_num - 1): 10 * page_num]
+        unread = 0
+        for index, r in enumerate(result):
+            r['index'] = index + 1
+            r['duedate'] = stamp_to_localstr_date(r['duedate'])
+            r['detail'] = r['detail'].replace('\r\n', '</br>')
+            r['comment'] = r['comment'].replace('\r\n', '</br>')
+            if not r['read']:
+                unread += 1
+
+        self.assertEqual(res['code'], 0)
+        self.assertEqual(res['msg'], '')
+        self.assertEqual(res['data'], {
+            'total': length,
+            'assignments': result,
+            'unread': unread
+        })
+
+    def test_get_incorrect_input1(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/assignment',
+                                   {
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "open_id" required')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input2(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/assignment',
+                                   {
+                                       'open_id': 1,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "page" required')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input3(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/assignment',
+                                   {
+                                       'open_id': 2,
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 2)
+        self.assertEqual(res['msg'], 'no such open_id')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input4(self):
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/assignment',
+                                   {
+                                       'open_id': 1,
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 2)
+        self.assertEqual(res['msg'], 'user not bound')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input5(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        response = self.client.get('/api/learn/notice_panel/assignment',
+                                   {
+                                       'open_id': 1,
+                                       'page': 1.3,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given page should be int')
+        self.assertEqual(res['data'], None)
+
+
+class SlideListViewTestCase(TestCase):
+    fixtures = ['user.json']
+
+    def test_get_correct_input(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/slide',
+                                   {
+                                       'open_id': 1,
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        user = User.get_by_openid(1)
+        read_slides = user.get_read_slide_list()
+
+        url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        course_ids = []
+        if response.status_code == 200:
+            response_course = json.loads(response.content.decode())
+            course_ids = list(set([c['courseid'] for c in response_course['classes']]))
+        else:
+            self.assertEqual(res['code'], 2)
+            self.assertEqual(res['msg'], 'Response Error in SlideList')
+            self.assertEqual(res['data'], None)
+
+        result = []
+
+        for course_id in course_ids:
+            response_file = requests.post('http://se.zhuangty.com:8000/learnhelper/'
+                                          + user.student_id + '/courses/' + course_id
+                                          + '/documents')
+            if response_file.status_code == 200:
+                result_file = json.loads(response_file.content.decode())
+
+                course_name = ''
+                for rc in response_course['classes']:
+                    if rc['courseid'] == course_id:
+                        course_name = rc['coursename']
+                        break
+
+                for file in result_file['documents']:
+                    file['coursename'] = course_name
+                    file['read'] = ReadNoticeRecord.notice_name(file['title'], course_id) in read_slides
+
+                result += result_file['documents']
+
+            else:
+                self.assertEqual(res['code'], 2)
+                self.assertEqual(res['msg'], 'Response Error in SlideList')
+                self.assertEqual(res['data'], None)
+
+        length = len(result)
+        result = sorted(result, key=lambda a: a['updatingtime'], reverse=True)[10 * (page_num - 1): 10 * page_num]
+        unread = 0
+        for index, r in enumerate(result):
+            r['index'] = index + 1
+            r['updatingtime'] = stamp_to_localstr_date(r['updatingtime'])
+            if not r['read']:
+                unread += 1
+
+        self.assertEqual(res['code'], 0)
+        self.assertEqual(res['msg'], '')
+        self.assertEqual(res['data'], {
+            'total': length,
+            'slides': result,
+            'unread': unread
+        })
+
+    def test_get_incorrect_input1(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/slide',
+                                   {
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "open_id" required')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input2(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/slide',
+                                   {
+                                       'open_id': 1,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "page" required')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input3(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/slide',
+                                   {
+                                       'open_id': 2,
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 2)
+        self.assertEqual(res['msg'], 'no such open_id')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input4(self):
+        self.client.post('/api/welcome/account_bind',
+                         {
+                             'open_id': '1',
+                             'student_id': data_for_test['username'],
+                             'password': data_for_test['password']
+                         })
+        response = self.client.get('/api/learn/notice_panel/slide',
+                                   {
+                                       'open_id': 1,
+                                       'page': 1.3,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'The given page should be int')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input5(self):
+        page_num = 1
+        response = self.client.get('/api/learn/notice_panel/slide',
+                                   {
+                                       'open_id': 1,
+                                       'page': page_num,
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 2)
+        self.assertEqual(res['msg'], 'user not bound')
         self.assertEqual(res['data'], None)
 
 
@@ -1128,16 +1624,227 @@ class MeInfoViewTestCase(TestCase):
                          })
         response = self.client.get('/api/me/info',{'open_id': 2})
         res = response.json()
-        self.assertNotEqual(res['code'], 3)
-        self.assertEqual(res['msg'], '')
+        self.assertEqual(res['code'], 2)
+        self.assertEqual(res['msg'], 'no such open_id')
         self.assertEqual(res['data'], None)
 
     def test_get_incorrect_input3(self):
         response = self.client.get('/api/me/info',{'open_id': 1})
         res = response.json()
-        self.assertNotEqual(res['code'], 2)
-        self.assertEqual(res['msg'], '')
+        self.assertEqual(res['code'], 2)
+        self.assertEqual(res['msg'], 'user not bound')
         self.assertEqual(res['data'], None)
+
+
+class SearchCourseViewTestCase(TestCase):
+    fixtures = ['user.json']
+
+    @classmethod
+    def setUp(cls):
+        CourseForSearch.objects.all().delete()
+        course_data = json.load(open('./static/course/course.json', 'r'))
+
+        length = len(course_data)
+        for index, c in enumerate(course_data):
+            new_course = CourseForSearch.objects.create()
+            if c['course_name'] == '':
+                new_course.delete()
+                continue
+            new_course.course_name = c['course_name']
+            new_course.course_seq = c['course_seq']
+            new_course.score = c['score']
+            new_course.feature = c['feature']
+            new_course.intro = c['intro']
+            new_course.time = c['time']
+            new_course.second = c['second']
+            new_course.school = c['school']
+            new_course.teacher = c['teacher']
+            new_course.course_id = c['course_id']
+            new_course.week = c['week']
+            new_course.year = c['year']
+            new_course.save()
+
+    def test_get_correct_input(self):
+        key = '工程'
+        response = self.client.get('/api/learn/search_course',
+                                   {
+                                       'key': key,
+                                       'page': '1',
+                                   })
+        res = response.json()
+        courses = []
+        page_num = 1
+        courses = CourseForSearch.objects.filter(course_name=key)
+        if len(courses) == 0:
+            courses = CourseForSearch.fuzzy_search(key)
+
+
+        result = [{
+                   'course_name': x.course_name,
+                   'course_id': x.course_id,
+                   'course_seq': x.course_seq,
+                   'school': x.school,
+                   'time': x.time,
+                   'week': x.week,
+                   'second': x.second,
+                   'intro': x.intro,
+                   'feature': x.feature,
+                   'score': x.score,
+                   'teacher': x.teacher,
+                   'year': x.year,
+               } for x in courses][10 * (page_num - 1): 10 * page_num]
+
+        for index, r in enumerate(result):
+            r['index'] = index + 1
+            r['course_seq'] = int(float(r['course_seq']))
+
+        self.assertEqual(res['code'], 0)
+        self.assertEqual(res['msg'], '')
+        self.assertEqual(res['data'], {
+            'total': len(courses),
+            'search_result': result,
+        })
+
+    def test_get_incorrect_input1(self):
+        key = '工程'
+        response = self.client.get('/api/learn/search_course',
+                                   {
+                                       'key': key,
+                                       'page': '1.5',
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'the given page should be int')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input2(self):
+        response = self.client.get('/api/learn/search_course',
+                                   {
+                                       'page': '1',
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "key" required')
+        self.assertEqual(res['data'], None)
+
+    def test_get_incorrect_input3(self):
+        response = self.client.get('/api/learn/search_course',
+                                   {
+                                       'key': '工程',
+                                   })
+        res = response.json()
+        self.assertEqual(res['code'], 1)
+        self.assertEqual(res['msg'], 'Field "page" required')
+        self.assertEqual(res['data'], None)
+
+
+class CourseInfoViewTestCase(TestCase):
+    fixtures = ['user.json']
+
+    def test_get_correct_input(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.get('/api/course/information',
+                                       {
+                                           'open_id': 1,
+                                           'course_id': course_id,
+                                       })
+            res = response.json()
+            user = User.get_by_openid(1)
+            url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
+            params = {
+                'apikey': 'camustest',
+                'apisecret': 'camustest'
+            }
+
+            result = {}
+            response = requests.post(url, json=params)
+            if response.status_code == 200:
+                result_course = json.loads(response.content.decode())
+
+                for course in result_course['classes']:
+                    if course['courseid'] == course_id:
+                        result = course
+                        result['course_day'] = course['time'][0]
+                        result['course_time'] = start_time[course['time'][1] - 1]
+                        result['course_week'] = CourseInfo.map_week(course['week'])
+
+                        response = requests.post(
+                            'http://se.zhuangty.com:8000/learnhelper/' + user.student_id + '/courses')
+                        if response.status_code == 200:
+                            re = json.loads(response.content.decode())
+                            result['teacher_email'] = ''
+                            result['teacher_phone'] = ''
+                            result['course_new_file'] = 0
+                            result['course_unread_notice'] = 0
+                            result['course_unsubmitted_operations'] = 0
+                            for course in re['courses']:
+                                if course['courseid'] == course_id:
+                                    result['teacher_email'] = course['email']
+                                    result['teacher_phone'] = course['phone']
+                                    result['course_new_file'] = course['newfile']
+                                    result['course_unread_notice'] = course['unreadnotice']
+                                    result['course_unsubmitted_operations'] = course['unsubmittedoperations']
+                                    self.assertEqual(res['code'], 0)
+                                    self.assertEqual(res['msg'], '')
+                                    self.assertEqual(res['data'], result)
+                                    return
+
+                            self.assertEqual(res['code'], 0)
+                            self.assertEqual(res['msg'], '')
+                            self.assertEqual(res['data'], result)
+                            return
+                        else:
+                            self.assertEqual(res['code'], 2)
+                            self.assertEqual(res['msg'], 'Response Error')
+                            self.assertEqual(res['data'], None)
+                            return
+
+                self.assertEqual(res['code'], 2)
+                self.assertEqual(res['msg'], 'No course')
+                self.assertEqual(res['data'], None)
+                return
+            else:
+                self.assertEqual(res['code'], 2)
+                self.assertEqual(res['msg'], 'Response Error')
+                self.assertEqual(res['data'], None)
+                return
+
+    def test_get_incorrect_input1(self):
+        url = 'http://se.zhuangty.com:8000/curriculum/' + data_for_test['username']
+        params = {
+            'apikey': 'camustest',
+            'apisecret': 'camustest',
+        }
+        response = requests.post(url, json=params)
+        r = json.loads(response.content.decode())['classes']
+        if len(r) > 0:
+            course_id = r[0]['courseid']
+            self.client.post('/api/welcome/account_bind',
+                             {
+                                 'open_id': '1',
+                                 'student_id': data_for_test['username'],
+                                 'password': data_for_test['password'],
+                             })
+            response = self.client.get('/api/course/information',
+                                       {
+                                           'open_id': 1,
+                                           'course_id': course_id,
+                                       })
+            res = response.json()
 
 
 class EventDetailViewTestCase(TestCase):

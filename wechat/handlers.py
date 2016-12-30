@@ -237,8 +237,13 @@ class RemindHandler(WeChatHandler):
         return self.is_text('提醒')
 
     def handle(self):
-        confirm = WechatConfirmation.objects.get(id=1)
-        user = User.objects.get(username=self.user.username)
+        confirm = WechatConfirmation.get_or_create()
+        if self.user.student_id == '':
+            return self.reply_text('请先进行绑定')
+        try:
+            user = User.get_by_openid(self.user.open_id)
+        except:
+            raise LogicError('no such open_id')
 
         hw_num = 0
         info_num = 0

@@ -203,6 +203,13 @@ class WechatConfirmation(models.Model):
 
         return self.jssdk_ticket
 
+    @classmethod
+    def get_or_create(cls):
+        elems = cls.objects.all()
+        if len(elems) == 0:
+            cls.objects.create()
+        return cls.objects.all()[0]
+
 
 class Message(models.Model):
     sender_id = models.CharField(max_length=128, default='')
