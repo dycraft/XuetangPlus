@@ -20,16 +20,21 @@
                 <div class="weui-panel weui-panel_access">
                     <div class="weui-panel__hd">课程列表</div>
                     <div class="weui-panel__bd">
-                        {% for cls in courses %}
-                        <a class="weui-media-box weui-media-box_appmsg js-course" href="/learn/communication?open_id={{ openid }}&course_id={{ cls.courseid }}">
+                        {% for course in courses %}
+                        <a class="weui-media-box weui-media-box_appmsg js-course" id="course_{{ course.index }}">
                             <div class="weui-media-box__bd">
-                                <h4 class="weui-media-box__title">{{ cls.coursename }}</h4>
+                                <h4 style="word-break: normal; font-weight: normal">{{ course.coursename }}</h4>
                             </div>
                         </a>
                         {% endfor %}
                     </div>
                 </div>
+                <div class="weui-btn-area">
+                    <a class="weui-btn weui-btn_default" id="backBtn" onclick="wx.closeWindow();">返回</a>
+                </div>
             </div>
+
+
         </script>
 
         <script type="text/javascript" src="/lib/zepto.min.js"></script>
@@ -45,6 +50,14 @@
         <script type="text/javascript">
             var jssdk_function_list = ['closeWindow'];
             callJSSDK(jssdk_function_list);
+        </script>
+
+        <script type="text/javascript">
+            $(function(){
+                window.addEventListener("popstate", function(e) {
+                    $('#backBtn').click();
+                }, false);
+            });
         </script>
 
         <script type="text/javascript">
@@ -66,8 +79,26 @@
                             $.get('/api/communicate/list/', {
                                 open_id: openid
                             }, function(data) {
-                                locals.courses = data.data;
+                                locals.courses = data.data.courses;
+                                locals.comment_url = data.data.url;
                                 render('main', locals);
+
+                                for(var i = 0; i < locals.courses.length; i++)
+                                {
+                                    var id_str = '#course_';
+                                    id_str += locals.courses[i].index;
+                                    $(id_str).click(function (i, openid, courseid, url) {
+                                        return function () {
+                                            $.post('/api/communicate/control/',{
+                                                open_id: openid,
+                                                mode: 1,
+                                                course_id: courseid
+                                            }, function () {
+                                                window.location.href = url;
+                                            });
+                                        }
+                                    }(i, openid, locals.courses[i].courseid, locals.comment_url));
+                                }
                             });
                         } else {
                             weui.alert('请绑定学号', function(){ wx.closeWindow(); });
