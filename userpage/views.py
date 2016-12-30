@@ -175,7 +175,7 @@ class CourseList(APIView):
             raise LogicError('no such open_id')
 
         if user.student_id == '':
-            raise LogicError('has not bind')
+            raise LogicError('unbind user')
 
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
         params = {
@@ -819,7 +819,7 @@ class EventDetail(APIView):
         except:
             raise InputError('The given id should be int')
         if 0 <= id < len(event_id_list):
-            event = Event.get_by_id(event_id_list[int(self.input['id'])])
+            event = Event.get_by_id(event_id_list[id])
             event.name = self.input['name']
             try:
                 event.date = utcstr_date_to_stamp(self.input['date'])
@@ -828,7 +828,7 @@ class EventDetail(APIView):
             event.content = self.input['content']
             event.save()
             return {
-                'id': self.input['id']
+                'id': id,
             }
         else:
             raise InputError('The given id is out of range')
@@ -851,7 +851,6 @@ class EventList(APIView):
             except:
                 raise LogicError('no such open_id')
             event_id_list = json.loads(user.event_list)
-            print(event_id_list)
             event_list = sorted([Event.get_by_id(x) for x in event_id_list], key=lambda d: d.date)
             result = []
             record = []

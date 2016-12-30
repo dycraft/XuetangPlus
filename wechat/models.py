@@ -18,7 +18,7 @@ class User(models.Model):
     position = models.CharField(max_length=32, default='')
     email = models.CharField(max_length=32, default='')
     realname = models.CharField(max_length=32, default='')
-    event_list = models.CharField(max_length=256, default='[]')
+    event_list = models.CharField(max_length=1024, default='[]')
     notice_list = models.CharField(max_length=4096, default='[]')
     assignment_list = models.CharField(max_length=4096, default='[]')
     slide_list = models.CharField(max_length=8192, default='[]')
@@ -59,7 +59,7 @@ class User(models.Model):
         events.append(id)
         self.event_list = json.dumps(events)
         self.save()
-        return len(events)
+        return len(events) - 1
 
     def search_event(self, id):
         events = json.loads(self.event_list)
@@ -102,6 +102,7 @@ class Course(models.Model):
             return [Message.objects.get(id = x) for x in temp[::-1]]
         else:
             return [Message.objects.get(id = x) for x in temp[(length - 10):length][::-1]]
+
 
 class CourseForSearch(models.Model):
     course_seq = models.CharField(max_length=128)

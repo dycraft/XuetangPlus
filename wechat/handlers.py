@@ -25,8 +25,9 @@ class DefaultHandler(WeChatHandler):
         return True
 
     def handle(self, inputStr):
-        return self.reply_text('对不起，没有找到您需要的信息:(\n您查找的内容为(' + inputStr + ')\n\n我们目前支持的' +
-            '功能包括帮助、解绑、绑定、我的信息、查找课程、我的课程、课程交流、通知面板、文图、我的日历、校历、导航、提醒')
+        return self.reply_text('对不起，没有找到您需要的信息:(\n您查找的内容为(' + inputStr
+                               + ')\n\n我们目前支持的功能包括帮助、解绑、绑定、我的信息、查找课程、我的课程、'
+                                 '课程交流、通知面板、文图、我的日历、校历、导航、提醒')
 
 
 class HelpOrSubscribeHandler(WeChatHandler):
