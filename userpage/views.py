@@ -549,7 +549,7 @@ class CourseInfo(APIView):
                         result['course_new_file'] = 0
                         result['course_unread_notice'] = 0
                         result['course_unsubmitted_operations'] = 0
-                        for course in res['courses']:
+                        for course in res:
                             if course['courseid'] == self.input['course_id']:
                                 result['teacher_email'] = course['email']
                                 result['teacher_phone'] = course['phone']
@@ -966,7 +966,6 @@ class ReadNoticeRecord(APIView):
 
 
 class Communicate(APIView):
-    update = False
 
     def get(self):
         self.check_input('open_id', 'course_id')
@@ -983,21 +982,29 @@ class Communicate(APIView):
         return answer
 
     def post(self):
-        if 'update' in self.input:
-            openid = self.input['open_id']
-            courseid = self.input['course_id']
-            while True:
-                if update == True:
-                    return
-                time.sleep(5)
-                update = False
-        else:
-            openid = self.input['open_id']
-            courseid = self.input['course_id']
-            content = self.input['content']
-            Course.objects.get(course_id=courseid).add_msg(openid, content)
-            update = True
-            return
+        self.check_input('open_id', 'course_id', 'content')
+        openid = self.input['open_id']
+        courseid = self.input['course_id']
+        content = self.input['content']
+        Course.objects.get(course_id=courseid).add_msg(openid, content)
+        return
+
+
+class CommunicateNew(APIView):
+
+    def post(self):
+        self.check_input('open_id', 'course_id')
+        openid = self.input['open_id']
+        courseid = self.input['course_id']
+        course = Course.objects.get(course_id=courseid)
+        while True:
+            if course.msg_update == 1:
+                time.sleep(3)
+                if course.msg_update == 1:
+                    course.msg_update = 0
+                    course.save()
+                return
+            time.sleep(2)
 
 
 class CommunicateList(APIView):
@@ -1019,6 +1026,6 @@ class CommunicateList(APIView):
         response = requests.post(url, json=params)
         if response.status_code == 200:
             result_course = json.loads(response.content.decode())
-            return result_course['courses']
+            return result_course
         else:
             raise LogicError('Response Error')

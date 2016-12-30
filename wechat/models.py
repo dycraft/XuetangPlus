@@ -68,12 +68,14 @@ class Course(models.Model):
     course_id = models.CharField(max_length=128, default='')
     comments = models.CharField(max_length=1024, default='[]')
     chatmsg = models.CharField(max_length=1024, default='[]')
+    msg_update = models.IntegerField(default=0)
 
     def add_msg(self, open_id, content):
         msg = Message.objects.create(sender_id=open_id, course_id=self.course_id, content=content, create_time=current_stamp())
         temp = json.loads(self.chatmsg)
         temp.append(msg.id)
         self.chatmsg = json.dumps(temp)
+        self.msg_update = 1
         self.save()
 
     def get_msg(self):

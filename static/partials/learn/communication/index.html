@@ -19,12 +19,12 @@
             <div class="page__bd">
                 <div class="weui-cells__title">消息操作</div>
                 <div class="weui-cells">
-                    <div class="weui-cell weui-cell_access" id="freshBtn">
+                    <!-- <div class="weui-cell weui-cell_access" id="freshBtn">
                         <div class="weui-cell__bd">刷新消息</div>
                         <div class="weui-cell__ft" style="font-size: 0">
                             <span class="weui-badge weui-badge_dot" style="margin-left: 5px;margin-right: 5px;" id="new"></span>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="weui-cell weui-cell_access" id="sendBtn">
                         <div class="weui-cell__bd">发送消息</div>
                         <div class="weui-cell__ft" style="font-size: 0"></div>
@@ -88,6 +88,32 @@
             var locals = {};
             var openid;
             var courseid;
+            var fresh = function(next) {
+                $.get('/api/communicate/message/', {
+                    open_id: openid,
+                    course_id: courseid
+                }, function (data) {
+                    locals.msgs = data.data;
+                    render('main', locals);
+                    // $('#new').hide();
+                    // $('#freshBtn').click(fresh);
+                    $('#sendBtn').click(function () {
+                        page('#!add');
+                    });
+                    next();
+                });
+            };
+            var getRtmMsg = function() {
+                $.post("/api/communicate/eventsource/", {
+                    open_id: openid,
+                    course_id: courseid
+                }, function(data) {
+                    if(data.code === 0) {
+                        // $('#new').show();
+                        fresh(getRtmMsg);
+                    }
+                });
+            };
 
             var route = {
                 init: function (ctx, next) {
@@ -98,32 +124,7 @@
                     if (!openid) openid = params.open_id;
                     if (!courseid) courseid = params.course_id;
                     locals.courseid = courseid;
-                    (function fresh() {
-                        $.get('/api/communicate/eventsource/', {
-                            open_id: openid,
-                            course_id: courseid
-                        }, function (data) {
-                            locals.msgs = data.data;
-                            render('main', locals);
-                            $('#new').hide();
-                            $('#freshBtn').click(fresh);
-                            $('#sendBtn').click(function () {
-                                page('#!add');
-                            });
-                        });
-                    })();
-                    (function getRtmMsg() {
-                        $.post("/api/communicate/eventsource/", {
-                            open_id: openid,
-                            course_id: courseid,
-                            update: ""
-                        }, function(data) {
-                            if(data.code === 0) {
-                                $('#new').show();
-                                setTimeOut("getRtmMsg();", 5000);
-                            }
-                        });
-                    })();
+                    fresh(getRtmMsg);
                 },
                 add: function (ctx, next) {
                     render('add', locals);
@@ -131,7 +132,7 @@
                         weui.form.validate('#form', function (error) {
                             var loading = weui.loading('提交中...');
                             if (!error) {
-                                $.post('/api/communicate/eventsource/', {
+                                $.post('/api/communicate/message/', {
                                     open_id: openid,
                                     course_id: courseid,
                                     content: $('#inputContent').val()
