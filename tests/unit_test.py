@@ -1752,7 +1752,7 @@ class CourseInfoViewTestCase(TestCase):
                                     result['course_unsubmitted_operations'] = course['unsubmittedoperations']
                                     self.assertEqual(res['code'], 0)
                                     self.assertEqual(res['msg'], '')
-                                    self.assertEqual(res['data'], result)
+                                    self.assertEqual(res['data'], {'info': result})
                                     return
 
                             self.assertEqual(res['code'], 0)
