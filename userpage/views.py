@@ -547,7 +547,7 @@ class CourseInfo(APIView):
                         result['course_new_file'] = 0
                         result['course_unread_notice'] = 0
                         result['course_unsubmitted_operations'] = 0
-                        for course in res:
+                        for course in res['courses']:
                             if course['courseid'] == self.input['course_id']:
                                 result['teacher_email'] = course['email']
                                 result['teacher_phone'] = course['phone']
@@ -736,7 +736,7 @@ class GetOpenId(APIView):
 
         response = requests.get(url)
         result = json.loads(response.content.decode())
-        #print(result['openid'])
+        # print(result)
         #this openid is defined by TX
         return {
             'open_id': result['openid']

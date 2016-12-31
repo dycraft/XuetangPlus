@@ -483,11 +483,11 @@
             $(function(){
                 pushHistory("#");
                 window.addEventListener("popstate", function(e) {
-                    if(e.state == undefined){
+                    if(e.state === undefined){
                         wx.closeWindow();
                     }
                     loading = weui.loading('加载中');
-                    if(locals.detail != 0){
+                    if(locals.detail !== 0){
                         locals.detail = 0;
                     }
                 }, false);
@@ -509,7 +509,6 @@
                         open_id: openid
                     }, function (data) {
                         locals.studentId = data.data.studentId;
-                        console.log(data.data);
                         var isBind = data.data.bind;
                         if (!isBind) {
                             page.redirect('#!unbind');
@@ -524,8 +523,7 @@
                 },
                 notice: function(ctx, next) {
                     wx.hideOptionMenu();
-                    if(locals.detail == 0) {
-
+                    if(locals.detail === 0) {
                         $.get('/api/learn/notice_panel/notice', {
                             open_id: openid,
                             page: locals.pageNum
@@ -534,7 +532,7 @@
                             locals.total = data.data.total;
                             locals.totalPageNum = parseInt(locals.total / 10);
                             locals.unread = data.data.unread;
-                            if(locals.total % 10 != 0){
+                            if(locals.total % 10 !== 0){
                                 locals.totalPageNum += 1;
                             }
 
@@ -561,7 +559,7 @@
                                         locals.detail = i;
                                         locals.info = locals.notices[i - 1];
                                         page.redirect('#!notice');
-                                    }
+                                    };
                                 }(i));
                             }
 
@@ -613,14 +611,14 @@
                         $('#backBtn').click(function () {
                             locals.detail = 0;
                             loading = weui.loading('加载中');
-                            page('#!notice')
+                            page('#!notice');
                         });
 
                         loading.hide();
                     }
                 },
                 assignment: function (ctx, next) {
-                    if(locals.detail == 0) {
+                    if(locals.detail === 0) {
                         $.get('/api/learn/notice_panel/assignment', {
                             open_id: openid,
                             page: locals.pageNum
@@ -629,7 +627,7 @@
                             locals.total = data.data.total;
                             locals.totalPageNum = parseInt(locals.total / 10);
                             locals.unread = data.data.unread;
-                            if(locals.total % 10 != 0){
+                            if(locals.total % 10 !== 0){
                                 locals.totalPageNum += 1;
                             }
 
@@ -658,8 +656,8 @@
                                         locals.detail = i;
                                         locals.info = locals.assignments[i - 1];
                                         page.redirect('#!assignment');
-                                    }
-                                }(i))
+                                    };
+                                }(i));
                             }
 
                             $("#previousBtn").click(function () {
@@ -708,7 +706,7 @@
                         $('#backBtn').click(function () {
                             locals.detail = 0;
                             loading = weui.loading('加载中');
-                            page('#!assignment')
+                            page('#!assignment');
                         });
 
                         loading.hide();
@@ -716,7 +714,7 @@
 
                 },
                 slide: function (ctx, next) {
-                    if(locals.detail == 0) {
+                    if(locals.detail === 0) {
                         $.get('/api/learn/notice_panel/slide', {
                             open_id: openid,
                             page: locals.pageNum
@@ -725,7 +723,7 @@
                             locals.total = data.data.total;
                             locals.totalPageNum = parseInt(locals.total / 10);
                             locals.unread = data.data.unread;
-                            if(locals.total % 10 != 0){
+                            if(locals.total % 10 !== 0){
                                 locals.totalPageNum += 1;
                             }
 
@@ -789,7 +787,7 @@
                         $('#backBtn').click(function () {
                             locals.detail = 0;
                             loading = weui.loading('加载中');
-                            page('#!slide')
+                            page('#!slide');
                         });
 
                         loading.hide();
@@ -800,8 +798,6 @@
                         open_id: openid
                     }, function(data) {
                         locals.info = data.data;
-                        console.log(data.data)
-                        console.log(locals.info)
 
                         render('main', locals);
 

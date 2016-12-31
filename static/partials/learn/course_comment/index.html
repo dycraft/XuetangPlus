@@ -65,7 +65,6 @@
             $(function() {
                 var locals = {};
                 locals.rest = 1;
-                var openid, curid;
 
                 var route = {
                     init: function(ctx, next) {
@@ -73,27 +72,35 @@
                     },
                     main: function(ctx, next) {
                         $.get('/api/welcome/check_bind/', {
-                            open_id: openid
+                            open_id: sessionStorage.openid
                         }, function (data) {
                             locals.student_id = data.data.student_id;
                             var isBind = data.data.bind;
                             if (isBind) {
                                 $.get('/api/course/comment/list', {
-                                    open_id: openid
+                                    open_id: sessionStorage.openid
                                 }, function(data) {
                                     if (data.data.length < 10) locals.rest = 0;
                                     locals.comments = data.data;
-                                    curid = locals.comments[locals.comments.length-1].id;
+                                    if (locals.comments.length === 0) {
+                                        sessionStorage.curid = 0;
+                                    } else {
+                                        sessionStorage.curid = locals.comments[locals.comments.length-1].id;
+                                    }
                                     render('main', locals);
                                     $('#more').click(function() {
                                         (function showMore() {
                                             $.get('/api/course/comment/list', {
-                                                open_id: openid,
-                                                end_id: curid
+                                                open_id: sessionStorage.openid,
+                                                end_id: sessionStorage.curid
                                             }, function(data) {
                                                 if (data.data.length < 10) locals.rest = 0;
                                                 locals.comments = locals.comments.concat(data.data);
-                                                curid = locals.comments[locals.comments.length-1].id;
+                                                if (locals.comments.length === 0) {
+                                                    sessionStorage.curid = 0;
+                                                } else {
+                                                    sessionStorage.curid = locals.comments[locals.comments.length-1].id;
+                                                }
                                                 render('main', locals);
                                                 $('#more').click(showMore);
                                             });
@@ -109,7 +116,7 @@
                 };
 
                 getOpenId(function (get_open_id) {
-                    openid = get_open_id;
+                    sessionStorage.openid = get_open_id;
                     page.base('/learn/course_comment');
                     page('/', route.main);
                     page('*', route.init);

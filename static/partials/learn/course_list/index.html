@@ -184,7 +184,7 @@
             $(function(){
                 pushHistory("#");
                 window.addEventListener("popstate", function(e) {
-                    if(e.state == undefined){
+                    if(e.state === undefined){
                         wx.closeWindow();
                     }
                     loading = weui.loading('加载中');
@@ -210,14 +210,13 @@
                         });
                     }
                 });
-            }
+            };
         </script>
 
         <script type="text/javascript">
 
             var locals = {};
             var loading;
-            var openid, courseid, coursename;
 
             var route = {
                 init: function(ctx, next) {
@@ -226,12 +225,12 @@
                 main: function(ctx, next) {
                     loading = weui.loading('加载中');
                     $.get('/api/welcome/check_bind/', {
-                        open_id: openid
+                        open_id: sessionStorage.openid
                     }, function (data) {
                         locals.student_id = data.data.student_id;
                         var isBind = data.data.bind;
                         if (isBind) {
-                            page.redirect('#!list')
+                            page.redirect('#!list');
                         } else {
                             weui.alert('请绑定学号', function(){ wx.closeWindow(); });
                         }
@@ -241,16 +240,16 @@
                     locals.week = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
                     locals.one = 1;
                     $.get('/api/learn/course_list', {
-                        open_id: openid
+                        open_id: sessionStorage.openid
                     }, function(data) {
                         locals.classes = data.data.classes;
                         render('main', locals);
                         $('.js-info').click(function() {
                             pushHistory("#");
-                            courseid = $(this).attr('courseid');
-                            coursename = $(this).attr('coursename');
-                            locals.courseid = courseid;
-                            locals.coursename = coursename;
+                            sessionStorage.courseid = $(this).attr('courseid');
+                            sessionStorage.coursename = $(this).attr('coursename');
+                            locals.courseid = sessionStorage.courseid;
+                            locals.coursename = sessionStorage.coursename;
                             page.redirect('#!info');
                         });
                         loading.hide();
@@ -260,8 +259,8 @@
                 info: function(ctx, next) {
                     locals.detail = 1;
                     $.get('/api/course/information/', {
-                        open_id: openid,
-                        course_id: courseid
+                        open_id: sessionStorage.openid,
+                        course_id: sessionStorage.courseid
                     }, function (data) {
                         locals.info = data.data.info;
                         locals.url = data.data.url;
@@ -270,7 +269,7 @@
 
                         $('#backBtn').click(function () {
                             loading = weui.loading('加载中');
-                            page.redirect('#!list')
+                            page.redirect('#!list');
                         });
 
                         $('#comment').click(function () {
@@ -287,9 +286,9 @@
                     $('#confirmBtn').click(function () {
                         var loading = weui.loading('提交中...');
                         $.post('/api/course/comment/create', {
-                            open_id: openid,
-                            course_id: courseid,
-                            course_name: coursename,
+                            open_id: sessionStorage.openid,
+                            course_id: sessionStorage.courseid,
+                            course_name: sessionStorage.coursename,
                             score: $('#inputScore').val(),
                             isanonymous: $('#inputAnonymous').prop('checked'),
                             content: $('#inputContent').val()
@@ -301,7 +300,7 @@
 
                     $('#backBtn').click(function () {
                         loading = weui.loading('加载中');
-                        page.redirect('#!info')
+                        page.redirect('#!info');
                     });
 
                     loading.hide();
@@ -309,8 +308,8 @@
             };
 
             getOpenId(function (get_open_id) {
-                openid = get_open_id;
-                locals.openid = openid;
+                sessionStorage.openid = get_open_id;
+                locals.openid = sessionStorage.openid;
                 page.base('/learn/course_list');
                 page('/', route.main);
                 page('list', route.list);
