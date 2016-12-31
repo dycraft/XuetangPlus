@@ -43,7 +43,7 @@ CONFIGS = json.loads(open(os.path.join(BASE_DIR, 'configs.json')).read())
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = SECRET_KEY = CONFIGS['SECRET_KEY']
+SECRET_KEY = CONFIGS['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = CONFIGS['DEBUG']
@@ -72,7 +72,6 @@ INSTALLED_APPS = [
     'wechat',
     'userpage',
     'djcelery',
-    'kombu.transport.django',
 ]
 
 MIDDLEWARE_CLASSES = [
