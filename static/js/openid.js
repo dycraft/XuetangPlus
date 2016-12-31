@@ -15,14 +15,20 @@
     };
 
     window.getOpenId = function(next) {
-        var openIdUrl = '/api/welcome/openid/';
-        if (window.hasOwnProperty('isAccountBind') && isAccountBind) {
-            openIdUrl = '/api/welcome/userinfo/';
+        if (sessionStorage.hasOwnProperty('open_id')) {
+            next(sessionStorage.open_id);
+        } else {
+            var openIdUrl = '/api/welcome/openid/';
+            if (window.hasOwnProperty('isAccountBind') && isAccountBind) {
+                openIdUrl = '/api/welcome/userinfo/';
+            }
+            $.get(openIdUrl, {
+                'code': getQueryParams(document.location.search).code
+            }, function(data){
+                console.log(sessionStorage);
+                sessionStorage.open_id = data.data.open_id;
+                next(data.data.open_id);
+            });
         }
-        $.get(openIdUrl, {
-            'code': getQueryParams(document.location.search).code
-        }, function(data){
-            next(data.data.open_id);
-        });
     };
 })();

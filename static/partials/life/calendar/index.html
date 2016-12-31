@@ -173,6 +173,22 @@
                     rest: 1
                 };
                 var openid, curdate;
+                var getEvent = function() {
+                    var year = $('#calendar').fullCalendar('getDate')._d.getYear() + 1900;
+                    var month = $('#calendar').fullCalendar('getDate')._d.getMonth() + 1;
+                    $.get('/api/event/list', {
+                        open_id: openid,
+                        mode: 'month',
+                        month: year+'-'+month
+                    }, function (data) {
+                        for (var i = 0; i < data.data.length; i++) {
+                            $('#calendar').fullCalendar('renderEvent', {
+                                title: data.data[i].name,
+                                start: data.data[i].date
+                            });
+                        }
+                    });
+                };
 
                 var route = {
                     init: function (ctx, next) {
@@ -196,54 +212,9 @@
                         			editable: true,
                         			eventLimit: false
                                 });
-                                (function getEvent() {
-                                    var year = $('#calendar').fullCalendar('getDate')._d.getYear() + 1900;
-                                    var month = $('#calendar').fullCalendar('getDate')._d.getMonth() + 1;
-                                    $.get('/api/event/list', {
-                                        open_id: openid,
-                                        mode: 'month',
-                                        month: year+'-'+month
-                                    }, function (data) {
-                                        for (var i = 0; i < data.data.length; i++) {
-                                            $('#calendar').fullCalendar('renderEvent', {
-                                                title: data.data[i].name,
-                                                start: data.data[i].date
-                                            });
-                                        }
-                                    });
-                                })();
-                                $('.fc-prev-button').click(function() {
-                                    var year = $('#calendar').fullCalendar('getDate')._d.getYear() + 1900;
-                                    var month = $('#calendar').fullCalendar('getDate')._d.getMonth() + 1;
-                                    $.get('/api/event/list', {
-                                        open_id: openid,
-                                        mode: 'month',
-                                        month: year+'-'+month
-                                    }, function (data) {
-                                        for (var i = 0; i < data.data.length; i++) {
-                                            $('#calendar').fullCalendar('renderEvent', {
-                                                title: data.data[i].name,
-                                                start: data.data[i].date
-                                            });
-                                        }
-                                    });
-                                });
-                                $('.fc-next-button').click(function() {
-                                    var year = $('#calendar').fullCalendar('getDate')._d.getYear() + 1900;
-                                    var month = $('#calendar').fullCalendar('getDate')._d.getMonth() + 1;
-                                    $.get('/api/event/list', {
-                                        open_id: openid,
-                                        mode: 'month',
-                                        month: year+'-'+month
-                                    }, function (data) {
-                                        for (var i = 0; i < data.data.length; i++) {
-                                            $('#calendar').fullCalendar('renderEvent', {
-                                                title: data.data[i].name,
-                                                start: data.data[i].date
-                                            });
-                                        }
-                                    });
-                                });
+                                $('.fc-prev-button').click(getEvent);
+                                $('.fc-next-button').click(getEvent);
+                                getEvent();
                                 $('#showSelectFormat').click(function () {
                                     weui.actionSheet([
                                         {
@@ -301,14 +272,17 @@
                         });
                     },
                     list: function (ctx, next) {
-                        var loading = weui.loading('数据加载中...');
+                        // var loading = weui.loading('数据加载中...');
                         $.get('/api/event/list', {
                             open_id: openid,
                             mode: 'day'
                         }, function (data) {
-                            loading.hide();
-                            if (data.data.events.length === 0) locals.rest = 0;
-                            else {
+                            // loading.hide();
+                            if (data.data.events.length === 0) {
+                                locals.rest = 0;
+                                locals.events = {};
+                                curdate = locals.now;
+                            } else {
                                 locals.events = data.data.events;
                                 curdate = locals.events[locals.events.length-1][0].date;
                             }
@@ -383,7 +357,7 @@
                                         content: $('#inputContent').val()
                                     }, function (data) {
                                         loading.hide();
-                                        page('');
+                                        page('#!list');
                                     });
                                 }
                             });

@@ -140,12 +140,10 @@
 
         <script type="text/javascript">
             var locals = {};
-            var openid;
-            var courseid;
             var fresh = function(next) {
                 $.get('/api/communicate/message/', {
-                    open_id: openid,
-                    course_id: courseid
+                    open_id: sessionStorage.openid,
+                    course_id: sessionStorage.courseid
                 }, function (data) {
                     locals.msgs = data.data.msgs;
                     locals.update = data.data.update_index;
@@ -160,8 +158,8 @@
             };
             var getRtmMsg = function() {
                 $.post("/api/communicate/eventsource/", {
-                    open_id: openid,
-                    course_id: courseid,
+                    open_id: sessionStorage.openid,
+                    course_id: sessionStorage.courseid,
                     index: locals.update
                 }, function(data) {
                     if(data.code === 0) {
@@ -177,18 +175,18 @@
                 },
                 main: function (ctx, next) {
                     $.get('/api/welcome/check_bind/', {
-                        open_id: openid
+                        open_id: sessionStorage.openid
                     }, function (data) {
                         locals.student_id = data.data.student_id;
                         var isBind = data.data.bind;
                         if (isBind) {
                             $.get('/api/communicate/list/', {
-                                open_id: openid
+                                open_id: sessionStorage.openid
                             }, function(data) {
                                 locals.courses = data.data.courses;
                                 render('main', locals);
                                 $('.js-course').click(function() {
-                                    courseid = $(this).attr('courseid');
+                                    sessionStorage.courseid = $(this).attr('courseid');
                                     page('#!page');
                                 });
                             });
@@ -207,8 +205,8 @@
                             var loading = weui.loading('提交中...');
                             if (!error) {
                                 $.post('/api/communicate/message/', {
-                                    open_id: openid,
-                                    course_id: courseid,
+                                    open_id: sessionStorage.openid,
+                                    course_id: sessionStorage.courseid,
                                     content: $('#inputContent').val()
                                 }, function (data) {
                                     loading.hide();
@@ -223,8 +221,8 @@
             };
 
             getOpenId(function (get_open_id) {
-                openid = get_open_id;
-                locals.openid = openid;
+                sessionStorage.openid = get_open_id;
+                locals.openid = sessionStorage.openid;
                 page.base('/learn/communication_list');
                 page('/', route.main);
                 page('page', route.page);
