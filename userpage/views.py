@@ -104,7 +104,6 @@ class AccountBind(APIView):
                         user.add_notice(ReadNoticeRecord.notice_name(notice['title'], course_id))
                 else:
                     raise LogicError("Response Error in AccountBind")
-                xsx = user.get_read_notice_list()
                 response_assignment = requests.post('http://se.zhuangty.com:8000/learnhelper/'
                                                     + user.student_id + '/courses/' + course_id
                                                     + '/assignments')
@@ -547,7 +546,7 @@ class CourseInfo(APIView):
                         result['course_new_file'] = 0
                         result['course_unread_notice'] = 0
                         result['course_unsubmitted_operations'] = 0
-                        for course in res:
+                        for course in res['courses']:
                             if course['courseid'] == self.input['course_id']:
                                 result['teacher_email'] = course['email']
                                 result['teacher_phone'] = course['phone']
@@ -558,7 +557,10 @@ class CourseInfo(APIView):
                                     'info': result,
                                     'url': get_redirect_url(event_urls['communication'])
                                 }
-
+                        return {
+                            'info': result,
+                            'url': get_redirect_url(event_urls['communication'])
+                        }
                     raise LogicError('Response Error')
 
             raise LogicError('No course')
