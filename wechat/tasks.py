@@ -39,9 +39,9 @@ def remind_informations():
 
         message_model = MessageModel()
 
-        timenow = stamp_to_localstr_minute(current_stamp())
+        timenow = stamp_to_localstr_minute(1000 * current_stamp())
         model = message_model.create_remind_model(user.open_id, hw_num, info_num, timenow)
 
-        model_url = 'https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=';
+        model_url = 'https://api.weixin.qq.com/cgi-bin/message/template/send?access_token='
         model_url += confirm.get_access_token()
         res = requests.post(model_url, data=json.dumps(model))
