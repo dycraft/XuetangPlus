@@ -1517,7 +1517,7 @@ class MeInfoViewTestCase(TestCase):
                              'student_id': data_for_test['username'],
                              'password': data_for_test['password'],
                          })
-        response = self.client.get('/api/me/info',{'open_id': 1})
+        response = self.client.get('/api/learn/notice_panel/me',{'open_id': 1})
         res = response.json()
         user = User.get_by_openid(1)
         url = 'http://se.zhuangty.com:8000/curriculum/' + user.student_id
@@ -1561,7 +1561,7 @@ class MeInfoViewTestCase(TestCase):
                              'student_id': data_for_test['username'],
                              'password': data_for_test['password'],
                          })
-        response = self.client.get('/api/me/info',{'openid': 1})
+        response = self.client.get('/api/learn/notice_panel/me',{'openid': 1})
         res = response.json()
         self.assertNotEqual(res['code'], 0)
         self.assertEqual(res['msg'], 'Field "open_id" required')
@@ -1574,14 +1574,14 @@ class MeInfoViewTestCase(TestCase):
                              'student_id': data_for_test['username'],
                              'password': data_for_test['password'],
                          })
-        response = self.client.get('/api/me/info',{'open_id': 2})
+        response = self.client.get('/api/learn/notice_panel/me',{'open_id': 2})
         res = response.json()
         self.assertEqual(res['code'], 2)
         self.assertEqual(res['msg'], 'no such open_id')
         self.assertEqual(res['data'], None)
 
     def test_get_incorrect_input3(self):
-        response = self.client.get('/api/me/info',{'open_id': 1})
+        response = self.client.get('/api/learn/notice_panel/me',{'open_id': 1})
         res = response.json()
         self.assertEqual(res['code'], 2)
         self.assertEqual(res['msg'], 'user not bound')
