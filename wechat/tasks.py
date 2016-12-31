@@ -12,12 +12,13 @@ from codex.baseerror import LogicError
 
 @task
 def remind_informations():
-    #print("remind")
     users = User.objects.all()
 
     confirm = WechatConfirmation.objects.get(id=1)
 
     for user in users:
+        if user.student_id == "":
+            continue
         hw_num = 0
         info_num = 0
 

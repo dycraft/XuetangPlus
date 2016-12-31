@@ -124,8 +124,6 @@ class CourseListHandler(WeChatHandler):
         if self.user.username == '':
             return self.reply_text('请先进行绑定')
 
-        print(self.url_pic('theme/my_course_png'))
-
         return self.reply_single_news({
             'Title': '欢迎查看您的课程',
             'Description': '点击查看课程列表',

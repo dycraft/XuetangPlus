@@ -6,8 +6,6 @@ data = xlrd.open_workbook('2016_2017_2.xls')
 jsonData = []
 
 for index, table in enumerate(data.sheets()):
-	print(table)
-	print(index)
 	for row in range(table.nrows):
 		if(row < 2):
 			continue

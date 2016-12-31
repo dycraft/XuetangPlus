@@ -738,7 +738,6 @@ class GetOpenId(APIView):
 
         response = requests.get(url)
         result = json.loads(response.content.decode())
-        # print(result)
         #this openid is defined by TX
         return {
             'open_id': result['openid']

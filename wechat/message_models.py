@@ -21,7 +21,7 @@ class MessageModel():
                     "color": "#173177"
                 },
                 "remark": {
-                    "value": "我服",
+                    "value": "",
                     "color": "#173177"
                 }
             }

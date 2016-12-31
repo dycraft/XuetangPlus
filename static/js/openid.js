@@ -25,7 +25,6 @@
             $.get(openIdUrl, {
                 'code': getQueryParams(document.location.search).code
             }, function(data){
-                console.log(sessionStorage);
                 sessionStorage.open_id = data.data.open_id;
                 next(data.data.open_id);
             });

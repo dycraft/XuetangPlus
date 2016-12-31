@@ -19,7 +19,6 @@ from datetime import timedelta
 from celery.schedules import crontab
 
 djcelery.setup_loader()
-#BROKER_URL = 'django://'
 BROKER_HOST = "localhost"
 BROKER_PORT = 5672
 BROKER_USER = "guest"
@@ -27,9 +26,9 @@ BROKER_PASSWORD = "guest"
 BROKER_VHOST = "/"
 
 CELERYBEAT_SCHEDULE = {
-    'remind':{
+    'remind': {
         'task': 'wechat.tasks.remind_informations',
-        'schedule': crontab(hour=5, minute=40)
+        'schedule': crontab(hour=23, minute=0)
     },
 }
 
@@ -66,19 +65,16 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    #'django.contrib.messages',
-    #'django.contrib.staticfiles',
-
     'wechat',
     'userpage',
     'djcelery',
+    'kombu.transport.django'
 ]
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -205,7 +201,6 @@ def get_redirect_url(input_url):
         url_part3 = '&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect'
 
     des = url_part1 + CONFIGS['WECHAT_APPID'] + url_part2 + url_part3
-    print(des)
     return des
 
 
